@@ -1,0 +1,1165 @@
+@* Views/Projects/Config.cshtml *@
+@model DataSync.Web.Models.ViewModels.ProjectDetailsVm
+
+@{
+    ViewData["Title"] = "Project Config";
+    ViewData["ActiveTab"] = "Config";
+    var activeTab = (ViewData["ActiveTab"] as string) ?? "Config";
+
+    // =========================
+    // MOCK: Project Header (aligned with other project pages)
+    // =========================
+    var projectStatus = "ACTIVE";
+    var projectHealth = "GOOD";
+    var projectStage = "UAT";
+
+    // If your VM has these fields, great. If not, it will still render safely.
+    var client = string.IsNullOrWhiteSpace(Model.ClientName) ? "ZolaSuite" : Model.ClientName;
+    var sourceSystem = "ZolaSuite";
+    var targetSystem = "DMT Master";
+    var ownerName = "Sarah Chen";
+
+    // =========================
+    // MOCK: Vendor template
+    // =========================
+    var templateName = "AbacusLaw → Target CRM Vendor Template";
+    var templateVersion = "v3.2";
+    var templateUpdated = "2025-12-12";
+    var templateScope = "Contacts, Matters, Notes, Invoices";
+    var templateCompatibility = "Source: AbacusLaw • Target: DataSync Canonical v1";
+
+    // =========================
+    // MOCK: Project defaults
+    // =========================
+    var defaultTimezone = "Asia/Kolkata";
+    var defaultDateFormat = "DD/MM/YYYY";
+    var idStrategy = "Keep Source IDs + Crosswalk";
+    var duplicatePolicy = "Flag + Merge (Safe)";
+    var auditEnabled = true;
+
+    // =========================
+    // MOCK: Objects (cards) – Config-level info only (no mapping/readiness/exceptions)
+    // =========================
+    var objects = new[]
+    {
+        new { Key="Contacts",    Icon="users",       Records="42,180",  Policies=4, Defaults=6, Rules=14, Status="NeedsConfig", Scope="Full",  LastRun="Today 09:10" },
+        new { Key="Matters",     Icon="briefcase",   Records="9,540",   Policies=6, Defaults=4, Rules=18, Status="InProgress", Scope="Delta", LastRun="Today 09:12" },
+        new { Key="Notes",       Icon="file-text",   Records="128,900", Policies=3, Defaults=2, Rules=9,  Status="NeedsConfig", Scope="Full",  LastRun="Yesterday 18:45" },
+        new { Key="Invoices",    Icon="receipt",     Records="21,330",  Policies=5, Defaults=3, Rules=12, Status="Ready",      Scope="Full",  LastRun="Today 09:15" },
+        new { Key="Payments",    Icon="credit-card", Records="18,410",  Policies=4, Defaults=2, Rules=10, Status="NeedsConfig", Scope="Delta", LastRun="Today 09:18" },
+        new { Key="TimeEntries", Icon="clock",       Records="61,020",  Policies=2, Defaults=1, Rules=8,  Status="Blocked",    Scope="Full",  LastRun="—" }
+    };
+
+    string ObjectConfigUrl(string objectKey) =>
+        Url.Action("ObjectConfig", "Projects", new { id = Model.Id, objectKey = objectKey }) ?? "#";
+
+    // Advisory rollups (mock)
+    var needsConfigCount = objects.Count(o => o.Status == "NeedsConfig");
+    var blockedCount = objects.Count(o => o.Status == "Blocked");
+    var readyCount = objects.Count(o => o.Status == "Ready");
+}
+
+<div class="cfg-shell">
+
+    <!-- =========================================
+         PROJECT HEADER (aligned with other project page)
+    ========================================== -->
+    <div class="proj-hero">
+        <div class="ph-left">
+            <div class="ph-avatar" aria-hidden="true">
+                @(string.IsNullOrWhiteSpace(client) ? "P" : client.Trim().Substring(0,1).ToUpperInvariant())
+            </div>
+
+            <div class="ph-text">
+                <div class="ph-crumbs">
+                    <a class="ph-crumb-link" asp-controller="Projects" asp-action="Index">Projects</a>
+                    <span class="ph-crumb-sep">/</span>
+                    <span class="ph-crumb-current">@Model.Name</span>
+                </div>
+
+                <div class="ph-title-row">
+                    <h1 class="ph-title">@Model.Name</h1>
+                    <span class="tag tag-neutral">@projectStatus</span>
+                    <span class="tag tag-good">@projectHealth</span>
+                    <span class="tag tag-stage">@projectStage</span>
+                </div>
+
+                <div class="ph-meta">
+                    <span class="meta-item"><span class="meta-k">Client:</span> <span class="meta-v">@client</span></span>
+                    <span class="meta-dot">•</span>
+                    <span class="meta-item"><span class="meta-k">Source:</span> <span class="meta-v">@sourceSystem</span></span>
+                    <span class="meta-dot">•</span>
+                    <span class="meta-item"><span class="meta-k">Target:</span> <span class="meta-v">@targetSystem</span></span>
+                    <span class="meta-dot">•</span>
+                    <span class="meta-item"><span class="meta-k">Owner:</span> <span class="meta-v">@ownerName</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ph-right">
+            <button class="btn btn-ghost" type="button" id="btnExport">
+                <i data-lucide="download"></i> Export
+            </button>
+            <button class="btn btn-ghost" type="button" id="btnSettings">
+                <i data-lucide="settings"></i> Settings
+            </button>
+            <button class="btn btn-primary" type="button" id="btnRunNow">
+                <i data-lucide="play"></i> Run Now
+            </button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         PRIMARY TABS (active navigation)
+    ========================================== -->
+    <div class="proj-tabs">
+        <a class="ptab @(activeTab=="Overview" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Id">Overview</a>
+
+        <a class="ptab @(activeTab=="Fetch" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
+
+        <a class="ptab @(activeTab=="Verify" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Verify" asp-route-id="@Model.Id">Verify</a>
+
+        <a class="ptab @(activeTab=="Process" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Process" asp-route-id="@Model.Id">Process</a>
+
+        <a class="ptab @(activeTab=="Config" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Config" asp-route-id="@Model.Id">Config</a>
+
+        <a class="ptab @(activeTab=="Activity" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Activity" asp-route-id="@Model.Id">Activity</a>
+
+        <div class="ptab-spacer"></div>
+
+        <button class="icon-btn" type="button" title="Notes / Docs" id="btnDocs">
+            <i data-lucide="file-text"></i>
+        </button>
+        <button class="icon-btn" type="button" title="More" id="btnMore">
+            <i data-lucide="more-horizontal"></i>
+        </button>
+    </div>
+
+    <!-- =========================================
+         CONTENT GRID
+    ========================================== -->
+    <div class="cfg-grid">
+
+        <!-- LEFT COLUMN -->
+        <div class="cfg-main">
+
+            <!-- Vendor Template -->
+            <section class="card">
+                <div class="card-head">
+                    <div class="ch-left">
+                        <div class="ch-ico"><i data-lucide="layout-template"></i></div>
+                        <div>
+                            <div class="ch-title">Vendor Template</div>
+                            <div class="ch-sub">
+                                Select the mapping schema your client calls a “vendor template” and lock configuration for repeatable migrations.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ch-actions">
+                        <button class="btn btn-ghost" type="button" id="btnViewTemplate">
+                            <i data-lucide="eye"></i> View
+                        </button>
+                        <button class="btn btn-ghost" type="button" id="btnSwitchTemplate">
+                            <i data-lucide="refresh-cw"></i> Switch
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-grid">
+                    <!-- Template summary (filled layout — no empty half) -->
+                    <div class="template-card">
+                        <div class="tpl-top">
+                            <div class="tpl-name">@templateName</div>
+                            <span class="pill pill-neutral">@templateVersion</span>
+                        </div>
+
+                        <div class="tpl-kv">
+                            <div class="kv">
+                                <div class="kv-k">Updated</div>
+                                <div class="kv-v">@templateUpdated</div>
+                            </div>
+                            <div class="kv">
+                                <div class="kv-k">Scope</div>
+                                <div class="kv-v">@templateScope</div>
+                            </div>
+                            <div class="kv">
+                                <div class="kv-k">Compatibility</div>
+                                <div class="kv-v">@templateCompatibility</div>
+                            </div>
+                        </div>
+
+                        <div class="tpl-tip">
+                            <i data-lucide="info"></i>
+                            <div>
+                                <div class="tip-title">Best practice</div>
+                                <div class="tip-text">Clone before editing to keep a clean baseline template and preserve auditability.</div>
+                            </div>
+                        </div>
+
+                        <div class="tpl-actions">
+                            <button class="btn btn-primary" type="button" id="btnCloneTemplate">
+                                <i data-lucide="copy"></i> Clone & Edit
+                            </button>
+                            <button class="btn btn-ghost" type="button" id="btnLockTemplate">
+                                <i data-lucide="lock"></i> Lock Version
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Template health -->
+                    <div class="health-card">
+                        <div class="health-head">
+                            <div class="health-title">
+                                <i data-lucide="activity"></i>
+                                Template Health
+                            </div>
+                            <span class="pill pill-soft">Config view</span>
+                        </div>
+
+                        <div class="health-list">
+                            <div class="health-item">
+                                <div class="hi-left">
+                                    <span class="dot dot-warn"></span>
+                                    <div>
+                                        <div class="hi-name">Missing mappings</div>
+                                        <div class="hi-sub">Required target fields not fully mapped (template-level).</div>
+                                    </div>
+                                </div>
+                                <div class="hi-right"><span class="pill pill-warn">7</span></div>
+                            </div>
+
+                            <div class="health-item">
+                                <div class="hi-left">
+                                    <span class="dot dot-ok"></span>
+                                    <div>
+                                        <div class="hi-name">Deprecated fields</div>
+                                        <div class="hi-sub">No deprecated fields detected for this target version.</div>
+                                    </div>
+                                </div>
+                                <div class="hi-right"><span class="pill pill-ok">0</span></div>
+                            </div>
+
+                            <div class="health-item">
+                                <div class="hi-left">
+                                    <span class="dot dot-warn"></span>
+                                    <div>
+                                        <div class="hi-name">Defaults required</div>
+                                        <div class="hi-sub">Some required fields need defaults (project/object-level).</div>
+                                    </div>
+                                </div>
+                                <div class="hi-right"><span class="pill pill-warn">3</span></div>
+                            </div>
+                        </div>
+
+                        <div class="health-actions">
+                            <button class="btn btn-ghost w100" type="button" id="btnOpenMapping">
+                                <i data-lucide="arrow-right"></i> Open Mapping Editor
+                            </button>
+                            <button class="btn btn-ghost w100" type="button" id="btnOpenDefaults">
+                                <i data-lucide="arrow-right"></i> Configure Defaults
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Project Defaults -->
+            <section class="card">
+                <div class="card-head">
+                    <div class="ch-left">
+                        <div class="ch-ico"><i data-lucide="sliders"></i></div>
+                        <div>
+                            <div class="ch-title">Project Defaults</div>
+                            <div class="ch-sub">Applies across all objects unless an object overrides it.</div>
+                        </div>
+                    </div>
+
+                    <div class="ch-actions">
+                        <button class="btn btn-primary" type="button" id="btnSaveDefaults">
+                            <i data-lucide="save"></i> Save Defaults
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label class="lbl">Timezone</label>
+                        <select class="inp" id="tz">
+                            <option selected>@defaultTimezone</option>
+                            <option>UTC</option>
+                            <option>Europe/London</option>
+                            <option>America/New_York</option>
+                        </select>
+                        <div class="help">Used for audit timestamps and date conversions.</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="lbl">Date Format</label>
+                        <select class="inp" id="df">
+                            <option selected>@defaultDateFormat</option>
+                            <option>MM/DD/YYYY</option>
+                            <option>YYYY-MM-DD</option>
+                        </select>
+                        <div class="help">Controls display format for reports and previews.</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="lbl">ID Strategy</label>
+                        <select class="inp" id="idStrategy">
+                            <option selected>@idStrategy</option>
+                            <option>Generate New IDs</option>
+                            <option>Keep Source IDs Only</option>
+                        </select>
+                        <div class="help">Crosswalk keeps traceability between source and target records.</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="lbl">Duplicate Handling (default)</label>
+                        <select class="inp" id="dupPolicy">
+                            <option selected>@duplicatePolicy</option>
+                            <option>Flag Only (No Merge)</option>
+                            <option>Keep Both</option>
+                            <option>Merge Aggressively</option>
+                        </select>
+                        <div class="help">Object-level policies may override this default.</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="lbl">Audit Logging</label>
+                        <div class="toggle-row">
+                            <label class="toggle">
+                                <input type="checkbox" id="audit" @(auditEnabled ? "checked" : "") />
+                                <span class="toggle-ui"></span>
+                            </label>
+                            <div class="toggle-text">
+                                <div class="toggle-title">Enable config audit</div>
+                                <div class="toggle-sub">Track who changed what and when (recommended).</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="lbl">Normalization</label>
+                        <div class="pill-row">
+                            <button type="button" class="pillbtn is-on">Trim</button>
+                            <button type="button" class="pillbtn is-on">Collapse spaces</button>
+                            <button type="button" class="pillbtn">Title case</button>
+                            <button type="button" class="pillbtn is-on">Unicode normalize</button>
+                        </div>
+                        <div class="help">Safe defaults for names and free-text fields.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Objects in Scope -->
+            <section class="card">
+                <div class="card-head">
+                    <div class="ch-left">
+                        <div class="ch-ico"><i data-lucide="boxes"></i></div>
+                        <div>
+                            <div class="ch-title">Objects in Scope</div>
+                            <div class="ch-sub">Config-only view: policies, defaults, and rules by object (no transactional metrics here).</div>
+                        </div>
+                    </div>
+
+                    <div class="ch-actions">
+                        <div class="seg">
+                            <button type="button" class="seg-btn is-on" data-filter="all">All</button>
+                            <button type="button" class="seg-btn" data-filter="NeedsConfig">Needs Config</button>
+                            <button type="button" class="seg-btn" data-filter="Ready">Ready</button>
+                            <button type="button" class="seg-btn" data-filter="Blocked">Blocked</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="obj-grid" id="objGrid">
+                    @foreach (var o in objects)
+                    {
+                        var statusClass = o.Status switch
+                        {
+                            "Ready" => "pill-ok",
+                            "NeedsConfig" => "pill-warn",
+                            "Blocked" => "pill-bad",
+                            "InProgress" => "pill-info",
+                            _ => "pill-neutral"
+                        };
+
+                        <a class="obj-card" href="@ObjectConfigUrl(o.Key)" data-status="@o.Status">
+                            <div class="obj-head">
+                                <div class="obj-ico"><i data-lucide="@o.Icon"></i></div>
+
+                                <div class="obj-title">
+                                    <div class="obj-name">@o.Key</div>
+                                    <div class="obj-meta">@o.Scope • Last: @o.LastRun • Rows: @o.Records</div>
+                                </div>
+
+                                <div class="obj-pill">
+                                    <span class="pill @statusClass">@o.Status</span>
+                                </div>
+                            </div>
+
+                            <div class="obj-stats">
+                                <div class="stat">
+                                    <div class="stat-k">Policies</div>
+                                    <div class="stat-v">@o.Policies</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-k">Defaults</div>
+                                    <div class="stat-v">@o.Defaults</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-k">Rules</div>
+                                    <div class="stat-v">@o.Rules</div>
+                                </div>
+                            </div>
+
+                            <div class="obj-foot">
+                                <div class="obj-cta">
+                                    Configure <i data-lucide="arrow-right"></i>
+                                </div>
+                                <div class="obj-note">Policies • Defaults • Rules</div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </section>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <aside class="cfg-side">
+
+            <div class="side-card">
+                <div class="side-head">
+                    <div class="side-left">
+                        <i data-lucide="sparkles"></i>
+                        <div class="side-title">Executive Advisory</div>
+                    </div>
+                    <span class="pill pill-soft">AI powered</span>
+                </div>
+
+                <div class="side-body">
+                    <div class="ai-box">
+                        <div class="ai-top">
+                            <span class="ai-dot"></span>
+                            <div class="ai-title">Readiness summary</div>
+                        </div>
+                        <div class="ai-text">
+                            @needsConfigCount objects still need configuration. @blockedCount object(s) are blocked. Focus first on defaults + duplicate policies for Contacts and Notes.
+                        </div>
+                    </div>
+
+                    <div class="side-actions">
+                        <button class="btn btn-primary w100" type="button" id="btnAIExplain">
+                            <i data-lucide="message-square"></i> Explain what to fix next
+                        </button>
+                        <button class="btn btn-ghost w100" type="button" id="btnAIReport">
+                            <i data-lucide="file-down"></i> Generate config report
+                        </button>
+                    </div>
+
+                    <div class="side-kv">
+                        <div class="skv">
+                            <div class="sk">Suggested next step</div>
+                            <div class="sv">Set defaults for Contacts</div>
+                        </div>
+                        <div class="skv">
+                            <div class="sk">Risk</div>
+                            <div class="sv">TimeEntries is blocked</div>
+                        </div>
+                        <div class="skv">
+                            <div class="sk">Confidence</div>
+                            <div class="sv"><span class="pill pill-warn">Medium</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-card">
+                <div class="side-head">
+                    <div class="side-left">
+                        <i data-lucide="shield"></i>
+                        <div class="side-title">Safety & Governance</div>
+                    </div>
+                </div>
+
+                <div class="side-body">
+                    <ul class="checklist">
+                        <li><span class="chk ok"></span> Template locked to version @templateVersion</li>
+                        <li><span class="chk warn"></span> Defaults required for mandatory fields</li>
+                        <li><span class="chk warn"></span> Duplicate policy not set for Contacts</li>
+                        <li><span class="chk ok"></span> Audit logging enabled</li>
+                    </ul>
+
+                    <button class="btn btn-ghost w100" type="button" id="btnViewAudit">
+                        <i data-lucide="scroll-text"></i> View config change log
+                    </button>
+                </div>
+            </div>
+
+        </aside>
+    </div>
+</div>
+
+@section Styles {
+<style>
+/* =========================================
+   CONFIG PAGE (single file, scoped)
+   IMPORTANT: keep @@media (Razor escape)
+========================================= */
+
+:root{
+    --bg: #f6f8fc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --line: rgba(15,23,42,.10);
+    --line2: rgba(15,23,42,.07);
+    --shadow: 0 10px 28px rgba(15,23,42,.06);
+    --shadow2: 0 6px 16px rgba(15,23,42,.05);
+    --brand: #4f46e5;
+    --brandSoft: rgba(79,70,229,.10);
+
+    --ok: #16a34a;
+    --warn: #f59e0b;
+    --bad: #ef4444;
+    --info: #2563eb;
+}
+
+/* Shell */
+.cfg-shell{
+    max-width: 1320px;
+    margin: 0 auto;
+    padding-bottom: 18px;
+}
+
+/* -------------------------
+   Project Hero (aligned)
+-------------------------- */
+.proj-hero{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 18px;
+    background: var(--card);
+    border: 1px solid var(--line2);
+    box-shadow: var(--shadow);
+}
+
+.ph-left{ display:flex; gap: 12px; align-items:flex-start; }
+.ph-avatar{
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    display:flex; align-items:center; justify-content:center;
+    font-weight: 900;
+    color: #fff;
+    background: linear-gradient(180deg, rgba(79,70,229,.95), rgba(79,70,229,.65));
+    box-shadow: 0 10px 22px rgba(79,70,229,.18);
+}
+
+.ph-crumbs{ font-size: 12px; color: var(--muted); }
+.ph-crumb-link{ color: var(--muted); text-decoration:none; }
+.ph-crumb-link:hover{ color: var(--text); }
+.ph-crumb-sep{ margin: 0 6px; opacity:.7; }
+.ph-crumb-current{ color: var(--text); font-weight: 800; }
+
+.ph-title-row{ display:flex; align-items:center; gap: 10px; margin-top: 2px; }
+.ph-title{
+    margin:0;
+    font-size: 20px;
+    font-weight: 950;
+    color: var(--text);
+    letter-spacing: .1px;
+}
+
+.ph-meta{
+    margin-top: 8px;
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+}
+.meta-item{ display:inline-flex; gap: 6px; }
+.meta-k{ color: var(--muted); font-weight: 700; }
+.meta-v{ color: var(--text); font-weight: 800; }
+.meta-dot{ opacity:.6; }
+
+.ph-right{ display:flex; align-items:center; gap: 10px; }
+
+/* Tags (status chips) */
+.tag{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    border: 1px solid var(--line2);
+    background: #fff;
+    color: var(--text);
+}
+.tag-neutral{ background: rgba(15,23,42,.05); border-color: rgba(15,23,42,.10); }
+.tag-good{ background: rgba(22,163,74,.10); border-color: rgba(22,163,74,.18); color: #15803d; }
+.tag-stage{ background: rgba(245,158,11,.10); border-color: rgba(245,158,11,.20); color: #b45309; }
+
+/* Buttons */
+.btn{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--text);
+    cursor:pointer;
+    box-shadow: 0 3px 10px rgba(15,23,42,.04);
+}
+.btn:hover{ background: rgba(15,23,42,.02); }
+
+.btn-primary{
+    background: var(--brand);
+    border-color: rgba(79,70,229,.55);
+    color: #fff;
+    box-shadow: 0 12px 22px rgba(79,70,229,.18);
+}
+.btn-primary:hover{ filter: brightness(1.02); }
+
+.btn-ghost{
+    background: #fff;
+    border-color: var(--line2);
+    color: var(--text);
+}
+.btn-ghost:hover{ background: rgba(15,23,42,.02); }
+
+.w100{ width: 100%; justify-content:center; }
+
+/* Icons */
+.btn svg, .ph-right svg, .ch-ico svg, .obj-ico svg, .side-left svg, .tpl-tip svg, .obj-cta svg{
+    width: 16px; height: 16px;
+}
+
+/* -------------------------
+   Tabs (active navigation)
+-------------------------- */
+.proj-tabs{
+    margin-top: 12px;
+    display:flex;
+    align-items:center;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 16px;
+    background: var(--card);
+    border: 1px solid var(--line2);
+    box-shadow: var(--shadow2);
+    overflow-x:auto;
+}
+
+.ptab{
+    text-decoration:none;
+    padding: 10px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--muted);
+    border: 1px solid transparent;
+    white-space:nowrap;
+}
+.ptab:hover{ color: var(--text); background: rgba(15,23,42,.03); }
+.ptab.is-active{
+    color: var(--brand);
+    background: var(--brandSoft);
+    border-color: rgba(79,70,229,.22);
+}
+.ptab-spacer{ flex:1; }
+
+.icon-btn{
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--line2);
+    background: #fff;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 3px 10px rgba(15,23,42,.04);
+}
+.icon-btn:hover{ background: rgba(15,23,42,.02); }
+.icon-btn svg{ width: 18px; height: 18px; }
+
+/* -------------------------
+   Content grid
+-------------------------- */
+.cfg-grid{
+    margin-top: 14px;
+    display:grid;
+    grid-template-columns: 1fr 360px;
+    gap: 18px;
+}
+
+@@media (max-width: 1120px){
+    .cfg-grid{ grid-template-columns: 1fr; }
+    .proj-hero{ flex-direction:column; }
+    .ph-right{ width:100%; justify-content:flex-start; flex-wrap:wrap; }
+}
+
+/* -------------------------
+   Cards
+-------------------------- */
+.card{
+    background: var(--card);
+    border: 1px solid var(--line2);
+    border-radius: 18px;
+    box-shadow: var(--shadow2);
+    overflow:hidden;
+}
+.card + .card{ margin-top: 14px; }
+
+.card-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 12px;
+    padding: 14px;
+    border-bottom: 1px solid var(--line2);
+    background: linear-gradient(180deg, rgba(15,23,42,.015), rgba(15,23,42,0));
+}
+
+.ch-left{ display:flex; gap: 10px; }
+.ch-ico{
+    width: 34px; height: 34px;
+    border-radius: 12px;
+    display:flex; align-items:center; justify-content:center;
+    background: rgba(79,70,229,.08);
+    border: 1px solid rgba(79,70,229,.16);
+    color: var(--brand);
+}
+.ch-title{ font-weight: 950; color: var(--text); }
+.ch-sub{ margin-top: 2px; font-size: 12px; color: var(--muted); max-width: 760px; }
+.ch-actions{ display:flex; align-items:center; gap: 10px; }
+
+/* Pills */
+.pill{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 950;
+    border: 1px solid var(--line2);
+    background: #fff;
+    color: var(--text);
+}
+.pill-neutral{ background: rgba(15,23,42,.05); border-color: rgba(15,23,42,.10); }
+.pill-soft{ background: rgba(79,70,229,.10); border-color: rgba(79,70,229,.20); color: var(--brand); }
+.pill-ok{ background: rgba(22,163,74,.10); border-color: rgba(22,163,74,.18); color: #15803d; }
+.pill-warn{ background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.22); color: #b45309; }
+.pill-bad{ background: rgba(239,68,68,.10); border-color: rgba(239,68,68,.20); color: #b91c1c; }
+.pill-info{ background: rgba(37,99,235,.10); border-color: rgba(37,99,235,.20); color: #1d4ed8; }
+
+/* -------------------------
+   Vendor Template block
+-------------------------- */
+.template-grid{
+    display:grid;
+    grid-template-columns: 1.15fr .85fr;
+    gap: 12px;
+    padding: 14px;
+}
+@@media (max-width: 980px){
+    .template-grid{ grid-template-columns: 1fr; }
+}
+
+.template-card, .health-card{
+    border-radius: 16px;
+    border: 1px solid var(--line2);
+    background: #fbfcff;
+    box-shadow: 0 6px 16px rgba(15,23,42,.04);
+    padding: 14px;
+}
+
+.tpl-top{ display:flex; align-items:center; justify-content:space-between; gap: 10px; }
+.tpl-name{ font-weight: 950; color: var(--text); }
+
+.tpl-kv{
+    margin-top: 10px;
+    display:grid;
+    gap: 10px;
+}
+.kv{ display:flex; justify-content:space-between; gap: 12px; }
+.kv-k{ font-size: 12px; color: var(--muted); font-weight: 800; }
+.kv-v{ font-size: 12px; color: var(--text); font-weight: 900; text-align:right; }
+
+.tpl-tip{
+    margin-top: 12px;
+    display:flex;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(79,70,229,.16);
+    background: rgba(79,70,229,.06);
+    color: var(--text);
+}
+.tip-title{ font-weight: 950; font-size: 12px; }
+.tip-text{ font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+
+.tpl-actions{
+    margin-top: 12px;
+    display:flex;
+    gap: 10px;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+}
+
+/* Health */
+.health-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 10px;
+}
+.health-title{ display:flex; align-items:center; gap: 8px; font-weight: 950; color: var(--text); }
+
+.health-list{ margin-top: 10px; display:grid; gap: 10px; }
+.health-item{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px solid var(--line2);
+    background: #fff;
+}
+.hi-left{ display:flex; gap: 10px; }
+.hi-name{ font-weight: 950; color: var(--text); }
+.hi-sub{ font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.35; max-width: 360px; }
+
+.dot{ width: 10px; height: 10px; border-radius: 999px; display:inline-block; margin-top: 3px; }
+.dot-ok{ background: rgba(22,163,74,.9); }
+.dot-warn{ background: rgba(245,158,11,.9); }
+.dot-bad{ background: rgba(239,68,68,.9); }
+
+.health-actions{ margin-top: 12px; display:grid; gap: 10px; }
+
+/* -------------------------
+   Defaults form
+-------------------------- */
+.form-grid{
+    padding: 14px;
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+@@media (max-width: 980px){
+    .form-grid{ grid-template-columns: 1fr; }
+}
+
+.field{
+    border-radius: 16px;
+    border: 1px solid var(--line2);
+    background: #fbfcff;
+    box-shadow: 0 6px 16px rgba(15,23,42,.04);
+    padding: 12px;
+}
+.lbl{ font-size: 12px; color: var(--muted); font-weight: 900; display:block; margin-bottom: 8px; }
+.inp{
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(15,23,42,.12);
+    background: #fff;
+    padding: 10px 12px;
+    font-weight: 900;
+    color: var(--text);
+    outline: none;
+}
+.inp:focus{
+    border-color: rgba(79,70,229,.40);
+    box-shadow: 0 0 0 4px rgba(79,70,229,.10);
+}
+.help{ margin-top: 8px; font-size: 12px; color: var(--muted); line-height: 1.35; }
+
+.toggle-row{ display:flex; align-items:center; gap: 12px; }
+.toggle{ position:relative; width: 44px; height: 26px; display:inline-block; }
+.toggle input{ display:none; }
+.toggle-ui{
+    position:absolute; inset:0;
+    border-radius: 999px;
+    border: 1px solid rgba(15,23,42,.14);
+    background: rgba(15,23,42,.06);
+    transition: all .16s ease;
+}
+.toggle-ui:before{
+    content:"";
+    position:absolute;
+    width: 20px; height: 20px;
+    border-radius: 999px;
+    top: 2px; left: 2px;
+    background: #fff;
+    box-shadow: 0 6px 14px rgba(15,23,42,.10);
+    transition: all .16s ease;
+}
+.toggle input:checked + .toggle-ui{
+    border-color: rgba(22,163,74,.28);
+    background: rgba(22,163,74,.16);
+}
+.toggle input:checked + .toggle-ui:before{ transform: translateX(18px); }
+
+.toggle-title{ font-weight: 950; color: var(--text); }
+.toggle-sub{ margin-top: 2px; font-size: 12px; color: var(--muted); line-height: 1.35; }
+
+.pill-row{ display:flex; flex-wrap:wrap; gap: 8px; }
+.pillbtn{
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(15,23,42,.12);
+    background: #fff;
+    font-size: 12px;
+    font-weight: 950;
+    color: var(--text);
+    cursor:pointer;
+}
+.pillbtn:hover{ background: rgba(15,23,42,.02); }
+.pillbtn.is-on{
+    border-color: rgba(79,70,229,.24);
+    background: rgba(79,70,229,.10);
+    color: var(--brand);
+}
+
+/* -------------------------
+   Objects
+-------------------------- */
+.seg{
+    display:flex;
+    border-radius: 14px;
+    border: 1px solid var(--line2);
+    background: #fff;
+    box-shadow: 0 3px 10px rgba(15,23,42,.04);
+    overflow:hidden;
+}
+.seg-btn{
+    padding: 8px 10px;
+    border: 0;
+    background: transparent;
+    cursor:pointer;
+    font-size: 12px;
+    font-weight: 950;
+    color: var(--muted);
+}
+.seg-btn:hover{ background: rgba(15,23,42,.03); color: var(--text); }
+.seg-btn.is-on{ background: rgba(79,70,229,.10); color: var(--brand); }
+
+.obj-grid{
+    padding: 14px;
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+@@media (max-width: 980px){
+    .obj-grid{ grid-template-columns: 1fr; }
+}
+
+.obj-card{
+    text-decoration:none;
+    color: inherit;
+    border-radius: 18px;
+    border: 1px solid var(--line2);
+    background: #fff;
+    box-shadow: 0 10px 22px rgba(15,23,42,.06);
+    padding: 12px;
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.obj-card:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(15,23,42,.08);
+    border-color: rgba(79,70,229,.22);
+}
+
+.obj-head{ display:flex; align-items:flex-start; gap: 10px; }
+.obj-ico{
+    width: 42px; height: 42px;
+    border-radius: 16px;
+    display:flex; align-items:center; justify-content:center;
+    background: rgba(79,70,229,.08);
+    border: 1px solid rgba(79,70,229,.16);
+    color: var(--brand);
+    flex: 0 0 auto;
+}
+.obj-title{ flex: 1; }
+.obj-name{ font-weight: 950; color: var(--text); font-size: 16px; }
+.obj-meta{ margin-top: 2px; font-size: 13px; color: var(--muted); }
+.obj-pill{ display:flex; align-items:center; }
+
+.obj-stats{
+    margin-top: 12px;
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+.stat{
+    border-radius: 14px;
+    border: 1px solid var(--line2);
+    background: #fbfcff;
+    padding: 10px;
+}
+.stat-k{ font-size: 12px; color: var(--muted); font-weight: 900; }
+.stat-v{ margin-top: 2px; font-size: 18px; font-weight: 950; color: var(--text); }
+
+.obj-foot{
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line2);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 10px;
+}
+.obj-cta{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    font-weight: 950;
+    color: var(--brand);
+}
+.obj-note{ font-size: 12px; color: var(--muted); }
+
+/* -------------------------
+   Sidebar
+-------------------------- */
+.cfg-side{ display:flex; flex-direction:column; gap: 12px; }
+.side-card{
+    background: var(--card);
+    border: 1px solid var(--line2);
+    border-radius: 18px;
+    box-shadow: var(--shadow2);
+    overflow:hidden;
+}
+.side-head{
+    padding: 12px;
+    border-bottom: 1px solid var(--line2);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 10px;
+    background: linear-gradient(180deg, rgba(15,23,42,.015), rgba(15,23,42,0));
+}
+.side-left{ display:flex; align-items:center; gap: 10px; font-weight: 950; color: var(--text); }
+.side-title{ font-weight: 950; color: var(--text); }
+.side-body{ padding: 12px; }
+
+.ai-box{
+    border-radius: 14px;
+    border: 1px solid rgba(168,85,247,.22);
+    background: rgba(168,85,247,.08);
+    padding: 10px;
+}
+.ai-top{ display:flex; align-items:center; gap: 8px; }
+.ai-dot{ width: 8px; height: 8px; border-radius: 999px; background: rgba(168,85,247,.9); }
+.ai-title{ font-weight: 950; color: var(--text); }
+.ai-text{ margin-top: 6px; font-size: 13px; color: var(--text); opacity:.88; line-height: 1.45; }
+
+.side-actions{ margin-top: 10px; display:grid; gap: 10px; }
+
+.side-kv{
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line2);
+    display:grid;
+    gap: 10px;
+}
+.skv{ display:flex; justify-content:space-between; gap: 10px; font-size: 12px; }
+.sk{ color: var(--muted); font-weight: 900; }
+.sv{ color: var(--text); font-weight: 950; text-align:right; }
+
+.checklist{
+    list-style:none;
+    padding:0;
+    margin:0 0 10px 0;
+    display:grid;
+    gap: 10px;
+}
+.checklist li{ display:flex; align-items:center; gap: 10px; font-size: 13px; color: var(--text); }
+.chk{ width: 10px; height: 10px; border-radius: 999px; display:inline-block; }
+.chk.ok{ background: rgba(22,163,74,.9); }
+.chk.warn{ background: rgba(245,158,11,.9); }
+.chk.bad{ background: rgba(239,68,68,.9); }
+</style>
+}
+
+@section Scripts {
+<script>
+(function () {
+    // lucide icons (already included in _Layout, but safe to call)
+    if (window.lucide && typeof window.lucide.createIcons === "function") {
+        window.lucide.createIcons();
+    }
+
+    // Segment filter for object cards
+    const segBtns = document.querySelectorAll(".seg-btn");
+    const grid = document.getElementById("objGrid");
+
+    function setActive(btn) {
+        segBtns.forEach(b => b.classList.remove("is-on"));
+        btn.classList.add("is-on");
+    }
+
+    function applyFilter(status) {
+        if (!grid) return;
+        const cards = grid.querySelectorAll(".obj-card");
+        cards.forEach(c => {
+            const s = c.getAttribute("data-status") || "";
+            const show = (status === "all") ? true : (s === status);
+            c.style.display = show ? "" : "none";
+        });
+    }
+
+    segBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            setActive(btn);
+            applyFilter(btn.getAttribute("data-filter") || "all");
+        });
+    });
+
+    // Toggle "normalization" pills
+    document.querySelectorAll(".pillbtn").forEach(p => {
+        p.addEventListener("click", () => p.classList.toggle("is-on"));
+    });
+
+    // Buttons (wire later to backend)
+    const toast = (msg) => console.log(msg);
+
+    document.getElementById("btnExport")?.addEventListener("click", () => toast("Export: wire to config export (PDF/JSON)"));
+    document.getElementById("btnSettings")?.addEventListener("click", () => toast("Settings: open project settings"));
+    document.getElementById("btnRunNow")?.addEventListener("click", () => toast("Run Now: start orchestration"));
+    document.getElementById("btnDocs")?.addEventListener("click", () => toast("Docs: open project docs/notes"));
+    document.getElementById("btnMore")?.addEventListener("click", () => toast("More: open menu"));
+
+    document.getElementById("btnViewTemplate")?.addEventListener("click", () => toast("View Template"));
+    document.getElementById("btnSwitchTemplate")?.addEventListener("click", () => toast("Switch Template"));
+    document.getElementById("btnCloneTemplate")?.addEventListener("click", () => toast("Clone & Edit Template"));
+    document.getElementById("btnLockTemplate")?.addEventListener("click", () => toast("Lock Template Version"));
+
+    document.getElementById("btnOpenMapping")?.addEventListener("click", () => toast("Open Mapping Editor"));
+    document.getElementById("btnOpenDefaults")?.addEventListener("click", () => toast("Configure Defaults"));
+    document.getElementById("btnSaveDefaults")?.addEventListener("click", () => toast("Save Defaults"));
+
+    document.getElementById("btnAIExplain")?.addEventListener("click", () => toast("AI Explain: Azure AI Foundry endpoint"));
+    document.getElementById("btnAIReport")?.addEventListener("click", () => toast("Generate config report"));
+    document.getElementById("btnViewAudit")?.addEventListener("click", () => toast("View config change log"));
+
+})();
+</script>
+}

@@ -1,1276 +1,1085 @@
-@model DataSync.Web.Models.ViewModels.ProjectDetailsVm
+@* Views/Projects/Process.cshtml
+   Process tab — REDRAFTED per your feedback:
+   ✅ Less text (clean + scannable)
+   ✅ Removed: Execution Orchestration
+   ✅ Removed: Execution Strategy + Configuration
+   ✅ Kept: Performance & Load Insights
+   ✅ Kept: Objects in Scope (Summary/Detail)
+   ✅ Kept: Executive Advisory (AI-Powered)
+   ✅ Added: Project Header + Tabs navigation (same pattern as other tabs)
+   ✅ CSS + JS in SAME file
+   ✅ IMPORTANT: CSS uses @@media (Razor-safe)
+*@
 @{
     ViewData["Title"] = "Project Process";
+
+    // ------------------------------
+    // Replace these with your Model later if needed
+    // ------------------------------
     var activeTab = (ViewData["ActiveTab"] as string) ?? "Process";
 
-    // Mock data for prototype
-    var runId = "RUN-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
-    var batchId = "BATCH-10934";
-    var adfPipeline = "pl_dmt_process_load";
-    var storedProc = "sp_dmt_process_pack";
+    var projectName = (ViewData["ProjectName"] as string) ?? "Project #1 – ZolaSuite Migration";
+    var projectCrumb = (ViewData["ProjectCrumb"] as string) ?? "Projects";
+    var projectId = (ViewData["ProjectId"] as string) ?? "1";
+    var status1 = (ViewData["Status1"] as string) ?? "ACTIVE";
+    var status2 = (ViewData["Status2"] as string) ?? "GOOD";
+    var status3 = (ViewData["Status3"] as string) ?? "UAT";
+
+    var clientName = (ViewData["ClientName"] as string) ?? "ZolaSuite";
+    var sourceName = (ViewData["SourceName"] as string) ?? "ZolaSuite";
+    var targetName = (ViewData["TargetName"] as string) ?? "DMT Master";
+    var ownerName = (ViewData["OwnerName"] as string) ?? "Sarah Chen";
+
+    // Run context
+    var runId = (ViewData["RunId"] as string) ?? "RUN-20251223-225558";
+    var batchId = (ViewData["BatchId"] as string) ?? "BATCH-10934";
+    var mappingVersion = (ViewData["MappingVersion"] as string) ?? "v2.4.1";
+    var rulesetVersion = (ViewData["RulesetVersion"] as string) ?? "v3.2";
+    var targetSystem = (ViewData["TargetSystem"] as string) ?? "SQL Target (Prod)";
+    var execMode = (ViewData["ExecutionMode"] as string) ?? "Chunked Parallel";
+    var isolation = (ViewData["IsolationLevel"] as string) ?? "Read Committed";
+
+    // KPI (minimal)
+    var kpiDataReadiness = 92;     // %
+    var kpiRisk = "Medium";        // Low/Medium/High
+    var kpiEtaMin = 3;
+    var kpiEtaMax = 5;
+
+    // Object list mock (replace later)
+    var objects = new[] {
+        new { Name="Payments", Mode="Full", Last="Today 09:10", Rows=4560, Health=96, Rules=42, Passed=40, Failed=2, Status="Ready", Tag="OK" },
+        new { Name="Contacts", Mode="Delta", Last="Today 09:12", Rows=1820, Health=88, Rules=34, Passed=30, Failed=4, Status="Ready", Tag="WARN" },
+        new { Name="Matters", Mode="Full", Last="Today 09:15", Rows=620,  Health=74, Rules=28, Passed=20, Failed=8, Status="At risk", Tag="RISK" },
+        new { Name="Invoices", Mode="Full", Last="Today 09:18", Rows=9320, Health=99, Rules=51, Passed=51, Failed=0, Status="Ready", Tag="OK" },
+        new { Name="Users",    Mode="Delta", Last="Today 09:20", Rows=210,  Health=82, Rules=22, Passed=19, Failed=3, Status="Ready", Tag="WARN" },
+        new { Name="Ledger",   Mode="Full", Last="Today 09:22", Rows=12850,Health=91, Rules=46, Passed=44, Failed=2, Status="Ready", Tag="OK" }
+    };
 }
 
-<div class="process-page">
-
-    <!-- PROJECT HERO -->
-    <div class="project-hero">
-        <div class="hero-left">
-            <div class="hero-logo" aria-hidden="true">
-                @(string.IsNullOrWhiteSpace(Model.ClientName) ? "C" : Model.ClientName.Trim().Substring(0, 1).ToUpperInvariant())
-            </div>
-
-            <div class="hero-text">
-                <div class="hero-topline">
-                    <a class="crumb-link" asp-controller="Projects" asp-action="Index">Projects</a>
-                    <span class="crumb-sep">/</span>
-                    <span class="crumb-current">@Model.Name</span>
-                </div>
-
-                <div class="hero-title-row">
-                    <h1 class="hero-title">@Model.Name</h1>
-                    <div class="hero-badges">
-                        <span class="pill pill-status">@Model.Status</span>
-                        <span class="pill pill-health">@Model.Health</span>
-                        <span class="pill pill-env">@Model.Environment</span>
-                    </div>
-                </div>
-
-                <div class="hero-meta">
-                    <span><strong>Client:</strong> @Model.ClientName</span>
-                    <span class="subdot">•</span>
-                    <span><strong>Source:</strong> @Model.SourcePlatform</span>
-                    <span class="subdot">•</span>
-                    <span><strong>Target:</strong> @Model.TargetPlatform</span>
-                    <span class="subdot">•</span>
-                    <span><strong>Owner:</strong> @Model.Owner</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="hero-right">
-            <button class="btn btn-secondary" id="btnExport"><i data-lucide="download"></i> Export Plan</button>
-            <button class="btn btn-primary" id="btnStartProcess"><i data-lucide="play-circle"></i> Start Process</button>
-        </div>
-    </div>
-
-    <!-- TABS BAR -->
-    <div class="details-tabs">
-        <a class="tab-item" asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Id">Overview</a>
-        <a class="tab-item" asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
-        <a class="tab-item" asp-controller="Projects" asp-action="Verify" asp-route-id="@Model.Id">Verify</a>
-        <a class="tab-item is-active" asp-controller="Projects" asp-action="Process" asp-route-id="@Model.Id">Process</a>
-        <a class="tab-item" href="#">Config</a>
-        <a class="tab-item" href="#">Activity</a>
-
-        <div class="tabs-spacer"></div>
-
-        <button class="tab-icon-btn" type="button" title="AI Assistant" id="toggleAI">
-            <i data-lucide="sparkles"></i>
-        </button>
-    </div>
-
-    <!-- PROCESS HEADER -->
-    <div class="process-head">
-        <div>
-            <h2 class="process-title">Process</h2>
-            <div class="process-subtitle">
-                Final data load into SQL target systems - irreversible operation
-            </div>
-            <div class="process-runmeta" id="runMetaInfo">
-                <span class="mini neutral"><strong>Status:</strong> Ready to execute</span>
-                <span class="mini neutral"><strong>Run ID:</strong> @runId</span>
-                <span class="mini neutral"><strong>Batch:</strong> @batchId</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- MAIN GRID -->
-    <div class="details-grid">
-
-        <!-- LEFT COLUMN -->
-        <section class="details-main">
-
-            <!-- 1️⃣ EXECUTION ORCHESTRATION (Planning View) -->
-            <div class="panel planning-view">
-                <div class="panel-head">
-                    <div>
-                        <div class="panel-title">Execution Orchestration</div>
-                        <div class="panel-sub">What will execute when you press Start Process</div>
-                    </div>
-                    <span class="pill pill-neutral">Pre-flight</span>
-                </div>
-
-                <div class="exec-cards">
-                    <div class="exec-card">
-                        <div class="exec-icon"><i data-lucide="workflow"></i></div>
-                        <div class="exec-content">
-                            <div class="exec-label">ADF Pipeline</div>
-                            <div class="exec-value">@adfPipeline</div>
-                            <div class="exec-sub">Sequential execution, timeout 2h</div>
-                        </div>
-                    </div>
-
-                    <div class="exec-card">
-                        <div class="exec-icon"><i data-lucide="database"></i></div>
-                        <div class="exec-content">
-                            <div class="exec-label">SQL Stored Procedure</div>
-                            <div class="exec-value">@storedProc</div>
-                            <div class="exec-sub">Target: DMT_Master_Prod</div>
-                        </div>
-                    </div>
-
-                    <div class="exec-card">
-                        <div class="exec-icon"><i data-lucide="layers"></i></div>
-                        <div class="exec-content">
-                            <div class="exec-label">Execution Mode</div>
-                            <div class="exec-value">Chunked Parallel</div>
-                            <div class="exec-sub">Batch size: 10,000 rows</div>
-                        </div>
-                    </div>
-
-                    <div class="exec-card">
-                        <div class="exec-icon"><i data-lucide="refresh-ccw"></i></div>
-                        <div class="exec-content">
-                            <div class="exec-label">Retry Policy</div>
-                            <div class="exec-value">3 attempts</div>
-                            <div class="exec-sub">Exponential backoff</div>
-                        </div>
-                    </div>
-
-                    <div class="exec-card">
-                        <div class="exec-icon"><i data-lucide="file-text"></i></div>
-                        <div class="exec-content">
-                            <div class="exec-label">Logging</div>
-                            <div class="exec-value">ADF + SQL Audit</div>
-                            <div class="exec-sub">Immutable audit trail</div>
-                        </div>
-                    </div>
-
-                    <div class="exec-card">
-                        <div class="exec-icon"><i data-lucide="shield-check"></i></div>
-                        <div class="exec-content">
-                            <div class="exec-label">Objects to Process</div>
-                            <div class="exec-value">12 objects</div>
-                            <div class="exec-sub">~128K rows estimated</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="exec-warning">
-                    <i data-lucide="alert-triangle"></i>
-                    <div>
-                        <strong>Important:</strong> This operation will modify production data and cannot be undone. 
-                        Ensure Verify gate is clear before proceeding.
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2️⃣ PROGRESS & MONITORING (Monitoring View - hidden initially) -->
-            <div class="panel monitoring-view" style="display:none;">
-                <div class="panel-head">
-                    <div>
-                        <div class="panel-title">Progress & Monitoring</div>
-                        <div class="panel-sub">Real-time execution status</div>
-                    </div>
-                    <span class="pill pill-running" id="overallStatus">Running</span>
-                </div>
-
-                <!-- Overall Progress -->
-                <div class="progress-summary">
-                    <div class="prog-stat">
-                        <div class="prog-num" id="rowsProcessed">0</div>
-                        <div class="prog-label">Rows Processed</div>
-                    </div>
-                    <div class="prog-stat">
-                        <div class="prog-num" id="objectsComplete">0/12</div>
-                        <div class="prog-label">Objects Complete</div>
-                    </div>
-                    <div class="prog-stat">
-                        <div class="prog-num" id="throughput">0</div>
-                        <div class="prog-label">Rows/sec</div>
-                    </div>
-                    <div class="prog-stat">
-                        <div class="prog-num" id="elapsed">00:00</div>
-                        <div class="prog-label">Elapsed Time</div>
-                    </div>
-                </div>
-
-                <!-- Per-Object Progress -->
-                <div class="objects-progress">
-                    <div class="obj-prog-item">
-                        <div class="obj-prog-top">
-                            <span class="obj-name">Contacts</span>
-                            <span class="obj-status status-running">Running</span>
-                        </div>
-                        <div class="pbar good"><span style="width: 67%"></span></div>
-                        <div class="obj-prog-foot">
-                            <span>30,421 / 45,210 rows</span>
-                            <span>Staged → Transformed → Loading</span>
-                        </div>
-                    </div>
-
-                    <div class="obj-prog-item">
-                        <div class="obj-prog-top">
-                            <span class="obj-name">Invoices</span>
-                            <span class="obj-status status-complete">Complete</span>
-                        </div>
-                        <div class="pbar good"><span style="width: 100%"></span></div>
-                        <div class="obj-prog-foot">
-                            <span>61,880 / 61,880 rows</span>
-                            <span>✓ Loaded successfully</span>
-                        </div>
-                    </div>
-
-                    <div class="obj-prog-item">
-                        <div class="obj-prog-top">
-                            <span class="obj-name">Matters</span>
-                            <span class="obj-status status-queued">Queued</span>
-                        </div>
-                        <div class="pbar neutral"><span style="width: 0%"></span></div>
-                        <div class="obj-prog-foot">
-                            <span>0 / 8,420 rows</span>
-                            <span>Waiting...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="monitoring-foot">
-                    <span class="mini neutral">ADF Run ID: adf-run-20241223-091045</span>
-                    <button class="btn btn-secondary btn-sm">View ADF Logs</button>
-                </div>
-            </div>
-
-            <!-- 3️⃣ EXCEPTIONS & REMEDIATION (Shows when failures occur) -->
-            <div class="panel exceptions-view" style="display:none;">
-                <div class="panel-head">
-                    <div>
-                        <div class="panel-title">Exceptions & Remediation</div>
-                        <div class="panel-sub">Failures and recovery actions</div>
-                    </div>
-                    <span class="pill pill-warn">2 Failures</span>
-                </div>
-
-                <div class="exception-cards">
-                    <div class="exc-card">
-                        <div class="exc-header">
-                            <div class="exc-icon bad"><i data-lucide="x-circle"></i></div>
-                            <div>
-                                <div class="exc-title">Uniqueness Constraint Violation</div>
-                                <div class="exc-meta">Contacts table • Data Quality Issue</div>
-                            </div>
-                            <span class="exc-impact">127 rows</span>
-                        </div>
-                        <div class="exc-reason">
-                            Duplicate Email values detected. Primary key constraint failed on insert.
-                        </div>
-                        <div class="exc-actions">
-                            <button class="btn btn-secondary btn-sm">Export Failed Rows</button>
-                            <button class="btn btn-secondary btn-sm">Return to Verify</button>
-                            <button class="btn btn-primary btn-sm">Retry</button>
-                        </div>
-                    </div>
-
-                    <div class="exc-card">
-                        <div class="exc-header">
-                            <div class="exc-icon warn"><i data-lucide="alert-circle"></i></div>
-                            <div>
-                                <div class="exc-title">Timeout Exceeded</div>
-                                <div class="exc-meta">Time Entries table • System Issue</div>
-                            </div>
-                            <span class="exc-impact">0 rows</span>
-                        </div>
-                        <div class="exc-reason">
-                            SQL execution exceeded 120s timeout. Consider increasing batch size or timeout limit.
-                        </div>
-                        <div class="exc-actions">
-                            <button class="btn btn-secondary btn-sm">View Logs</button>
-                            <button class="btn btn-primary btn-sm">Retry with Extended Timeout</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5️⃣ COMPLETION OUTPUT (Shows after successful run) -->
-            <div class="panel completion-view" style="display:none;">
-                <div class="panel-head">
-                    <div>
-                        <div class="panel-title">Completion Summary</div>
-                        <div class="panel-sub">Final load results and reconciliation</div>
-                    </div>
-                    <span class="pill pill-ok">Complete</span>
-                </div>
-
-                <div class="completion-hero">
-                    <div class="completion-icon"><i data-lucide="badge-check"></i></div>
-                    <div>
-                        <div class="completion-title">Migration Load Complete</div>
-                        <div class="completion-sub">All objects processed successfully</div>
-                    </div>
-                </div>
-
-                <div class="completion-stats">
-                    <div class="comp-stat">
-                        <div class="comp-num good">128,450</div>
-                        <div class="comp-label">Rows Inserted</div>
-                    </div>
-                    <div class="comp-stat">
-                        <div class="comp-num neutral">0</div>
-                        <div class="comp-label">Rows Updated</div>
-                    </div>
-                    <div class="comp-stat">
-                        <div class="comp-num bad">0</div>
-                        <div class="comp-label">Rows Failed</div>
-                    </div>
-                    <div class="comp-stat">
-                        <div class="comp-num good">100%</div>
-                        <div class="comp-label">Reconciliation</div>
-                    </div>
-                </div>
-
-                <div class="completion-artifacts">
-                    <div class="artifact-item">
-                        <i data-lucide="file-check"></i>
-                        <span>Final_Load_Report_@(runId).pdf</span>
-                        <button class="btn btn-secondary btn-sm">Download</button>
-                    </div>
-                    <div class="artifact-item">
-                        <i data-lucide="file-spreadsheet"></i>
-                        <span>Reconciliation_Summary_@(runId).xlsx</span>
-                        <button class="btn btn-secondary btn-sm">Download</button>
-                    </div>
-                </div>
-
-                <div class="golive-indicator good">
-                    <i data-lucide="rocket"></i>
-                    <strong>Go-Live Ready:</strong> All criteria met. System ready for production handover.
-                </div>
-            </div>
-
-            <!-- 4️⃣ AUDIT & TRACEABILITY -->
-            <div class="panel audit-view" style="display:none;">
-                <div class="panel-head">
-                    <div>
-                        <div class="panel-title">Audit & Traceability</div>
-                        <div class="panel-sub">Compliance and governance record</div>
-                    </div>
-                </div>
-
-                <div class="audit-grid">
-                    <div class="audit-row">
-                        <div class="audit-key">Run ID</div>
-                        <div class="audit-val">@runId</div>
-                    </div>
-                    <div class="audit-row">
-                        <div class="audit-key">Batch ID</div>
-                        <div class="audit-val">@batchId</div>
-                    </div>
-                    <div class="audit-row">
-                        <div class="audit-key">Triggered By</div>
-                        <div class="audit-val">@Model.Owner (Manual)</div>
-                    </div>
-                    <div class="audit-row">
-                        <div class="audit-key">Timestamp</div>
-                        <div class="audit-val">@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss UTC")</div>
-                    </div>
-                    <div class="audit-row">
-                        <div class="audit-key">Input Dataset</div>
-                        <div class="audit-val">stg_@(Model.SourcePlatform.ToLower())_verified_snapshot_v12</div>
-                    </div>
-                    <div class="audit-row">
-                        <div class="audit-key">Mapping Version</div>
-                        <div class="audit-val">v2.4.1 (approved 2024-12-20)</div>
-                    </div>
-                    <div class="audit-row">
-                        <div class="audit-key">Ruleset Version</div>
-                        <div class="audit-val">rules_@(Model.SourcePlatform.ToLower())_v3.2</div>
-                    </div>
-                    <div class="audit-row">
-                        <div class="audit-key">Target System</div>
-                        <div class="audit-val">DMT_Master_Prod (SQL Server)</div>
-                    </div>
-                </div>
-
-                <div class="audit-seal">
-                    <i data-lucide="shield"></i>
-                    This audit record is immutable and tamper-proof. Stored in dmt_audit_log table.
-                </div>
-            </div>
-
-        </section>
-
-        <!-- RIGHT COLUMN -->
-        <aside class="details-side">
-
-            <!-- 6️⃣ AI CO-PILOT PANEL -->
-            <div class="panel ai-panel" id="aiCoPilot">
-                <div class="panel-head">
-                    <div>
-                        <div class="panel-title">AI Co-Pilot</div>
-                        <div class="panel-sub">Azure AI Foundry Assistant</div>
-                    </div>
-                    <button class="ai-close" id="closeAI"><i data-lucide="x"></i></button>
-                </div>
-
-                <div class="ai-chat">
-                    <div class="ai-msg ai-assistant">
-                        <div class="ai-avatar"><i data-lucide="sparkles"></i></div>
-                        <div class="ai-bubble">
-                            I'm ready to help you with the Process step. You can ask me:
-                            <ul>
-                                <li>Explain execution plan</li>
-                                <li>Why did object X fail?</li>
-                                <li>Generate reconciliation summary</li>
-                                <li>What should I do next?</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ai-input-area">
-                    <input type="text" placeholder="Ask me anything..." id="aiInput" />
-                    <button class="ai-send"><i data-lucide="send"></i></button>
-                </div>
-
-                <div class="ai-quick-actions">
-                    <button class="ai-quick-btn">Explain Plan</button>
-                    <button class="ai-quick-btn">Risk Summary</button>
-                    <button class="ai-quick-btn">Next Steps</button>
-                </div>
-            </div>
-
-            <!-- Schedule & Actions -->
-            <div class="panel">
-                <div class="panel-head">
-                    <div>
-                        <div class="panel-title">Run Control</div>
-                        <div class="panel-sub">Execution management</div>
-                    </div>
-                </div>
-
-                <div class="kv">
-                    <div class="kv-row">
-                        <div class="kv-k">Mode</div>
-                        <div class="kv-v">Manual</div>
-                    </div>
-                    <div class="kv-row">
-                        <div class="kv-k">Environment</div>
-                        <div class="kv-v">@Model.Environment</div>
-                    </div>
-                    <div class="kv-row">
-                        <div class="kv-k">Rollback</div>
-                        <div class="kv-v">Not available</div>
-                    </div>
-                </div>
-
-                <div class="side-actions monitoring-controls" style="display:none;">
-                    <button class="btn btn-secondary w-100" id="btnPause">
-                        <i data-lucide="pause"></i> Pause
-                    </button>
-                    <button class="btn btn-danger w-100" id="btnCancel">
-                        <i data-lucide="stop-circle"></i> Cancel Run
-                    </button>
-                </div>
-            </div>
-
-        </aside>
-
-    </div>
-
-</div>
-
-@section PageStyles {
+@section Styles {
 <style>
-/* Process Page Styles */
-.process-page { }
-
-.process-head {
-    padding: 14px;
-    margin-bottom: 12px;
-}
-
-.process-title {
-    font-size: 22px;
-    font-weight: 900;
-    margin: 0;
-    letter-spacing: -0.4px;
-}
-
-.process-subtitle {
-    font-size: 13px;
-    opacity: 0.75;
-    margin-top: 4px;
-}
-
-.process-runmeta {
-    display: flex;
-    gap: 12px;
-    margin-top: 8px;
-    flex-wrap: wrap;
-}
-
-/* Execution Cards */
-.exec-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 14px;
-}
-
-@@media (max-width: 1100px) {
-    .exec-cards { grid-template-columns: repeat(2, 1fr); }
-}
-
-.exec-card {
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 14px;
-    padding: 14px;
-    background: rgba(255,255,255,0.85);
-    display: flex;
-    gap: 12px;
-}
-
-.exec-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: rgba(37,99,235,0.10);
-    border: 1px solid rgba(37,99,235,0.20);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.exec-icon svg {
-    width: 20px;
-    height: 20px;
-    color: rgba(37,99,235,1);
-}
-
-.exec-content { flex: 1; min-width: 0; }
-
-.exec-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    font-weight: 800;
-    opacity: 0.65;
-    letter-spacing: 0.5px;
-}
-
-.exec-value {
-    font-size: 15px;
-    font-weight: 900;
-    margin-top: 4px;
-    letter-spacing: -0.2px;
-}
-
-.exec-sub {
-    font-size: 12px;
-    opacity: 0.75;
-    margin-top: 4px;
-}
-
-.exec-warning {
-    display: flex;
-    gap: 10px;
-    padding: 12px;
-    border-radius: 12px;
-    background: rgba(245,158,11,0.08);
-    border: 1px solid rgba(245,158,11,0.25);
-    font-size: 13px;
-}
-
-.exec-warning svg {
-    width: 20px;
-    height: 20px;
-    color: rgba(180,83,9,1);
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-/* Progress Summary */
-.progress-summary {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-@@media (max-width: 1100px) {
-    .progress-summary { grid-template-columns: repeat(2, 1fr); }
-}
-
-.prog-stat {
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 14px;
-    padding: 14px;
-    background: rgba(255,255,255,0.9);
-    text-align: center;
-}
-
-.prog-num {
-    font-size: 24px;
-    font-weight: 900;
-    letter-spacing: -0.5px;
-    color: rgba(37,99,235,1);
-}
-
-.prog-label {
-    font-size: 12px;
-    opacity: 0.75;
-    margin-top: 4px;
-    font-weight: 700;
-}
-
-/* Object Progress Items */
-.objects-progress {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.obj-prog-item {
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 14px;
-    padding: 14px;
-    background: rgba(255,255,255,0.9);
-}
-
-.obj-prog-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.obj-name {
-    font-weight: 900;
-    font-size: 14px;
-}
-
-.obj-status {
-    font-size: 11px;
-    font-weight: 800;
-    padding: 4px 10px;
-    border-radius: 999px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-
-.status-running {
-    background: rgba(37,99,235,0.12);
-    color: rgba(37,99,235,1);
-    border: 1px solid rgba(37,99,235,0.25);
-}
-
-.status-complete {
-    background: rgba(16,185,129,0.12);
-    color: rgba(5,150,105,1);
-    border: 1px solid rgba(16,185,129,0.25);
-}
-
-.status-queued {
-    background: rgba(0,0,0,0.04);
-    color: rgba(0,0,0,0.65);
-    border: 1px solid rgba(0,0,0,0.10);
-}
-
-.pbar {
-    height: 10px;
-    border-radius: 999px;
-    background: rgba(0,0,0,0.06);
-    overflow: hidden;
-    margin-bottom: 10px;
-}
-
-.pbar > span {
-    display: block;
-    height: 100%;
-    border-radius: 999px;
-    background: rgba(37,99,235,0.9);
-    transition: width 0.3s ease;
-}
-
-.pbar.good > span { background: rgba(16,185,129,0.9); }
-.pbar.neutral > span { background: rgba(107,114,128,0.5); }
-
-.obj-prog-foot {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    opacity: 0.75;
-}
-
-.monitoring-foot {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 12px;
-}
-
-/* Exception Cards */
-.exception-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.exc-card {
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 14px;
-    padding: 14px;
-    background: rgba(255,255,255,0.9);
-}
-
-.exc-header {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    margin-bottom: 10px;
-}
-
-.exc-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.exc-icon.bad {
-    background: rgba(239,68,68,0.12);
-    border: 1px solid rgba(239,68,68,0.25);
-}
-
-.exc-icon.bad svg {
-    width: 18px;
-    height: 18px;
-    color: rgba(220,38,38,1);
-}
-
-.exc-icon.warn {
-    background: rgba(245,158,11,0.12);
-    border: 1px solid rgba(245,158,11,0.25);
-}
-
-.exc-icon.warn svg {
-    width: 18px;
-    height: 18px;
-    color: rgba(180,83,9,1);
-}
-
-.exc-header > div { flex: 1; min-width: 0; }
-
-.exc-title {
-    font-weight: 900;
-    font-size: 14px;
-}
-
-.exc-meta {
-    font-size: 12px;
-    opacity: 0.75;
-    margin-top: 2px;
-}
-
-.exc-impact {
-    font-weight: 900;
-    font-size: 13px;
-    opacity: 0.85;
-}
-
-.exc-reason {
-    font-size: 13px;
-    line-height: 1.5;
-    padding: 10px;
-    border-radius: 10px;
-    background: rgba(0,0,0,0.03);
-    margin-bottom: 12px;
-}
-
-.exc-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-/* Completion View */
-.completion-hero {
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    padding: 16px;
-    border-radius: 14px;
-    background: rgba(16,185,129,0.08);
-    border: 1px solid rgba(16,185,129,0.25);
-    margin-bottom: 16px;
-}
-
-.completion-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: rgba(16,185,129,0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.completion-icon svg {
-    width: 28px;
-    height: 28px;
-    color: rgba(5,150,105,1);
-}
-
-.completion-title {
-    font-size: 18px;
-    font-weight: 900;
-    letter-spacing: -0.3px;
-}
-
-.completion-sub {
-    font-size: 13px;
-    opacity: 0.8;
-    margin-top: 2px;
-}
-
-.completion-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-@@media (max-width: 1100px) {
-    .completion-stats { grid-template-columns: repeat(2, 1fr); }
-}
-
-.comp-stat {
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 14px;
-    padding: 14px;
-    background: rgba(255,255,255,0.9);
-    text-align: center;
-}
-
-.comp-num {
-    font-size: 26px;
-    font-weight: 900;
-    letter-spacing: -0.5px;
-}
-
-.comp-num.good { color: rgba(5,150,105,1); }
-.comp-num.bad { color: rgba(220,38,38,1); }
-.comp-num.neutral { color: rgba(107,114,128,1); }
-
-.comp-label {
-    font-size: 12px;
-    opacity: 0.75;
-    margin-top: 4px;
-    font-weight: 700;
-}
-
-.completion-artifacts {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 16px;
-}
-
-.artifact-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px;
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 12px;
-    background: rgba(255,255,255,0.9);
-}
-
-.artifact-item svg {
-    width: 20px;
-    height: 20px;
-    opacity: 0.7;
-}
-
-.artifact-item > span {
-    flex: 1;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.golive-indicator {
-    padding: 14px;
-    border-radius: 12px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    font-size: 13px;
-}
-
-.golive-indicator.good {
-    background: rgba(16,185,129,0.12);
-    border: 1px solid rgba(16,185,129,0.25);
-    color: rgba(5,150,105,1);
-}
-
-.golive-indicator svg {
-    width: 20px;
-    height: 20px;
-}
-
-/* Audit Grid */
-.audit-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 14px;
-    overflow: hidden;
-    background: rgba(0,0,0,0.08);
-    margin-bottom: 12px;
-}
-
-.audit-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 14px;
-    background: rgba(255,255,255,0.95);
-    gap: 12px;
-}
-
-.audit-key {
-    font-weight: 800;
-    font-size: 12px;
-    opacity: 0.7;
-    min-width: 140px;
-}
-
-.audit-val {
-    font-weight: 600;
-    font-size: 13px;
-    text-align: right;
-    word-break: break-word;
-}
-
-.audit-seal {
-    display: flex;
-    gap: 10px;
-    padding: 12px;
-    border-radius: 12px;
-    background: rgba(37,99,235,0.08);
-    border: 1px solid rgba(37,99,235,0.20);
-    font-size: 12px;
-    opacity: 0.9;
-}
-
-.audit-seal svg {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-}
-
-/* AI Co-Pilot Panel */
-.ai-panel {
-    background: linear-gradient(135deg, rgba(139,92,246,0.05), rgba(59,130,246,0.05));
-}
-
-.ai-close {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    border: 1px solid rgba(0,0,0,0.10);
-    background: rgba(255,255,255,0.9);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.ai-close svg {
-    width: 16px;
-    height: 16px;
-}
-
-.ai-chat {
-    margin-bottom: 12px;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.ai-msg {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-.ai-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(139,92,246,1), rgba(59,130,246,1));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.ai-avatar svg {
-    width: 18px;
-    height: 18px;
-    color: white;
-}
-
-.ai-bubble {
-    flex: 1;
-    padding: 12px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.9);
-    border: 1px solid rgba(0,0,0,0.08);
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-.ai-bubble ul {
-    margin: 8px 0 0 0;
-    padding-left: 20px;
-}
-
-.ai-bubble li {
-    margin-top: 4px;
-}
-
-.ai-input-area {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.ai-input-area input {
-    flex: 1;
-    padding: 10px 12px;
-    border: 1px solid rgba(0,0,0,0.12);
-    border-radius: 10px;
-    font-size: 13px;
-}
-
-.ai-send {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, rgba(139,92,246,1), rgba(59,130,246,1));
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.ai-send svg {
-    width: 18px;
-    height: 18px;
-    color: white;
-}
-
-.ai-quick-actions {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
-.ai-quick-btn {
-    padding: 6px 12px;
-    border: 1px solid rgba(0,0,0,0.12);
-    border-radius: 999px;
-    background: rgba(255,255,255,0.9);
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.ai-quick-btn:hover {
-    background: rgba(139,92,246,0.10);
-    border-color: rgba(139,92,246,0.30);
-}
-
-/* Pills */
-.pill-running {
-    background: rgba(37,99,235,0.12);
-    color: rgba(37,99,235,1);
-    border: 1px solid rgba(37,99,235,0.25);
-}
-
-.pill-neutral {
-    background: rgba(107,114,128,0.12);
-    color: rgba(55,65,81,1);
-    border: 1px solid rgba(107,114,128,0.25);
-}
-
-.btn-danger {
-    background: rgba(239,68,68,1);
-    color: white;
-    border: 1px solid rgba(220,38,38,1);
-}
-
-.btn-danger:hover {
-    background: rgba(220,38,38,1);
-}
-
-.btn-sm {
-    padding: 6px 12px;
-    font-size: 12px;
+/* =========================================================
+   PROCESS TAB — Scoped, page-only
+   Prefix: .pce-
+   NOTE: Razor-safe @@media used.
+   ========================================================= */
+
+.pce-wrap{ padding: 18px 18px 28px; }
+
+/* ---------------- Project header (match other tabs) ---------------- */
+.pce-project-hero{
+  background: #fff;
+  border: 1px solid rgba(10,15,30,.10);
+  border-radius: 18px;
+  padding: 16px 16px;
+  box-shadow: 0 10px 22px rgba(10,15,30,.06);
+}
+
+.pce-hero-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 14px;
+}
+
+.pce-hero-left{
+  display:flex;
+  align-items:flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.pce-hero-avatar{
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 950;
+  color:#fff;
+  background: linear-gradient(135deg, rgba(46,91,255,1), rgba(137,83,255,1));
+  border: 1px solid rgba(10,15,30,.08);
+  flex: 0 0 auto;
+}
+
+.pce-hero-crumb{
+  font-size: 12px;
+  color: rgba(10,15,30,.60);
+  display:flex;
+  gap: 8px;
+  align-items:center;
+  margin-bottom: 6px;
+}
+.pce-hero-crumb a{
+  color: rgba(10,15,30,.72);
+  text-decoration:none;
+  font-weight: 800;
+}
+.pce-hero-crumb a:hover{ text-decoration: underline; }
+
+.pce-hero-title{
+  margin:0;
+  font-size: 22px;
+  font-weight: 950;
+  color: rgba(10,15,30,.95);
+  letter-spacing: .2px;
+  white-space: nowrap;
+  overflow:hidden;
+  text-overflow: ellipsis;
+}
+.pce-hero-meta{
+  margin-top: 6px;
+  font-size: 13px;
+  color: rgba(10,15,30,.70);
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px 14px;
+}
+
+.pce-dot{ opacity:.45; }
+
+.pce-hero-tags{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  flex-wrap:wrap;
+  margin-top: 8px;
+}
+.pce-tag{
+  display:inline-flex;
+  align-items:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(10,15,30,.12);
+  background: rgba(10,15,30,.02);
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(10,15,30,.78);
+}
+.pce-tag.primary{ background: rgba(46,91,255,.10); border-color: rgba(46,91,255,.22); color: rgba(18,54,145,.95); }
+.pce-tag.ok{ background: rgba(49,208,170,.14); border-color: rgba(49,208,170,.30); color: #0b5d4e; }
+.pce-tag.warn{ background: rgba(244,183,64,.16); border-color: rgba(244,183,64,.35); color: #6a4a00; }
+
+.pce-hero-actions{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+.pce-btn{
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(10,15,30,.12);
+  background:#fff;
+  font-weight: 900;
+  font-size: 13px;
+  color: rgba(10,15,30,.86);
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+}
+.pce-btn.primary{
+  background: linear-gradient(135deg, rgba(46,91,255,1), rgba(137,83,255,1));
+  color:#fff;
+  border-color: transparent;
+  box-shadow: 0 12px 22px rgba(46,91,255,.18);
+}
+.pce-btn:disabled{ opacity:.55; cursor:not-allowed; }
+
+/* ---------------- Tabs row ---------------- */
+.pce-tabs{
+  margin-top: 12px;
+  background:#fff;
+  border: 1px solid rgba(10,15,30,.10);
+  border-radius: 18px;
+  padding: 10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  box-shadow: 0 10px 22px rgba(10,15,30,.06);
+}
+
+.pce-tab-left{
+  display:flex;
+  gap: 6px;
+  flex-wrap:wrap;
+}
+.pce-tab{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  text-decoration:none;
+  font-weight: 900;
+  font-size: 13px;
+  color: rgba(10,15,30,.70);
+  background: transparent;
+}
+.pce-tab:hover{
+  background: rgba(10,15,30,.03);
+  border-color: rgba(10,15,30,.08);
+}
+.pce-tab.is-active{
+  background: rgba(46,91,255,.10);
+  border-color: rgba(46,91,255,.22);
+  color: rgba(18,54,145,.95);
+}
+
+.pce-tab-right{
+  display:flex;
+  gap: 8px;
+}
+.pce-iconbtn{
+  width: 44px;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid rgba(10,15,30,.12);
+  background:#fff;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* ---------------- Main page frame ---------------- */
+.pce-page{
+  margin-top: 12px;
+  background: #fff;
+  border: 1px solid rgba(10,15,30,.10);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 10px 22px rgba(10,15,30,.06);
+}
+
+.pce-grid{
+  display:grid;
+  grid-template-columns: 1fr 360px;
+  gap: 14px;
+  align-items:start;
+}
+
+/* IMPORTANT: Razor-safe @@media */
+@@media (max-width: 1180px){
+  .pce-grid{ grid-template-columns: 1fr; }
+  .pce-hero-actions{ width:100%; justify-content:flex-start; flex-wrap:wrap; }
+}
+
+@@media (max-width: 720px){
+  .pce-hero-top{ flex-direction: column; align-items: stretch; }
+  .pce-hero-left{ align-items: flex-start; }
+  .pce-hero-title{ white-space: normal; }
+  .pce-tabs{ flex-direction: column; align-items: stretch; }
+  .pce-tab-right{ justify-content:flex-end; }
+}
+
+/* ---------------- Run ribbon (minimal, low text) ---------------- */
+.pce-ribbon{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px 10px;
+  align-items:center;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(10,15,30,.08);
+  background: rgba(10,15,30,.02);
+}
+
+.pce-pill{
+  display:inline-flex;
+  align-items:center;
+  gap: 7px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(10,15,30,.10);
+  background:#fff;
+  font-size: 12px;
+  font-weight: 850;
+  color: rgba(10,15,30,.82);
+  white-space: nowrap;
+}
+.pce-pill b{ color: rgba(10,15,30,.92); font-weight: 950; }
+
+.pce-copy{
+  width: 24px;
+  height: 24px;
+  border-radius: 10px;
+  border: 1px solid rgba(10,15,30,.10);
+  background:#fff;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.pce-copy:hover{ background: rgba(46,91,255,.08); border-color: rgba(46,91,255,.22); }
+
+.pce-ribbon-actions{
+  margin-left:auto;
+  display:flex;
+  gap: 10px;
+  align-items:center;
+}
+
+/* ---------------- KPI (minimal) ---------------- */
+.pce-kpis{
+  margin-top: 12px;
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+@@media (max-width: 980px){
+  .pce-kpis{ grid-template-columns: 1fr; }
+}
+
+.pce-kpi{
+  border: 1px solid rgba(10,15,30,.10);
+  border-radius: 16px;
+  padding: 12px;
+  background:#fff;
+}
+.pce-kpi .row{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap: 10px;
+}
+.pce-kpi .t{
+  font-size: 12px;
+  font-weight: 950;
+  color: rgba(10,15,30,.88);
+}
+.pce-kpi .v{
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 950;
+  color: rgba(10,15,30,.95);
+  line-height: 1.1;
+}
+.pce-kpi .s{
+  font-size: 12px;
+  color: rgba(10,15,30,.60);
+  font-weight: 800;
+}
+.pce-meter{
+  margin-top: 10px;
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(10,15,30,.10);
+  background: rgba(10,15,30,.05);
+  overflow:hidden;
+}
+.pce-meter > span{
+  display:block;
+  height:100%;
+  width:0%;
+  background: linear-gradient(90deg, rgba(46,91,255,1), rgba(49,208,170,1));
+}
+
+/* ---------------- Charts (kept) ---------------- */
+.pce-section{
+  margin-top: 14px;
+}
+.pce-section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.pce-h2{
+  margin:0;
+  font-size: 14px;
+  font-weight: 950;
+  color: rgba(10,15,30,.92);
+}
+.pce-sub{
+  font-size: 12px;
+  color: rgba(10,15,30,.60);
+  font-weight: 800;
+}
+
+.pce-charts{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+@@media (max-width: 980px){
+  .pce-charts{ grid-template-columns: 1fr; }
+}
+
+.pce-chart{
+  border: 1px solid rgba(10,15,30,.10);
+  border-radius: 18px;
+  padding: 12px;
+  background:#fff;
+}
+.pce-chart .ct{
+  font-size: 13px;
+  font-weight: 950;
+  color: rgba(10,15,30,.92);
+  margin:0;
+}
+.pce-chart .cs{
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(10,15,30,.60);
+}
+.pce-svg{
+  margin-top: 10px;
+  width: 100%;
+  height: 130px;
+  border-radius: 14px;
+  border: 1px solid rgba(10,15,30,.08);
+  background: linear-gradient(180deg, rgba(10,15,30,.02), rgba(10,15,30,.01));
+}
+
+/* ---------------- Objects (kept) ---------------- */
+.pce-objects{
+  border: 1px solid rgba(10,15,30,.10);
+  border-radius: 18px;
+  overflow:hidden;
+  background:#fff;
+}
+.pce-objects-head{
+  padding: 12px 14px;
+  background: rgba(10,15,30,.02);
+  border-bottom: 1px solid rgba(10,15,30,.08);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+}
+.pce-seg{
+  display:inline-flex;
+  border: 1px solid rgba(10,15,30,.12);
+  background:#fff;
+  border-radius: 999px;
+  overflow:hidden;
+}
+.pce-seg button{
+  border:0;
+  background: transparent;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 950;
+  color: rgba(10,15,30,.68);
+  cursor:pointer;
+}
+.pce-seg button.is-active{
+  background: rgba(46,91,255,.10);
+  color: rgba(18,54,145,.95);
+}
+
+.pce-obj-row{
+  padding: 12px 14px;
+  border-top: 1px solid rgba(10,15,30,.08);
+  display:grid;
+  grid-template-columns: 1fr 260px 140px;
+  gap: 12px;
+  align-items:center;
+}
+@@media (max-width: 980px){
+  .pce-obj-row{ grid-template-columns: 1fr; }
+}
+
+.pce-obj-name{
+  font-size: 13px;
+  font-weight: 950;
+  color: rgba(10,15,30,.92);
+}
+.pce-obj-meta{
+  margin-top: 3px;
+  font-size: 12px;
+  color: rgba(10,15,30,.62);
+  font-weight: 800;
+}
+.pce-obj-mid{
+  display:flex;
+  flex-direction:column;
+  gap: 8px;
+}
+.pce-pbar{
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(10,15,30,.10);
+  background: rgba(10,15,30,.05);
+  overflow:hidden;
+}
+.pce-pbar > span{
+  display:block;
+  height:100%;
+  width:0%;
+  background: linear-gradient(90deg, rgba(46,91,255,1), rgba(49,208,170,1));
+}
+.pce-stats{
+  display:flex;
+  gap: 8px;
+  flex-wrap:wrap;
+}
+.pce-stat{
+  font-size: 11px;
+  font-weight: 950;
+  color: rgba(10,15,30,.74);
+  background: rgba(10,15,30,.02);
+  border: 1px solid rgba(10,15,30,.10);
+  border-radius: 999px;
+  padding: 4px 8px;
+}
+.pce-obj-right{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap: 10px;
+}
+
+/* donut */
+.pce-donut{ width: 44px; height: 44px; display:inline-block; }
+.pce-donut svg{ width: 44px; height: 44px; display:block; }
+.pce-donut .bg{ stroke: rgba(10,15,30,.10); }
+.pce-donut .fg{ stroke-linecap: round; }
+.pce-donut .txt{
+  font-size: 10px;
+  font-weight: 950;
+  fill: rgba(10,15,30,.86);
+}
+
+/* Detail-only block */
+.pce-detail-only{ display:none; margin-top:8px; }
+.pce-detail-note{
+  font-size: 12px;
+  color: rgba(10,15,30,.62);
+  font-weight: 800;
+}
+
+/* ---------------- AI Advisor (kept) ---------------- */
+.pce-side{ position: sticky; top: 10px; }
+.pce-side-card{
+  background:#fff;
+  border: 1px solid rgba(10,15,30,.10);
+  border-radius: 18px;
+  padding: 12px;
+  box-shadow: 0 10px 22px rgba(10,15,30,.06);
+}
+.pce-side-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.pce-side-title{
+  font-size: 14px;
+  font-weight: 950;
+  color: rgba(10,15,30,.92);
+}
+.pce-close{
+  width: 34px;
+  height: 34px;
+  border-radius: 14px;
+  border: 1px solid rgba(10,15,30,.10);
+  background:#fff;
+  cursor:pointer;
+}
+.pce-locked{
+  margin-top: 10px;
+  border: 1px solid rgba(10,15,30,.10);
+  background: rgba(10,15,30,.02);
+  border-radius: 14px;
+  padding: 10px;
+}
+.pce-mini{
+  font-size: 12px;
+  color: rgba(10,15,30,.60);
+  font-weight: 800;
+}
+.pce-ask{
+  margin-top: 10px;
+  display:flex;
+  gap: 8px;
+}
+.pce-input{
+  flex:1;
+  height: 38px;
+  border-radius: 14px;
+  border: 1px solid rgba(10,15,30,.12);
+  padding: 0 10px;
+  font-size: 12px;
+  outline:none;
+}
+.pce-send{
+  width: 44px;
+  height: 38px;
+  border-radius: 14px;
+  border: 1px solid rgba(10,15,30,.12);
+  background: #0a0f1e;
+  color:#fff;
+  cursor:pointer;
+  font-weight: 950;
+}
+.pce-suggest{
+  margin-top: 10px;
+  border-top: 1px solid rgba(10,15,30,.08);
+  padding-top: 10px;
+}
+.pce-suggest .h{
+  font-size: 11px;
+  font-weight: 950;
+  color: rgba(10,15,30,.72);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-bottom: 8px;
+}
+.pce-q{
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  border: 1px solid rgba(10,15,30,.10);
+  background: rgba(10,15,30,.02);
+  cursor:pointer;
+  color: rgba(10,15,30,.78);
+  font-weight: 900;
+  margin: 0 8px 8px 0;
+}
+.pce-q:hover{ background: rgba(46,91,255,.08); border-color: rgba(46,91,255,.20); }
+
+/* local toast */
+#pceToast{
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(10,15,30,.12);
+  background: #0a0f1e;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: 0 14px 24px rgba(10,15,30,.22);
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 180ms ease;
 }
 </style>
 }
 
+<div class="pce-wrap">
+
+  <!-- =========================
+       PROJECT HEADER (with nav)
+  ========================== -->
+  <div class="pce-project-hero">
+    <div class="pce-hero-top">
+      <div class="pce-hero-left">
+        <div class="pce-hero-avatar" aria-hidden="true">Z</div>
+        <div style="min-width:0;">
+          <div class="pce-hero-crumb">
+            <a asp-controller="Projects" asp-action="Index">@projectCrumb</a>
+            <span class="pce-dot">/</span>
+            <span style="font-weight:900;color:rgba(10,15,30,.75);">Project @projectId</span>
+          </div>
+
+          <h1 class="pce-hero-title">@projectName</h1>
+
+          <div class="pce-hero-tags">
+            <span class="pce-tag primary">@status1</span>
+            <span class="pce-tag ok">@status2</span>
+            <span class="pce-tag warn">@status3</span>
+          </div>
+
+          <div class="pce-hero-meta">
+            <span><b>Client:</b> @clientName</span>
+            <span class="pce-dot">•</span>
+            <span><b>Source:</b> @sourceName</span>
+            <span class="pce-dot">•</span>
+            <span><b>Target:</b> @targetName</span>
+            <span class="pce-dot">•</span>
+            <span><b>Owner:</b> @ownerName</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pce-hero-actions">
+        <button class="pce-btn" type="button" onclick="pceToast('Export queued (UI only).')">⬇️ Export</button>
+        <button class="pce-btn" type="button" onclick="pceToast('Settings opened (UI only).')">⚙️ Settings</button>
+        <button class="pce-btn primary" type="button" disabled title="Run Now is locked in UI prototype">▶ Run Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================
+       TABS NAV (same as others)
+  ========================== -->
+  <div class="pce-tabs" role="navigation" aria-label="Project tabs">
+    <div class="pce-tab-left">
+      <a class="pce-tab @(activeTab=="Overview" ? "is-active" : "")" asp-controller="Projects" asp-action="Details" asp-route-id="@projectId">Overview</a>
+      <a class="pce-tab @(activeTab=="Fetch" ? "is-active" : "")" asp-controller="Projects" asp-action="Fetch" asp-route-id="@projectId">Fetch</a>
+      <a class="pce-tab @(activeTab=="Verify" ? "is-active" : "")" asp-controller="Projects" asp-action="Verify" asp-route-id="@projectId">Verify</a>
+      <a class="pce-tab @(activeTab=="Process" ? "is-active" : "")" asp-controller="Projects" asp-action="Process" asp-route-id="@projectId">Process</a>
+      <a class="pce-tab @(activeTab=="Config" ? "is-active" : "")" asp-controller="Projects" asp-action="Config" asp-route-id="@projectId">Config</a>
+      <a class="pce-tab @(activeTab=="Activity" ? "is-active" : "")" asp-controller="Projects" asp-action="Activity" asp-route-id="@projectId">Activity</a>
+    </div>
+
+    <div class="pce-tab-right">
+      <button class="pce-iconbtn" type="button" title="Notes" onclick="pceToast('Notes opened (UI only).')">🗒️</button>
+      <button class="pce-iconbtn" type="button" title="More" onclick="pceToast('More actions (UI only).')">⋯</button>
+    </div>
+  </div>
+
+  <!-- =========================
+       PROCESS PAGE (REDRAFT)
+  ========================== -->
+  <div class="pce-page">
+
+    <!-- Run context (minimal chips) -->
+    <div class="pce-ribbon" aria-label="Run context">
+      <span class="pce-pill"><b>Run</b>: <span id="pceRun">@runId</span>
+        <button class="pce-copy" type="button" title="Copy Run ID" onclick="pceCopy('pceRun')">⧉</button>
+      </span>
+      <span class="pce-pill"><b>Batch</b>: <span id="pceBatch">@batchId</span>
+        <button class="pce-copy" type="button" title="Copy Batch ID" onclick="pceCopy('pceBatch')">⧉</button>
+      </span>
+      <span class="pce-pill"><b>Mapping</b>: @mappingVersion</span>
+      <span class="pce-pill"><b>Ruleset</b>: @rulesetVersion</span>
+      <span class="pce-pill"><b>Target</b>: @targetSystem</span>
+      <span class="pce-pill"><b>Mode</b>: @execMode</span>
+      <span class="pce-pill"><b>Isolation</b>: @isolation</span>
+
+      <div class="pce-ribbon-actions">
+        <button class="pce-btn" type="button" onclick="pceToast('Pre-flight queued (UI only).')">Run Pre-Flight</button>
+        <button class="pce-btn primary" type="button" disabled>Execute (Locked)</button>
+      </div>
+    </div>
+
+    <div class="pce-grid" style="margin-top:12px;">
+
+      <!-- LEFT MAIN -->
+      <div>
+
+        <!-- Minimal KPI strip -->
+        <div class="pce-kpis" aria-label="Readiness KPIs">
+          <div class="pce-kpi">
+            <div class="row">
+              <div>
+                <div class="t">Data Readiness</div>
+                <div class="v">@kpiDataReadiness<span style="font-size:13px;font-weight:950;color:rgba(10,15,30,.70);">%</span></div>
+              </div>
+              <div class="s">Verify gate</div>
+            </div>
+            <div class="pce-meter"><span style="width:@kpiDataReadiness%"></span></div>
+          </div>
+
+          <div class="pce-kpi">
+            <div class="row">
+              <div>
+                <div class="t">Risk</div>
+                <div class="v">@kpiRisk</div>
+              </div>
+              <div class="s">Run impact</div>
+            </div>
+            @{
+              var riskPct = kpiRisk == "Low" ? 28 : (kpiRisk == "High" ? 85 : 55);
+            }
+            <div class="pce-meter"><span style="width:@riskPct%"></span></div>
+          </div>
+
+          <div class="pce-kpi">
+            <div class="row">
+              <div>
+                <div class="t">Estimated Runtime</div>
+                <div class="v">@kpiEtaMin–@kpiEtaMax<span style="font-size:13px;font-weight:950;color:rgba(10,15,30,.70);"> min</span></div>
+              </div>
+              <div class="s">Throughput ETA</div>
+            </div>
+            <div class="pce-meter"><span style="width:62%"></span></div>
+          </div>
+        </div>
+
+        <!-- Performance & Load Insights (KEEP) -->
+        <div class="pce-section">
+          <div class="pce-section-head">
+            <h2 class="pce-h2">Performance & Load Insights</h2>
+            <div class="pce-sub">Trends that build confidence before execution</div>
+          </div>
+
+          <div class="pce-charts">
+            <div class="pce-chart">
+              <p class="ct">Throughput Trend</p>
+              <div class="cs">Rows/sec (baseline vs plan)</div>
+              <svg class="pce-svg" viewBox="0 0 360 130" preserveAspectRatio="none" aria-label="Throughput chart">
+                <g stroke="rgba(10,15,30,.08)" stroke-width="1">
+                  <line x1="0" y1="110" x2="360" y2="110"></line>
+                  <line x1="0" y1="75" x2="360" y2="75"></line>
+                  <line x1="0" y1="40" x2="360" y2="40"></line>
+                </g>
+                <path d="M0,85 C45,78 90,82 135,76 C180,70 225,76 270,68 C315,63 340,65 360,60"
+                      fill="none" stroke="rgba(10,15,30,.18)" stroke-width="3" stroke-linecap="round"/>
+                <path d="M0,95 C45,90 90,92 135,86 C180,80 225,84 270,76 C315,70 340,72 360,66"
+                      fill="none" stroke="rgba(49,208,170,.95)" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <div class="pce-chart">
+              <p class="ct">Failure Probability</p>
+              <div class="cs">Risk signal for this run</div>
+              <svg class="pce-svg" viewBox="0 0 360 130" aria-label="Failure probability gauge">
+                <defs>
+                  <linearGradient id="pceGrad" x1="0" x2="1">
+                    <stop offset="0%" stop-color="rgba(49,208,170,.95)"></stop>
+                    <stop offset="60%" stop-color="rgba(244,183,64,.95)"></stop>
+                    <stop offset="100%" stop-color="rgba(255,93,108,.95)"></stop>
+                  </linearGradient>
+                </defs>
+                <path d="M60,110 A120,120 0 0 1 300,110" fill="none" stroke="rgba(10,15,30,.10)" stroke-width="16" stroke-linecap="round"/>
+                <path d="M60,110 A120,120 0 0 1 234,34" fill="none" stroke="url(#pceGrad)" stroke-width="16" stroke-linecap="round"/>
+                <text x="180" y="78" text-anchor="middle" font-size="22" font-weight="900" fill="rgba(10,15,30,.88)">55%</text>
+                <text x="180" y="98" text-anchor="middle" font-size="12" font-weight="800" fill="rgba(10,15,30,.62)">Medium</text>
+              </svg>
+            </div>
+
+            <div class="pce-chart">
+              <p class="ct">Parallel Utilization</p>
+              <div class="cs">Concurrency used vs configured</div>
+              <svg class="pce-svg" viewBox="0 0 360 130" aria-label="Concurrency bars">
+                <g fill="rgba(10,15,30,.08)">
+                  <rect x="50" y="30" width="50" height="80" rx="10"></rect>
+                  <rect x="120" y="30" width="50" height="80" rx="10"></rect>
+                  <rect x="190" y="30" width="50" height="80" rx="10"></rect>
+                  <rect x="260" y="30" width="50" height="80" rx="10"></rect>
+                </g>
+                <g fill="rgba(46,91,255,.75)">
+                  <rect x="50" y="46" width="50" height="64" rx="10"></rect>
+                  <rect x="120" y="38" width="50" height="72" rx="10"></rect>
+                  <rect x="190" y="58" width="50" height="52" rx="10"></rect>
+                  <rect x="260" y="70" width="50" height="40" rx="10"></rect>
+                </g>
+                <text x="180" y="20" text-anchor="middle" font-size="12" font-weight="850" fill="rgba(10,15,30,.62)">Avg utilization: 78%</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Objects in Scope (KEEP) -->
+        <div class="pce-section">
+          <div class="pce-section-head">
+            <h2 class="pce-h2">Objects in Scope</h2>
+            <div class="pce-sub">Summary + Detail view (object-level readiness)</div>
+          </div>
+
+          <div class="pce-objects" id="pceObjects">
+            <div class="pce-objects-head">
+              <div style="font-weight:950;color:rgba(10,15,30,.92);">Object Dashboard</div>
+              <div class="pce-seg" role="tablist" aria-label="View toggle">
+                <button type="button" class="is-active" id="pceViewSummary" onclick="pceSetView('summary')">Summary</button>
+                <button type="button" id="pceViewDetail" onclick="pceSetView('detail')">Detailed</button>
+              </div>
+            </div>
+
+            @foreach (var o in objects)
+            {
+                var stroke = o.Tag == "OK" ? "rgba(49,208,170,.95)" : (o.Tag == "WARN" ? "rgba(244,183,64,.95)" : "rgba(255,93,108,.95)");
+                var tagClass = o.Tag == "OK" ? "ok" : (o.Tag == "WARN" ? "warn" : "warn"); // keep simple badge palette
+                <div class="pce-obj-row">
+                  <div>
+                    <div class="pce-obj-name">@o.Name</div>
+                    <div class="pce-obj-meta">@o.Mode • Last: @o.Last • Rows: @o.Rows.ToString("N0")</div>
+
+                    <div class="pce-detail-only">
+                      <div class="pce-detail-note">
+                        Notes: Object isolated on critical errors • Retries: up to 3 • Chunk size: 10,000
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pce-obj-mid">
+                    <div class="pce-pbar" aria-label="Object health">
+                      <span style="width:@o.Health%"></span>
+                    </div>
+                    <div class="pce-stats">
+                      <span class="pce-stat">Rules: @o.Rules</span>
+                      <span class="pce-stat">Pass: @o.Passed</span>
+                      <span class="pce-stat">Fail: @o.Failed</span>
+                    </div>
+                  </div>
+
+                  <div class="pce-obj-right">
+                    @Html.Raw(PceDonutSvg(o.Health, stroke))
+                    <span class="pce-tag @tagClass">@o.Status</span>
+                  </div>
+                </div>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT SIDE — Executive Advisory (KEEP) -->
+      <div class="pce-side">
+        <div class="pce-side-card" id="pceAdvisor">
+          <div class="pce-side-head">
+            <div class="pce-side-title">Executive Advisory (AI-Powered)</div>
+            <button class="pce-close" type="button" title="Collapse" onclick="pceToggleAdvisor()">✕</button>
+          </div>
+
+          <div class="pce-mini">Read-only advisor locked to this run</div>
+
+          <div class="pce-locked">
+            <div class="pce-mini" style="font-weight:950;letter-spacing:.4px;text-transform:uppercase;">Locked to current run</div>
+            <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;">
+              <span class="pce-pill"><b>Run</b>: @runId</span>
+              <span class="pce-pill"><b>Batch</b>: @batchId</span>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;border:1px solid rgba(10,15,30,.10);border-radius:16px;padding:10px;background:#fff;">
+            <div class="pce-mini" style="color:rgba(10,15,30,.78);">
+              Ask for: plan summary, risk drivers, object readiness, reconciliation guidance.
+              <b>Advisory only</b>.
+            </div>
+          </div>
+
+          <div class="pce-ask">
+            <input class="pce-input" id="pceAsk" placeholder="Ask about this run…" />
+            <button class="pce-send" type="button" title="Send" onclick="pceAsk()">➤</button>
+          </div>
+
+          <div class="pce-suggest">
+            <div class="h">Suggested questions</div>
+            <div>
+              <button class="pce-q" type="button" onclick="pceQuick('Explain execution plan')">Explain Execution Plan</button>
+              <button class="pce-q" type="button" onclick="pceQuick('Explain risk drivers')">Explain Risk Drivers</button>
+              <button class="pce-q" type="button" onclick="pceQuick('Which objects are at risk and why?')">Objects at Risk</button>
+              <button class="pce-q" type="button" onclick="pceQuick('Reconciliation summary')">Reconciliation Summary</button>
+              <button class="pce-q" type="button" onclick="pceQuick('Pre go-live checklist')">Go-Live Checklist</button>
+              <button class="pce-q" type="button" onclick="pceQuick('Executive summary in 5 bullets')">Executive Summary</button>
+            </div>
+          </div>
+
+          <div class="pce-mini" style="margin-top:10px; padding:10px; border:1px solid rgba(10,15,30,.10); border-radius:14px; background: rgba(10,15,30,.02);">
+            <b>Advisory Only:</b> Actions require manual approval and are logged for audit.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+@functions {
+    public string PceDonutSvg(int percent, string stroke)
+    {
+        var p = Math.Max(0, Math.Min(100, percent));
+        var r = 18;
+        var c = 2 * Math.PI * r;
+        var dash = (c * p / 100.0);
+        var gap = c - dash;
+
+        return $@"
+        <span class='pce-donut' title='Health: {p}%'>
+          <svg viewBox='0 0 44 44' role='img' aria-label='Health donut {p}%'>
+            <circle class='bg' cx='22' cy='22' r='{r}' fill='none' stroke-width='6' />
+            <circle class='fg' cx='22' cy='22' r='{r}' fill='none' stroke='{stroke}' stroke-width='6'
+                    stroke-dasharray='{dash:F2} {gap:F2}' transform='rotate(-90 22 22)' />
+            <text class='txt' x='22' y='26' text-anchor='middle'>{p}%</text>
+          </svg>
+        </span>";
+    }
+}
+
 @section Scripts {
 <script>
-if (window.lucide) lucide.createIcons();
+/* Page-only JS */
+(function(){
+  // animate meters + progress bars
+  document.querySelectorAll(".pce-meter > span, .pce-pbar > span").forEach(el => {
+    const w = el.style.width || "0%";
+    el.style.width = "0%";
+    setTimeout(() => { el.style.transition = "width 900ms ease"; el.style.width = w; }, 60);
+  });
+})();
 
-// Simulate Process Execution
-let isRunning = false;
-let simulationInterval = null;
-
-document.getElementById('btnStartProcess').addEventListener('click', function() {
-    if (isRunning) return;
-    
-    // Hide planning view, show monitoring view
-    document.querySelector('.planning-view').style.display = 'none';
-    document.querySelector('.monitoring-view').style.display = 'block';
-    document.querySelector('.monitoring-controls').style.display = 'flex';
-    document.querySelector('.exceptions-view').style.display = 'none';
-    document.querySelector('.completion-view').style.display = 'none';
-    document.querySelector('.audit-view').style.display = 'none';
-    
-    // Change button
-    this.innerHTML = '<i data-lucide="loader"></i> Processing...';
-    this.disabled = true;
-    if (window.lucide) lucide.createIcons();
-    
-    // Update status
-    document.getElementById('runMetaInfo').innerHTML = 
-        '<span class="mini pill-running"><strong>Status:</strong> Running</span>' +
-        '<span class="mini neutral"><strong>Run ID:</strong> ' + document.querySelector('.process-runmeta .mini:nth-child(2)').textContent.split(':')[1] + '</span>' +
-        '<span class="mini neutral"><strong>Started:</strong> Just now</span>';
-    
-    isRunning = true;
-    simulateProgress();
-});
-
-function simulateProgress() {
-    let elapsed = 0;
-    let rowsProcessed = 0;
-    let maxRows = 128450;
-    
-    simulationInterval = setInterval(() => {
-        elapsed++;
-        rowsProcessed = Math.min(rowsProcessed + Math.random() * 8000, maxRows);
-        
-        // Update metrics
-        document.getElementById('rowsProcessed').textContent = Math.floor(rowsProcessed).toLocaleString();
-        document.getElementById('throughput').textContent = Math.floor(rowsProcessed / elapsed).toLocaleString();
-        document.getElementById('elapsed').textContent = 
-            Math.floor(elapsed / 60).toString().padStart(2, '0') + ':' + 
-            (elapsed % 60).toString().padStart(2, '0');
-        
-        // Update object progress
-        if (rowsProcessed > 45210) {
-            document.getElementById('objectsComplete').textContent = '1/12';
-        }
-        if (rowsProcessed > 90000) {
-            document.getElementById('objectsComplete').textContent = '2/12';
-        }
-        
-        // Complete after ~15 seconds
-        if (elapsed >= 15) {
-            clearInterval(simulationInterval);
-            showCompletion();
-        }
-    }, 1000);
+function pceCopy(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const txt = el.textContent.trim();
+  (navigator.clipboard?.writeText(txt) || Promise.reject())
+    .then(() => pceToast("Copied: " + txt))
+    .catch(() => pceToast("Copy not available"));
 }
 
-function showCompletion() {
-    // Update status
-    document.getElementById('overallStatus').textContent = 'Complete';
-    document.getElementById('overallStatus').className = 'pill pill-ok';
-    document.getElementById('objectsComplete').textContent = '12/12';
-    document.getElementById('rowsProcessed').textContent = '128,450';
-    
-    // Show completion and audit views
-    setTimeout(() => {
-        document.querySelector('.monitoring-view').style.display = 'none';
-        document.querySelector('.completion-view').style.display = 'block';
-        document.querySelector('.audit-view').style.display = 'block';
-        document.querySelector('.monitoring-controls').style.display = 'none';
-        
-        // Reset button
-        const btn = document.getElementById('btnStartProcess');
-        btn.innerHTML = '<i data-lucide="check-circle"></i> Process Complete';
-        btn.classList.remove('btn-primary');
-        btn.classList.add('btn-secondary');
-        if (window.lucide) lucide.createIcons();
-        
-        // Update run meta
-        document.getElementById('runMetaInfo').innerHTML = 
-            '<span class="mini pill-ok"><strong>Status:</strong> Complete</span>' +
-            '<span class="mini neutral"><strong>Run ID:</strong> ' + document.querySelector('.audit-val').textContent + '</span>' +
-            '<span class="mini neutral"><strong>Duration:</strong> 2m 14s</span>';
-    }, 500);
-    
-    isRunning = false;
+function pceToast(msg){
+  let t = document.getElementById("pceToast");
+  if(!t){
+    t = document.createElement("div");
+    t.id = "pceToast";
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = "0";
+  t.style.transform = "translateY(8px)";
+  requestAnimationFrame(() => {
+    t.style.opacity = "1";
+    t.style.transform = "translateY(0)";
+  });
+  clearTimeout(window.__pceToastTimer);
+  window.__pceToastTimer = setTimeout(() => {
+    t.style.opacity = "0";
+    t.style.transform = "translateY(8px)";
+  }, 1600);
 }
 
-// AI Panel Toggle
-document.getElementById('toggleAI')?.addEventListener('click', function() {
-    const panel = document.getElementById('aiCoPilot');
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'block';
-});
+function pceSetView(mode){
+  const sum = document.getElementById("pceViewSummary");
+  const det = document.getElementById("pceViewDetail");
+  const detailEls = document.querySelectorAll(".pce-detail-only");
 
-document.getElementById('closeAI')?.addEventListener('click', function() {
-    document.getElementById('aiCoPilot').style.display = 'none';
-});
+  if(mode === "detail"){
+    sum.classList.remove("is-active");
+    det.classList.add("is-active");
+    detailEls.forEach(x => x.style.display = "block");
+    pceToast("Detailed view enabled");
+  } else {
+    det.classList.remove("is-active");
+    sum.classList.add("is-active");
+    detailEls.forEach(x => x.style.display = "none");
+    pceToast("Summary view enabled");
+  }
+}
 
-// AI Quick Actions (mock)
-document.querySelectorAll('.ai-quick-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const chat = document.querySelector('.ai-chat');
-        const userMsg = document.createElement('div');
-        userMsg.className = 'ai-msg';
-        userMsg.innerHTML = `
-            <div class="ai-avatar" style="background: rgba(107,114,128,0.2);">
-                <i data-lucide="user"></i>
-            </div>
-            <div class="ai-bubble">${this.textContent}</div>
-        `;
-        chat.appendChild(userMsg);
-        
-        setTimeout(() => {
-            const aiMsg = document.createElement('div');
-            aiMsg.className = 'ai-msg ai-assistant';
-            aiMsg.innerHTML = `
-                <div class="ai-avatar"><i data-lucide="sparkles"></i></div>
-                <div class="ai-bubble">
-                    ${getAIResponse(this.textContent)}
-                </div>
-            `;
-            chat.appendChild(aiMsg);
-            chat.scrollTop = chat.scrollHeight;
-            if (window.lucide) lucide.createIcons();
-        }, 800);
-        
-        if (window.lucide) lucide.createIcons();
-    });
-});
+function pceToggleAdvisor(){
+  const el = document.getElementById("pceAdvisor");
+  if(!el) return;
+  const hidden = el.getAttribute("data-collapsed") === "1";
+  if(hidden){
+    el.style.display = "";
+    el.setAttribute("data-collapsed","0");
+    pceToast("Advisor opened");
+  } else {
+    el.style.display = "none";
+    el.setAttribute("data-collapsed","1");
+    pceToast("Advisor collapsed");
+  }
+}
 
-function getAIResponse(question) {
-    const responses = {
-        'Explain Plan': 'The execution plan will run ADF pipeline <strong>pl_dmt_process_load</strong> which orchestrates 12 objects in chunked parallel mode. Each object goes through Staged → Transformed → Loaded lifecycle. Expected duration: ~2-3 minutes.',
-        'Risk Summary': 'Current risk level is <strong>LOW</strong>. All Verify checks passed. The only minor concern is the Contacts table has 127 duplicate emails which were quarantined during Verify.',
-        'Next Steps': 'You can safely proceed with Process. After completion, review the reconciliation report and download the audit artifacts for client handover.'
-    };
-    return responses[question] || 'I can help with that. Please be more specific about what you need.';
+function pceQuick(q){
+  const input = document.getElementById("pceAsk");
+  if(!input) return;
+  input.value = q;
+  pceAsk();
+}
+
+function pceAsk(){
+  const input = document.getElementById("pceAsk");
+  if(!input) return;
+  const q = input.value.trim();
+  if(!q) return;
+  pceToast("Advisor (UI): " + q);
+  input.value = "";
 }
 </script>
 }

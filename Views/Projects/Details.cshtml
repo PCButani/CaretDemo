@@ -76,11 +76,7 @@
        asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
 
     <a class="tab-item @(activeTab=="Verify" ? "is-active" : "")"
-       asp-controller="Projects"
-       asp-action="Verify"
-       asp-route-id="@Model.Id">
-        Verify
-    </a>
+       asp-controller="Projects" asp-action="Verify" asp-route-id="@Model.Id">Verify</a>
 
     <a class="tab-item @(activeTab=="Process" ? "is-active" : "")"
        asp-controller="Projects" asp-action="Process" asp-route-id="@Model.Id">Process</a>
@@ -102,7 +98,7 @@
 </div>
 
 <!-- =========================
-   MAIN CONTENT SWITCHER (Step 1)
+   MAIN CONTENT SWITCHER
 ========================== -->
 @if (activeTab == "Verify")
 {
@@ -110,16 +106,46 @@
 }
 else
 {
+    // ---------- Mock (safe fallbacks; keep UI stable) ----------
+    var score = 72; // overall data quality score
+    var threshold = 80;
+    var scoreState = score >= threshold ? "Good" : "Below Threshold";
+
+    var obj1 = ("Contacts", 68, "High", "Missing names + uniqueness collisions");
+    var obj2 = ("Matters", 85, "Medium", "Schema drift requires review");
+    var obj3 = ("Time Entries", 78, "Medium", "Referential integrity gaps");
+    var obj4 = ("Invoices", 71, "High", "Orphaned / missing links");
+    var obj5 = ("Payments", 92, "Low", "Healthy");
+
+    // Top issues (counts mocked)
+    var issue1 = ("Missing contact names", 1234, "High");
+    var issue2 = ("Orphaned invoices", 89, "Medium");
+    var issue3 = ("Invalid email formats", 456, "Medium");
+
+    <!-- keep ALL your existing HTML below exactly as it is -->
+
     <!-- =========================
-       MAIN GRID (Overview)
+       OVERVIEW – NEW EXECUTIVE LAYOUT
+       Left: Executive KPIs + Scorecard + Activity
+       Right: Copilot + Quick Info + Actions
     ========================== -->
-    <div class="details-grid">
-        <!-- LEFT -->
-        <section class="details-main">
+    <div class="overview-grid">
+
+        <!-- LEFT (Main) -->
+        <section class="overview-main">
+
+            <!-- KPI Row (cleaner, less noisy) -->
             <div class="kpi-row">
-                <div class="kpi-card">
-                    <div class="kpi-label">Pipelines</div>
-                    <div class="kpi-value">@Model.PipelinesSucceeded/@Model.PipelinesTotal</div>
+                <div class="kpi-card kpi-strong">
+                    <div class="kpi-top">
+                        <div>
+                            <div class="kpi-label">Pipelines</div>
+                            <div class="kpi-value">@Model.PipelinesSucceeded/@Model.PipelinesTotal</div>
+                        </div>
+                        <div class="kpi-icon">
+                            <i data-lucide="workflow"></i>
+                        </div>
+                    </div>
                     <div class="kpi-foot">
                         <span class="mini good">@Model.PipelinesSucceeded Succeeded</span>
                         <span class="mini bad">@Model.PipelinesFailed Failed</span>
@@ -127,16 +153,30 @@ else
                 </div>
 
                 <div class="kpi-card">
-                    <div class="kpi-label">Exceptions (Open)</div>
-                    <div class="kpi-value">@Model.ExceptionsOpen</div>
+                    <div class="kpi-top">
+                        <div>
+                            <div class="kpi-label">Open Exceptions</div>
+                            <div class="kpi-value">@Model.ExceptionsOpen</div>
+                        </div>
+                        <div class="kpi-icon">
+                            <i data-lucide="alert-triangle"></i>
+                        </div>
+                    </div>
                     <div class="kpi-foot">
                         <span class="mini neutral">Needs review</span>
                     </div>
                 </div>
 
                 <div class="kpi-card">
-                    <div class="kpi-label">Rules</div>
-                    <div class="kpi-value">@Model.RulesTotal</div>
+                    <div class="kpi-top">
+                        <div>
+                            <div class="kpi-label">Rules</div>
+                            <div class="kpi-value">@Model.RulesTotal</div>
+                        </div>
+                        <div class="kpi-icon">
+                            <i data-lucide="shield-check"></i>
+                        </div>
+                    </div>
                     <div class="kpi-foot">
                         <span class="mini bad">@Model.RulesFailed Failed</span>
                         <span class="mini good">Rest OK</span>
@@ -144,14 +184,24 @@ else
                 </div>
 
                 <div class="kpi-card">
-                    <div class="kpi-label">Run Schedule</div>
-                    <div class="kpi-value">@Model.LastRunText</div>
+                    <div class="kpi-top">
+                        <div>
+                            <div class="kpi-label">Last Run</div>
+                            <div class="kpi-value">@Model.LastRunText</div>
+                        </div>
+                        <div class="kpi-icon">
+                            <i data-lucide="clock"></i>
+                        </div>
+                    </div>
                     <div class="kpi-foot">
                         <span class="mini neutral">Next: @Model.NextRunText</span>
                     </div>
                 </div>
             </div>
 
+    
+
+            <!-- Latest Activity -->
             <div class="panel">
                 <div class="panel-head">
                     <div>
@@ -165,7 +215,7 @@ else
                     <div class="activity-item">
                         <div class="activity-dot good"></div>
                         <div class="activity-body">
-                            <div class="activity-title">ADF Ingestion completed</div>
+                            <div class="activity-title">ADF ingestion completed</div>
                             <div class="activity-meta">Today • 09:10 • Blob → Staging</div>
                         </div>
                         <div class="activity-right">2m 14s</div>
@@ -190,10 +240,129 @@ else
                     </div>
                 </div>
             </div>
+
         </section>
 
-        <!-- RIGHT -->
-        <aside class="details-side">
+        <!-- RIGHT (Side) -->
+        <aside class="overview-side">
+
+            <!-- AI Copilot (Reusable Side Panel) -->
+            <div class="panel copilot">
+                <div class="copilot-head">
+                    <div class="copilot-title">
+                        <div class="copilot-badge">
+                            <i data-lucide="sparkles"></i>
+                        </div>
+                        <div>
+                            <div class="copilot-name">AI Copilot</div>
+                            <div class="copilot-sub">Project-aware assistant (assistive only)</div>
+                        </div>
+                    </div>
+                    <div class="copilot-status">
+                        <span class="online-dot"></span> Online
+                    </div>
+                </div>
+
+                <div class="copilot-scope">
+                    <span class="scope-pill">
+                        <i data-lucide="folder"></i>
+                        Project scoped
+                    </span>
+                    <span class="scope-text">MIG-2026-001 • @Model.SourcePlatform → @Model.TargetPlatform</span>
+                </div>
+
+                <div class="copilot-insights">
+                    <div class="mini-head">
+                        <span>AI Insights</span>
+                        <span class="mini-tag">Azure AI Foundry</span>
+                    </div>
+
+                    <div class="insight high">
+                        <div class="insight-ic"><i data-lucide="alert-octagon"></i></div>
+                        <div class="insight-txt">
+                            <div class="insight-title">83% of failures</div>
+                            <div class="insight-sub">Uniqueness + Referential Integrity patterns</div>
+                        </div>
+                        <span class="sev high">High</span>
+                    </div>
+
+                    <div class="insight high">
+                        <div class="insight-ic"><i data-lucide="link-2"></i></div>
+                        <div class="insight-txt">
+                            <div class="insight-title">Highest risk object</div>
+                            <div class="insight-sub">Contacts → Accounts mapping violations</div>
+                        </div>
+                        <span class="sev high">High</span>
+                    </div>
+
+                    <div class="insight med">
+                        <div class="insight-ic"><i data-lucide="scan"></i></div>
+                        <div class="insight-txt">
+                            <div class="insight-title">Schema drift detected</div>
+                            <div class="insight-sub">Matters transform requires manual review</div>
+                        </div>
+                        <span class="sev med">Medium</span>
+                    </div>
+                </div>
+
+                <div class="copilot-suggest">
+                    <div class="mini-head">
+                        <span>Suggested Questions</span>
+                        <span class="mini-hint">click to ask</span>
+                    </div>
+
+                    <div class="suggest-grid">
+                        <button class="suggest-btn" type="button">Why did Contacts fail?</button>
+                        <button class="suggest-btn" type="button">Show uniqueness patterns</button>
+                        <button class="suggest-btn" type="button">Compare to last run</button>
+                        <button class="suggest-btn" type="button">What’s blocking approval?</button>
+                    </div>
+                </div>
+
+                <div class="copilot-chat" id="copilotChat" aria-label="AI chat messages">
+                    <div class="msg ai">
+                        Based on validation, <b>Contacts</b> readiness is <b>68%</b>, driven by
+                        <b>missing first/last names</b>. This blocks automation eligibility.
+                        <div class="time">2 minutes ago</div>
+                    </div>
+
+                    <div class="msg user">
+                        How did we fix this in past migrations?
+                        <div class="time">1 minute ago</div>
+                    </div>
+
+                    <div class="msg ai">
+                        For similar cases, we’ve improved readiness by:
+                        <ul>
+                            <li>Re-exporting using <b>Full Contact Report</b></li>
+                            <li>Applying name-splitting normalization rules</li>
+                            <li>Running duplicate detection before load</li>
+                        </ul>
+                        <div class="time">just now</div>
+                    </div>
+                </div>
+
+                <div class="copilot-input">
+                    <input id="copilotInput" type="text" placeholder="Ask about this project…" />
+                    <button id="copilotSend" type="button" class="send-btn" title="Send">
+                        <i data-lucide="send"></i>
+                    </button>
+                </div>
+
+                <div class="copilot-foot">
+                    <button class="micro-action" type="button">
+                        <i data-lucide="wrench"></i> Suggest fix
+                    </button>
+                    <button class="micro-action" type="button">
+                        <i data-lucide="search"></i> Similar cases
+                    </button>
+                    <button class="micro-action" type="button">
+                        <i data-lucide="terminal-square"></i> Generate SQL
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Info -->
             <div class="panel">
                 <div class="panel-head">
                     <div>
@@ -230,6 +399,7 @@ else
                 </div>
             </div>
 
+            <!-- Actions -->
             <div class="panel">
                 <div class="panel-head">
                     <div>
@@ -244,13 +414,31 @@ else
                     <button class="btn btn-secondary w-100" type="button">Generate Export</button>
                 </div>
             </div>
+
         </aside>
     </div>
 }
 
 @section PageStyles {
     <style>
-        /* Project hero header */
+        /* =========================
+           FOUNDATIONS
+        ========================== */
+        .muted{ opacity:.75; }
+        .subdot{ opacity:.55; }
+        .stamp{
+            display:inline-flex; align-items:center; gap:6px;
+            padding:6px 10px; border-radius:999px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(0,0,0,.03);
+            font-size:12px; font-weight:700;
+            white-space:nowrap;
+        }
+        .stamp.ghost{ font-weight:600; opacity:.75; }
+
+        /* =========================
+           PROJECT HERO
+        ========================== */
         .project-hero{
             display:flex;
             justify-content:space-between;
@@ -263,81 +451,34 @@ else
             margin: 18px 0 12px;
         }
 
-        .hero-left{
-            display:flex;
-            gap:12px;
-            align-items:flex-start;
-            min-width: 0;
-        }
-
+        .hero-left{ display:flex; gap:12px; align-items:flex-start; min-width: 0; }
         .hero-logo{
-            width:44px;
-            height:44px;
-            border-radius: 14px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-weight:900;
-            letter-spacing:-.2px;
-            color:white;
+            width:44px; height:44px; border-radius: 14px;
+            display:flex; align-items:center; justify-content:center;
+            font-weight:900; letter-spacing:-.2px; color:white;
             background: linear-gradient(135deg, rgba(37,99,235,1), rgba(124,58,237,1));
             flex: 0 0 auto;
         }
-
         .hero-text{ min-width:0; }
+        .hero-topline{ font-size:12px; opacity:.85; display:flex; align-items:center; gap:8px; }
+        .crumb-link{ text-decoration:none; font-weight:700; opacity:.9; }
+        .crumb-link:hover{ text-decoration:underline; }
+        .crumb-sep{ opacity:.55; }
+        .hero-title-row{ display:flex; align-items:center; gap:12px; margin-top:6px; flex-wrap:wrap; }
+        .hero-title{ margin:0; font-size:22px; font-weight:850; letter-spacing:-.4px; line-height:1.2; }
+        .hero-badges{ display:flex; gap:8px; flex-wrap:wrap; }
+        .hero-meta{ margin-top:6px; font-size:13px; opacity:.9; display:flex; gap:10px; flex-wrap:wrap; }
 
-        .hero-topline{
-            font-size:12px;
-            opacity:.85;
-            display:flex;
-            align-items:center;
-            gap:8px;
-        }
-
-        .hero-title-row{
-            display:flex;
-            align-items:center;
-            gap:12px;
-            margin-top:6px;
-            flex-wrap:wrap;
-        }
-
-        .hero-title{
-            margin:0;
-            font-size:22px;
-            font-weight:850;
-            letter-spacing:-.4px;
-            line-height:1.2;
-        }
-
-        .hero-badges{
-            display:flex;
-            gap:8px;
-            flex-wrap:wrap;
-        }
-
-        .hero-meta{
-            margin-top:6px;
-            font-size:13px;
-            opacity:.9;
-            display:flex;
-            gap:10px;
-            flex-wrap:wrap;
-        }
-
-        .hero-right{
-            display:flex;
-            gap:10px;
-            align-items:center;
-            flex-wrap:wrap;
-        }
+        .hero-right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
 
         @@media (max-width: 1100px){
             .project-hero{ flex-direction:column; align-items:stretch; }
             .hero-right{ justify-content:flex-start; }
         }
 
-        /* Tabs */
+        /* =========================
+           TABS
+        ========================== */
         .details-tabs{
             display:flex;
             align-items:center;
@@ -366,38 +507,76 @@ else
         }
         .tabs-spacer{ flex:1; }
         .tab-icon-btn{
-            width:36px;
-            height:36px;
+            width:36px; height:36px;
             border-radius: 10px;
             border: 1px solid rgba(0,0,0,.10);
             background: rgba(255,255,255,.9);
             cursor:pointer;
-            display:flex;
-            align-items:center;
-            justify-content:center;
+            display:flex; align-items:center; justify-content:center;
         }
         .tab-icon-btn:hover{ background: rgba(0,0,0,.03); }
 
-        /* Layout grid */
-        .details-grid{ display:grid; grid-template-columns: 1fr 340px; gap:16px; }
-        @@media (max-width: 1100px){
-            .details-grid{ grid-template-columns: 1fr; }
-        }
+        /* =========================
+           BUTTONS (assumes global .btn exists)
+        ========================== */
+        .btn i{ width:16px; height:16px; margin-right:8px; vertical-align:-3px; }
+        .btn.btn-primary i{ margin-right:8px; }
 
-        /* Pills */
+        /* =========================
+           PANELS
+        ========================== */
+        .panel{
+            border-radius:16px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.7);
+            padding:12px;
+            margin-bottom:12px;
+        }
+        .panel-head{
+            display:flex; justify-content:space-between; align-items:flex-start;
+            gap:12px; margin-bottom:10px;
+        }
+        .panel-right{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+        .panel-title{ font-weight:800; letter-spacing:-.2px; }
+        .panel-sub{ font-size:12px; opacity:.75; margin-top:2px; }
+        .link-btn{ border:0; background:transparent; font-weight:700; cursor:pointer; opacity:.8; }
+        .link-btn:hover{ opacity:1; text-decoration:underline; }
+
+        /* =========================
+           PILLS
+        ========================== */
         .pill{
             display:inline-flex;
             align-items:center;
             padding:4px 10px;
             border-radius:999px;
             font-size:12px;
-            font-weight:600;
+            font-weight:700;
             border:1px solid rgba(0,0,0,.08);
             background: rgba(0,0,0,.03);
         }
 
-        /* KPIs */
-        .kpi-row{ display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:12px; }
+        /* =========================
+           OVERVIEW GRID
+        ========================== */
+        .overview-grid{
+            display:grid;
+            grid-template-columns: 1fr 380px;
+            gap:16px;
+        }
+        @@media (max-width: 1100px){
+            .overview-grid{ grid-template-columns: 1fr; }
+        }
+
+        /* =========================
+           KPI ROW
+        ========================== */
+        .kpi-row{
+            display:grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap:12px;
+            margin-bottom:12px;
+        }
         @@media (max-width: 1100px){
             .kpi-row{ grid-template-columns: repeat(2, 1fr); }
         }
@@ -407,25 +586,162 @@ else
             background: rgba(255,255,255,.7);
             padding:12px 12px;
         }
-        .kpi-label{ font-size:12px; opacity:.75; }
-        .kpi-value{ font-size:20px; font-weight:800; margin-top:6px; letter-spacing:-.3px; }
-        .kpi-foot{ display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; }
-        .mini{ font-size:12px; padding:3px 8px; border-radius:999px; background: rgba(0,0,0,.04); }
-
-        /* Panels */
-        .panel{
-            border-radius:16px;
-            border:1px solid rgba(0,0,0,.08);
-            background: rgba(255,255,255,.7);
-            padding:12px;
-            margin-bottom:12px;
+        .kpi-card.kpi-strong{
+            border-color: rgba(37,99,235,.20);
+            box-shadow: 0 10px 30px rgba(37,99,235,.08);
         }
-        .panel-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:10px; }
-        .panel-title{ font-weight:800; letter-spacing:-.2px; }
-        .panel-sub{ font-size:12px; opacity:.75; margin-top:2px; }
-        .link-btn{ border:0; background:transparent; font-weight:700; cursor:pointer; opacity:.8; }
+        .kpi-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+        .kpi-icon{
+            width:34px; height:34px; border-radius:12px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(0,0,0,.02);
+            display:flex; align-items:center; justify-content:center;
+            opacity:.9;
+        }
+        .kpi-icon i{ width:18px; height:18px; }
+        .kpi-label{ font-size:12px; opacity:.75; }
+        .kpi-value{ font-size:20px; font-weight:850; margin-top:6px; letter-spacing:-.3px; }
+        .kpi-foot{ display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; }
+        .mini{ font-size:12px; padding:3px 8px; border-radius:999px; background: rgba(0,0,0,.04); font-weight:700; }
+        .mini.good{ background: rgba(16,185,129,.12); color: rgba(6,95,70,1); }
+        .mini.bad{ background: rgba(239,68,68,.12); color: rgba(153,27,27,1); }
+        .mini.neutral{ background: rgba(59,130,246,.10); color: rgba(30,64,175,1); }
 
-        /* Activity */
+        /* =========================
+           SCORECARD
+        ========================== */
+        .scorecard{ overflow:hidden; }
+        .scorecard-body{
+            display:grid;
+            grid-template-columns: 280px 1fr;
+            gap:14px;
+            align-items:start;
+        }
+        @@media (max-width: 1100px){
+            .scorecard-body{ grid-template-columns: 1fr; }
+        }
+
+        .score-left{
+            display:flex;
+            gap:12px;
+            align-items:center;
+            padding:10px;
+            border-radius:14px;
+            border:1px solid rgba(0,0,0,.06);
+            background: rgba(0,0,0,.02);
+        }
+        @@media (max-width: 1100px){
+            .score-left{ justify-content:space-between; }
+        }
+
+        .donut{ width:120px; height:120px; position:relative; flex:0 0 auto; }
+        .donut svg{ width:120px; height:120px; transform: rotate(-90deg); }
+        .donut-track{
+            fill:none; stroke: rgba(0,0,0,.08); stroke-width:12;
+        }
+        .donut-ring{
+            fill:none; stroke: rgba(245,158,11,1); stroke-width:12;
+            stroke-linecap: round;
+            stroke-dasharray: 289;
+            stroke-dashoffset: 80;
+            transition: stroke-dashoffset .6s ease;
+        }
+        .donut-center{
+            position:absolute; inset:0;
+            display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+        }
+        .donut-score{ font-size:26px; font-weight:900; letter-spacing:-.4px; line-height:1; }
+        .donut-sub{ font-size:12px; opacity:.7; margin-top:4px; }
+
+        .score-note{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+        .note-badge{
+            display:inline-flex; align-items:center; gap:8px;
+            padding:6px 10px; border-radius:999px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(0,0,0,.03);
+            font-size:12px; font-weight:800; width:fit-content;
+        }
+        .note-badge i{ width:16px; height:16px; }
+        .note-badge.ok{ background: rgba(16,185,129,.12); color: rgba(6,95,70,1); border-color: rgba(16,185,129,.20); }
+        .note-badge.warn{ background: rgba(245,158,11,.15); color: rgba(146,64,14,1); border-color: rgba(245,158,11,.25); }
+        .note-text{ font-size:12px; opacity:.9; line-height:1.35; }
+
+        .score-right{ padding:10px; border-radius:14px; border:1px solid rgba(0,0,0,.06); background: rgba(255,255,255,.55); }
+        .subhead{ font-size:12px; font-weight:900; letter-spacing:-.1px; opacity:.8; margin-bottom:8px; }
+
+        .obj-row{
+            display:grid;
+            grid-template-columns: 1fr auto;
+            gap:10px;
+            padding:10px 10px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.06);
+            background: rgba(0,0,0,.02);
+            margin-bottom:8px;
+        }
+        .obj-meta{ min-width:0; }
+        .obj-name{ font-weight:850; letter-spacing:-.2px; }
+        .obj-sub{ font-size:12px; opacity:.75; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 540px; }
+        @@media (max-width:1100px){
+            .obj-sub{ max-width: 100%; white-space:normal; }
+        }
+        .obj-right{ display:flex; align-items:center; gap:8px; }
+        .obj-pct{ font-weight:900; opacity:.85; min-width:42px; text-align:right; }
+        .obj-pill{
+            font-size:11px; font-weight:900;
+            padding:5px 8px; border-radius:999px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(0,0,0,.03);
+        }
+        .obj-pill.risk-high{ background: rgba(239,68,68,.12); color: rgba(153,27,27,1); border-color: rgba(239,68,68,.20); }
+        .obj-pill.risk-med{ background: rgba(245,158,11,.14); color: rgba(146,64,14,1); border-color: rgba(245,158,11,.25); }
+        .obj-pill.risk-low{ background: rgba(16,185,129,.12); color: rgba(6,95,70,1); border-color: rgba(16,185,129,.20); }
+
+        .pbar{
+            grid-column: 1 / -1;
+            height:8px;
+            border-radius:999px;
+            background: rgba(0,0,0,.06);
+            overflow:hidden;
+        }
+        .pbar span{ display:block; height:100%; border-radius:999px; }
+        .pbar.good span{ background: rgba(16,185,129,1); }
+        .pbar.warn span{ background: rgba(245,158,11,1); }
+
+        .issues-strip{
+            display:flex;
+            gap:10px;
+            align-items:stretch;
+            flex-wrap:wrap;
+            margin-top:12px;
+        }
+        .issue-chip{
+            flex: 1 1 180px;
+            display:flex;
+            gap:10px;
+            align-items:center;
+            padding:10px;
+            border-radius:14px;
+            border:1px solid rgba(0,0,0,.06);
+            background: rgba(0,0,0,.02);
+            min-width: 200px;
+        }
+        .issue-chip .dot{
+            width:10px; height:10px; border-radius:999px;
+            background: rgba(0,0,0,.25);
+            flex: 0 0 auto;
+        }
+        .issue-chip.high .dot{ background: rgba(239,68,68,1); }
+        .issue-chip.med .dot{ background: rgba(245,158,11,1); }
+        .issue-chip .txt{ display:flex; flex-direction:column; line-height:1.1; }
+        .issue-chip .t{ font-weight:850; }
+        .issue-chip .m{ font-size:12px; opacity:.75; margin-top:2px; font-weight:800; }
+        .issues-cta{ flex: 0 0 auto; display:flex; align-items:center; }
+
+        /* =========================
+           ACTIVITY
+        ========================== */
         .activity-list{ display:flex; flex-direction:column; gap:10px; }
         .activity-item{
             display:flex;
@@ -437,16 +753,226 @@ else
             background: rgba(0,0,0,.02);
         }
         .activity-dot{ width:10px; height:10px; border-radius:999px; margin-top:5px; background: rgba(0,0,0,.25); }
+        .activity-dot.good{ background: rgba(16,185,129,1); }
+        .activity-dot.bad{ background: rgba(239,68,68,1); }
+        .activity-dot.neutral{ background: rgba(107,114,128,1); }
         .activity-body{ flex:1; }
-        .activity-title{ font-weight:700; }
+        .activity-title{ font-weight:850; }
         .activity-meta{ font-size:12px; opacity:.75; margin-top:2px; }
-        .activity-right{ font-size:12px; opacity:.75; white-space:nowrap; }
+        .activity-right{ font-size:12px; opacity:.75; white-space:nowrap; font-weight:800; }
 
-        /* Side */
+        /* =========================
+           RIGHT SIDE – COPILOT
+        ========================== */
+        .copilot{ padding:12px; }
+        .copilot-head{
+            display:flex; justify-content:space-between; align-items:flex-start;
+            gap:12px; margin-bottom:10px;
+        }
+        .copilot-title{ display:flex; gap:10px; align-items:center; }
+        .copilot-badge{
+            width:36px; height:36px; border-radius:14px;
+            display:flex; align-items:center; justify-content:center;
+            border:1px solid rgba(37,99,235,.20);
+            background: rgba(37,99,235,.10);
+            color: rgba(37,99,235,1);
+        }
+        .copilot-badge i{ width:18px; height:18px; }
+        .copilot-name{ font-weight:900; letter-spacing:-.2px; }
+        .copilot-sub{ font-size:12px; opacity:.75; margin-top:2px; }
+        .copilot-status{
+            display:flex; align-items:center; gap:8px;
+            font-size:12px; font-weight:900; opacity:.85;
+            padding:6px 10px; border-radius:999px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(0,0,0,.03);
+            white-space:nowrap;
+        }
+        .online-dot{ width:8px; height:8px; border-radius:999px; background: rgba(16,185,129,1); }
+
+        .copilot-scope{
+            display:flex; gap:10px; flex-wrap:wrap;
+            align-items:center;
+            padding:10px;
+            border-radius:14px;
+            border:1px solid rgba(0,0,0,.06);
+            background: rgba(0,0,0,.02);
+            margin-bottom:10px;
+        }
+        .scope-pill{
+            display:inline-flex; align-items:center; gap:8px;
+            padding:6px 10px; border-radius:999px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.8);
+            font-size:12px; font-weight:900;
+        }
+        .scope-pill i{ width:16px; height:16px; }
+        .scope-text{ font-size:12px; opacity:.85; font-weight:800; }
+
+        .mini-head{
+            display:flex; justify-content:space-between; align-items:center;
+            margin: 6px 0 8px;
+            font-size:12px; font-weight:900; opacity:.85;
+        }
+        .mini-tag{
+            font-size:11px; font-weight:900;
+            padding:4px 8px; border-radius:999px;
+            border:1px solid rgba(79,70,229,.20);
+            background: rgba(79,70,229,.10);
+            color: rgba(79,70,229,1);
+            white-space:nowrap;
+        }
+        .mini-hint{ font-size:11px; font-weight:800; opacity:.6; }
+
+        .copilot-insights{ margin-bottom:10px; }
+        .insight{
+            display:grid;
+            grid-template-columns: 32px 1fr auto;
+            gap:10px;
+            align-items:center;
+            padding:10px;
+            border-radius:14px;
+            border:1px solid rgba(0,0,0,.06);
+            background: rgba(0,0,0,.02);
+            margin-bottom:8px;
+        }
+        .insight-ic{
+            width:32px; height:32px; border-radius:12px;
+            display:flex; align-items:center; justify-content:center;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.8);
+            opacity:.9;
+        }
+        .insight-ic i{ width:16px; height:16px; }
+        .insight-title{ font-weight:900; letter-spacing:-.1px; }
+        .insight-sub{ font-size:12px; opacity:.75; margin-top:2px; font-weight:800; }
+        .sev{
+            font-size:11px; font-weight:900;
+            padding:5px 8px; border-radius:999px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(0,0,0,.03);
+            white-space:nowrap;
+        }
+        .sev.high{ background: rgba(239,68,68,.12); color: rgba(153,27,27,1); border-color: rgba(239,68,68,.20); }
+        .sev.med{ background: rgba(245,158,11,.14); color: rgba(146,64,14,1); border-color: rgba(245,158,11,.25); }
+
+        .suggest-grid{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap:8px;
+            margin-bottom:10px;
+        }
+        @@media (max-width: 1100px){
+            .suggest-grid{ grid-template-columns: 1fr; }
+        }
+        .suggest-btn{
+            text-align:left;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.85);
+            padding:10px 10px;
+            font-size:12px;
+            font-weight:900;
+            cursor:pointer;
+        }
+        .suggest-btn:hover{ background: rgba(0,0,0,.02); }
+
+        .copilot-chat{
+            height: 260px;
+            overflow:auto;
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+            padding:10px;
+            border-radius:14px;
+            border:1px solid rgba(0,0,0,.06);
+            background: rgba(0,0,0,.02);
+            margin-bottom:10px;
+        }
+        .msg{
+            max-width: 92%;
+            padding:10px;
+            border-radius:14px;
+            border:1px solid rgba(0,0,0,.06);
+            background: rgba(255,255,255,.85);
+            font-size:13px;
+            line-height:1.35;
+        }
+        .msg.ai{ align-self:flex-start; }
+        .msg.user{
+            align-self:flex-end;
+            background: rgba(79,70,229,1);
+            color: white;
+            border-color: rgba(79,70,229,.45);
+        }
+        .msg .time{ font-size:11px; opacity:.65; margin-top:8px; font-weight:800; }
+        .msg.user .time{ opacity:.75; }
+        .msg ul{ margin:8px 0 0 18px; }
+
+        .copilot-input{
+            display:flex;
+            gap:8px;
+            align-items:center;
+            margin-bottom:10px;
+        }
+        .copilot-input input{
+            flex:1;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.10);
+            background: rgba(255,255,255,.9);
+            padding:10px 10px;
+            font-size:13px;
+            outline:none;
+        }
+        .copilot-input input:focus{
+            border-color: rgba(79,70,229,.35);
+            box-shadow: 0 0 0 4px rgba(79,70,229,.10);
+        }
+        .send-btn{
+            width:44px; height:44px;
+            border-radius:12px;
+            border:1px solid rgba(79,70,229,.35);
+            background: rgba(79,70,229,1);
+            color:white;
+            cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .send-btn i{ width:18px; height:18px; }
+        .send-btn:hover{ filter: brightness(.98); }
+
+        .copilot-foot{
+            display:grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap:8px;
+        }
+        .micro-action{
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.85);
+            padding:9px 10px;
+            font-size:12px;
+            font-weight:900;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            white-space:nowrap;
+        }
+        .micro-action i{ width:16px; height:16px; }
+        .micro-action:hover{ background: rgba(0,0,0,.02); }
+        @@media (max-width: 1100px){
+            .copilot-foot{ grid-template-columns: 1fr; }
+            .micro-action{ justify-content:flex-start; }
+        }
+
+        /* =========================
+           QUICK INFO + ACTIONS
+        ========================== */
         .kv{ display:flex; flex-direction:column; gap:8px; }
         .kv-row{ display:flex; justify-content:space-between; gap:10px; font-size:13px; }
-        .kv-k{ opacity:.75; }
-        .kv-v{ font-weight:600; }
+        .kv-k{ opacity:.75; font-weight:800; }
+        .kv-v{ font-weight:900; }
         .side-actions{ display:flex; flex-direction:column; gap:10px; }
         .w-100{ width:100%; }
     </style>
@@ -454,6 +980,82 @@ else
 
 @section Scripts {
     <script>
+        // Lucide icons
         if (window.lucide) lucide.createIcons();
+
+        // Donut progress
+        (function () {
+            var donut = document.querySelector(".donut");
+            if (!donut) return;
+
+            var score = parseInt(donut.getAttribute("data-score") || "0", 10);
+            if (isNaN(score)) score = 0;
+            if (score < 0) score = 0;
+            if (score > 100) score = 100;
+
+            // circle length ~ 2πr, r=46 => ~289 (we used 289 in CSS)
+            var circumference = 289;
+            var offset = circumference - (circumference * score / 100);
+
+            var ring = donut.querySelector(".donut-ring");
+            if (ring) ring.style.strokeDashoffset = offset;
+
+            // color based on score
+            if (ring) {
+                if (score >= 85) ring.style.stroke = "rgba(16,185,129,1)";
+                else if (score >= 75) ring.style.stroke = "rgba(59,130,246,1)";
+                else ring.style.stroke = "rgba(245,158,11,1)";
+            }
+        })();
+
+        // Copilot: suggested → input
+        (function () {
+            var input = document.getElementById("copilotInput");
+            var send = document.getElementById("copilotSend");
+            var chat = document.getElementById("copilotChat");
+            if (!input || !send || !chat) return;
+
+            function appendMsg(text, who) {
+                var wrap = document.createElement("div");
+                wrap.className = "msg " + who;
+                wrap.innerHTML = text + '<div class="time">just now</div>';
+                chat.appendChild(wrap);
+                chat.scrollTop = chat.scrollHeight;
+            }
+
+            function safeText(t) {
+                return (t || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            }
+
+            function sendMessage() {
+                var q = (input.value || "").trim();
+                if (!q) return;
+
+                appendMsg(safeText(q), "user");
+                input.value = "";
+
+                // Mock AI response (UI-only). Replace with real Foundry call later.
+                var reply =
+                    "Got it. I can help you analyze: <b>why</b> it failed, <b>where</b> it failed, and <b>what to do next</b>. " +
+                    "Try asking: <i>‘Show impacted objects and top failing rules’</i>.";
+
+                setTimeout(function () {
+                    appendMsg(reply, "ai");
+                }, 450);
+            }
+
+            // Suggested buttons
+            document.querySelectorAll(".suggest-btn").forEach(function (b) {
+                b.addEventListener("click", function () {
+                    input.value = b.textContent.trim();
+                    input.focus();
+                });
+            });
+
+            send.addEventListener("click", sendMessage);
+            input.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") sendMessage();
+            });
+        })();
     </script>
 }
