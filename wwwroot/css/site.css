@@ -1596,7 +1596,12 @@ select:focus, input:focus{
 }
 .donut-num{ font-weight:900; font-size:16px; }
 .donut-cap{ font-size:10px; opacity:.65; margin-top:4px; }
-
+.donut-green {
+    background: conic-gradient(rgba(16, 185, 129, .9) calc(var(--p) * 1%), rgba(0, 0, 0, .08) 0);
+}
+.donut-orange {
+    background: conic-gradient(rgba(245,158,11,.9) calc(var(--p) * 1%), rgba(0, 0, 0, .08) 0);
+}
 /* Progress list / bars */
 .obj-list{ display:flex; flex-direction:column; gap:10px; }
 .obj-row{
@@ -1704,3 +1709,5 @@ select:focus, input:focus{
 
 body.fetch-view-summary .fetch-summary-only{ display:block; }
 body.fetch-view-summary .fetch-details-only{ display:none; }
+
+

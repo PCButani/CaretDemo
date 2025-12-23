@@ -73,9 +73,9 @@
        asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
 
     <a class="tab-item @(activeTab=="Verify" ? "is-active" : "")"
-        asp-controller="Projects"
-        asp-action="Verify"
-        asp-route-id="@Model.Id">Verify</a>
+       asp-controller="Projects"
+       asp-action="Verify"
+       asp-route-id="@Model.Id">Verify</a>
     <a class="tab-item" href="#" onclick="return false;">Process</a>
     <a class="tab-item" href="#" onclick="return false;">Config</a>
     <a class="tab-item" href="#" onclick="return false;">Activity</a>
@@ -103,12 +103,24 @@
     <!-- KPI Row (summary-only) -->
     <div class="kpi-row">
         <div class="kpi-card kpi-good">
-            <div class="kpi-label">Connection</div>
-            <div class="kpi-value">Connected</div>
-            <div class="kpi-subrow">
-                <span class="mini neutral">Source: @Model.SourcePlatform</span>
-                <span class="mini good">Auth: Valid</span>
-                <span class="mini neutral">Latency: 180ms</span>
+            <div class="kpi-label">Ingestion Readiness</div>
+            <div class="stat-wide" style="display:flex; gap:12px; align-items:center;">
+                <div class="donut" style="--p: 72;margin-top:5px;">
+                    <div class="donut-inner">
+                        <div class="donut-num">72</div>
+                        <div class="donut-cap">Score</div>
+                    </div>
+                </div>
+                <div>
+                    
+                    <div class="stat-value">Below threshold</div>
+                    <div class="stat-foot">Target 80% for automated migration eligibility</div>
+                  @*   <div class="pills">
+                        <span class="mini warn">2 objects need config</span>
+                        <span class="mini neutral">Rejects: 0</span>
+                        <span class="mini good">Connection stable</span>
+                    </div> *@
+                </div>
             </div>
         </div>
 
@@ -143,54 +155,7 @@
         </div>
     </div>
 
-    <!-- Health Summary (summary-only) -->
-    <div class="panel">
-        <div class="panel-head">
-            <div>
-                <div class="panel-title">Fetch Health Summary</div>
-                <div class="panel-sub">Readiness score + run trend</div>
-            </div>
-        </div>
-
-        <div class="stat-grid">
-            <div class="stat-tile stat-wide" style="display:flex; gap:12px; align-items:center;">
-                <div class="donut" style="--p: 72">
-                    <div class="donut-inner">
-                        <div class="donut-num">72</div>
-                        <div class="donut-cap">Score</div>
-                    </div>
-                </div>
-                <div>
-                    <div class="stat-label">Ingestion Readiness</div>
-                    <div class="stat-value">Below threshold</div>
-                    <div class="stat-foot">Target 80% for automated migration eligibility</div>
-                    <div class="pills">
-                        <span class="mini warn">2 objects need config</span>
-                        <span class="mini neutral">Rejects: 0</span>
-                        <span class="mini good">Connection stable</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="spark-wrap">
-                <div class="spark-head">
-                    <div>
-                        <div class="spark-title">Run Trend</div>
-                        <div class="spark-sub">Rows loaded (last 7 runs)</div>
-                    </div>
-                    <div class="spark-metric">+8%</div>
-                </div>
-
-                <svg class="sparkline" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true">
-                    <path class="bg" d="M0,45 L50,44 L100,40 L150,42 L200,30 L250,28 L300,22"></path>
-                    <path d="M0,45 L50,44 L100,40 L150,42 L200,30 L250,28 L300,22"></path>
-                </svg>
-
-                <div class="stat-foot">Latest: 128,450 rows • Avg: 121k</div>
-            </div>
-        </div>
-    </div>
-
+ 
     <!-- Summary: Object Health + Right rail -->
     <div class="details-grid">
         <section class="details-main">
@@ -206,94 +171,156 @@
 
                 <div class="obj-list">
                     <!-- 6 objects (summary-only) -->
-                    
-                    <div class="obj-row">
-                        <div class="obj-top">
-                            <div>
-                                <div class="obj-name">Contacts</div>
-                                <div class="obj-meta">Incremental • Last: Today 09:10 • Rows: 45,210</div>
+
+                    <div class="obj-row" style="display:inline-flex">
+                        <div style="width:80%">
+                            <div class="obj-top">
+                                <div>
+                                    <div class="obj-name">
+                                        <a asp-controller="Projects" asp-action="ContactSummary" asp-route-id="@Model.Id"> Contacts </a>
+                                    </div>
+                                    <div class="obj-meta">Incremental • Last: Today 09:10 • Rows: 45,210</div>
+                                </div>
+                                <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
                             </div>
-                            <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
+                            <div class="pbar good"><span style="width: 92%"></span></div>
+                            <div class="pills">
+                                <span class="mini good">Load: OK</span>
+                                <span class="mini neutral">Rejects: 0</span>
+                            </div>
                         </div>
-                        <div class="pbar good"><span style="width: 92%"></span></div>
-                        <div class="pills">
-                            <span class="mini good">Load: OK</span>
-                            <span class="mini neutral">Rejects: 0</span>
+                        <div style="width:20%;">
+                            <div class="donut donut-green" style="--p: 92; float:right">
+                                <div class="donut-inner">
+                                    <div class="donut-num">92</div>
+                                    <div class="donut-cap">Score</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="obj-row">
-                        <div class="obj-top">
-                            <div>
-                                <div class="obj-name">Invoices</div>
-                                <div class="obj-meta">Full • Last: Today 09:10 • Rows: 61,880</div>
+                    <div class="obj-row" style="display:inline-flex">
+                        <div style="width:80%">
+                            <div class="obj-top">
+                                <div>
+                                    <div class="obj-name">Invoices</div>
+                                    <div class="obj-meta">Full • Last: Today 09:10 • Rows: 61,880</div>
+                                </div>
+                                <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
                             </div>
-                            <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
+                            <div class="pbar good"><span style="width: 100%"></span></div>
+                            <div class="pills">
+                                <span class="mini good">Complete</span>
+                                <span class="mini neutral">Rejects: 0</span>
+                            </div>
                         </div>
-                        <div class="pbar good"><span style="width: 100%"></span></div>
-                        <div class="pills">
-                            <span class="mini good">Complete</span>
-                            <span class="mini neutral">Rejects: 0</span>
+                        <div style="width:20%;">
+                            <div class="donut donut-green" style="--p: 100; float:right">
+                                <div class="donut-inner">
+                                    <div class="donut-num">100</div>
+                                    <div class="donut-cap">Score</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="obj-row">
-                        <div class="obj-top">
-                            <div>
-                                <div class="obj-name">Matters</div>
-                                <div class="obj-meta">Incremental • Last: — • Rows: —</div>
+                    <div class="obj-row" style="display:inline-flex">
+                        <div style="width:80%">
+                            <div class="obj-top">
+                                <div>
+                                    <div class="obj-name">Matters</div>
+                                    <div class="obj-meta">Incremental • Last: — • Rows: —</div>
+                                </div>
+                                <div class="obj-right"><span class="pill pill-warn">Needs config</span></div>
                             </div>
-                            <div class="obj-right"><span class="pill pill-warn">Needs config</span></div>
+                            <div class="pbar warn"><span style="width: 38%"></span></div>
+                            <div class="pills">
+                                <span class="mini warn">Missing watermark</span>
+                                <span class="mini neutral">Mapping pending</span>
+                            </div>
                         </div>
-                        <div class="pbar warn"><span style="width: 38%"></span></div>
-                        <div class="pills">
-                            <span class="mini warn">Missing watermark</span>
-                            <span class="mini neutral">Mapping pending</span>
+                        <div style="width:20%;">
+                            <div class="donut donut-orange" style="--p: 38; float:right">
+                                <div class="donut-inner">
+                                    <div class="donut-num">38</div>
+                                    <div class="donut-cap">Score</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="obj-row">
-                        <div class="obj-top">
-                            <div>
-                                <div class="obj-name">Time Entries</div>
-                                <div class="obj-meta">Incremental • Last: Today 09:10 • Rows: 12,340</div>
+                    <div class="obj-row" style="display:inline-flex">
+                        <div style="width:80%">
+                            <div class="obj-top">
+                                <div>
+                                    <div class="obj-name">Time Entries</div>
+                                    <div class="obj-meta">Incremental • Last: Today 09:10 • Rows: 12,340</div>
+                                </div>
+                                <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
                             </div>
-                            <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
+                            <div class="pbar good"><span style="width: 88%"></span></div>
+                            <div class="pills">
+                                <span class="mini good">Load: OK</span>
+                                <span class="mini neutral">Rejects: 1</span>
+                            </div>
                         </div>
-                        <div class="pbar good"><span style="width: 88%"></span></div>
-                        <div class="pills">
-                            <span class="mini good">Load: OK</span>
-                            <span class="mini neutral">Rejects: 1</span>
+                        <div style="width:20%;">
+                            <div class="donut donut-green" style="--p: 88; float:right">
+                                <div class="donut-inner">
+                                    <div class="donut-num">88</div>
+                                    <div class="donut-cap">Score</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="obj-row">
-                        <div class="obj-top">
-                            <div>
-                                <div class="obj-name">Payments</div>
-                                <div class="obj-meta">Full • Last: Today 09:10 • Rows: 4,560</div>
+                    <div class="obj-row" style="display:inline-flex">
+                        <div style="width:80%">
+                            <div class="obj-top">
+                                <div>
+                                    <div class="obj-name">Payments</div>
+                                    <div class="obj-meta">Full • Last: Today 09:10 • Rows: 4,560</div>
+                                </div>
+                                <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
                             </div>
-                            <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
+                            <div class="pbar good"><span style="width: 96%"></span></div>
+                            <div class="pills">
+                                <span class="mini good">Freshness OK</span>
+                                <span class="mini neutral">Rejects: 0</span>
+                            </div>
                         </div>
-                        <div class="pbar good"><span style="width: 96%"></span></div>
-                        <div class="pills">
-                            <span class="mini good">Freshness OK</span>
-                            <span class="mini neutral">Rejects: 0</span>
-                        </div>
+                        <div style="width:20%;">
+                            <div class="donut donut-green" style="--p: 96; float:right">
+                                <div class="donut-inner">
+                                    <div class="donut-num">96</div>
+                                    <div class="donut-cap">Score</div>
+                                </div>
+                            </div>
+                        </div>  
                     </div>
 
-                    <div class="obj-row">
-                        <div class="obj-top">
-                            <div>
-                                <div class="obj-name">Users</div>
-                                <div class="obj-meta">Incremental • Last: Yesterday 01:00 • Rows: 2,110</div>
+                    <div class="obj-row" style="display:inline-flex">
+                        <div style="width:80%">
+                            <div class="obj-top">
+                                <div>
+                                    <div class="obj-name">Users</div>
+                                    <div class="obj-meta">Incremental • Last: Yesterday 01:00 • Rows: 2,110</div>
+                                </div>
+                                <div class="obj-right"><span class="pill pill-warn">Warning</span></div>
                             </div>
-                            <div class="obj-right"><span class="pill pill-warn">Warning</span></div>
+                            <div class="pbar warn"><span style="width: 64%"></span></div>
+                            <div class="pills">
+                                <span class="mini warn">18 rejects</span>
+                                <span class="mini neutral">Re-run advised</span>
+                            </div>
                         </div>
-                        <div class="pbar warn"><span style="width: 64%"></span></div>
-                        <div class="pills">
-                            <span class="mini warn">18 rejects</span>
-                            <span class="mini neutral">Re-run advised</span>
+                        <div style="width:20%;">
+                            <div class="donut donut-orange" style="--p: 64; float:right;">
+                                <div class="donut-inner">
+                                    <div class="donut-num">64</div>
+                                    <div class="donut-cap">Score</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -670,13 +697,13 @@
                         <div class="fetchd-runchart-sub">Rows loaded (recent)</div>
                     </div>
                     <svg class="fetchd-bars" viewBox="0 0 220 40" preserveAspectRatio="none" aria-hidden="true">
-                        <rect x="5"   y="18" width="18" height="20"></rect>
-                        <rect x="35"  y="14" width="18" height="24"></rect>
-                        <rect x="65"  y="16" width="18" height="22"></rect>
-                        <rect x="95"  y="12" width="18" height="26"></rect>
+                        <rect x="5" y="18" width="18" height="20"></rect>
+                        <rect x="35" y="14" width="18" height="24"></rect>
+                        <rect x="65" y="16" width="18" height="22"></rect>
+                        <rect x="95" y="12" width="18" height="26"></rect>
                         <rect x="125" y="10" width="18" height="28"></rect>
-                        <rect x="155" y="8"  width="18" height="30"></rect>
-                        <rect x="185" y="6"  width="18" height="32"></rect>
+                        <rect x="155" y="8" width="18" height="30"></rect>
+                        <rect x="185" y="6" width="18" height="32"></rect>
                     </svg>
                 </div>
 
@@ -799,316 +826,504 @@
 </div>
 
 @section PageStyles {
-<style>
-/* =========================
-   Toggle: Summary vs Details
-========================== */
-.fetch-summary-only { display: none; }
-.fetch-details-only { display: none; }
+    <style>
+        /* =========================
+                           Toggle: Summary vs Details
+                        ========================== */
+        .fetch-summary-only {
+            display: none;
+        }
 
-body.fetch-view-summary .fetch-summary-only { display: block; }
-body.fetch-view-summary .fetch-details-only { display: none; }
-body:not(.fetch-view-summary) .fetch-summary-only { display: none; }
-body:not(.fetch-view-summary) .fetch-details-only { display: block; }
+        .fetch-details-only {
+            display: none;
+        }
 
-/* Toggle UI */
-.view-toggle{
-    display:flex;
-    gap:6px;
-    padding:4px;
-    border-radius:999px;
-    border:1px solid rgba(0,0,0,.12);
-    background: rgba(255,255,255,.6);
-}
-.vt-btn{
-    padding:6px 14px;
-    border-radius:999px;
-    font-size:12px;
-    font-weight:800;
-    border:0;
-    background:transparent;
-    cursor:pointer;
-    opacity:.65;
-}
-.vt-btn.is-active{
-    background: rgba(37,99,235,.12);
-    color:#2563eb;
-    opacity:1;
-}
+        body.fetch-view-summary .fetch-summary-only {
+            display: block;
+        }
 
-/* Pills (local helpers) */
-.pill-ok{
-    background: rgba(16, 185, 129, .12);
-    border: 1px solid rgba(16, 185, 129, .25);
-    color: rgba(5, 150, 105, 1);
-}
-.pill-warn{
-    background: rgba(245, 158, 11, .12);
-    border: 1px solid rgba(245, 158, 11, .25);
-    color: rgba(180, 83, 9, 1);
-}
+        body.fetch-view-summary .fetch-details-only {
+            display: none;
+        }
 
-/* =========================
-   DETAILS UI (Scoped)
-========================== */
-.fetch-details-only .panel-actions{
-    display:flex;
-    gap:10px;
-    align-items:center;
-}
+        body:not(.fetch-view-summary) .fetch-summary-only {
+            display: none;
+        }
 
-/* Diagnostics row */
-.fetchd-diag-grid{
-    display:grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap:12px;
-}
-@@media (max-width: 1100px){
-    .fetchd-diag-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-.fetchd-diag-card{
-    border:1px solid rgba(0,0,0,.08);
-    border-radius:14px;
-    padding:12px;
-    background: rgba(255,255,255,.8);
-}
-.fetchd-diag-top{ display:flex; gap:10px; align-items:center; }
-.fetchd-diag-ico{
-    width:34px; height:34px;
-    border-radius:10px;
-    display:flex; align-items:center; justify-content:center;
-    border:1px solid rgba(0,0,0,.08);
-    background: rgba(37,99,235,.08);
-}
-.fetchd-diag-ico svg{ width:18px; height:18px; }
-.fetchd-diag-label{ font-size:12px; opacity:.7; font-weight:700; }
-.fetchd-diag-value{ font-size:16px; font-weight:900; }
-.fetchd-diag-foot{ margin-top:8px; font-size:12px; opacity:.75; }
+        body:not(.fetch-view-summary) .fetch-details-only {
+            display: block;
+        }
 
-/* Card grid */
-.fetchd-card-grid{
-    display:grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap:12px;
-}
-@@media (max-width: 1100px){
-    .fetchd-card-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-.fetchd-card{
-    position:relative;
-    border:1px solid rgba(0,0,0,.08);
-    border-radius:14px;
-    padding:12px 12px 12px 44px;
-    background: rgba(255,255,255,.85);
-    min-height:74px;
-}
-.fetchd-card-ico{
-    position:absolute;
-    left:12px; top:12px;
-    width:26px; height:26px;
-    border-radius:9px;
-    display:flex; align-items:center; justify-content:center;
-    border:1px solid rgba(0,0,0,.08);
-    background: rgba(0,0,0,.04);
-}
-.fetchd-card-ico svg{ width:16px; height:16px; opacity:.85; }
-.fetchd-card-label{ font-size:12px; opacity:.7; font-weight:800; }
-.fetchd-card-value{ margin-top:2px; font-size:14px; font-weight:900; }
-.fetchd-card-sub{ margin-top:4px; font-size:12px; opacity:.75; }
-.fetchd-mini-tag{
-    position:absolute;
-    right:10px; top:10px;
-    font-size:11px;
-    padding:3px 8px;
-    border-radius:999px;
-    border:1px solid rgba(0,0,0,.08);
-    background: rgba(255,255,255,.8);
-    font-weight:800;
-}
-.fetchd-mini-tag.good{
-    background: rgba(16,185,129,.12);
-    border-color: rgba(16,185,129,.25);
-    color: rgba(5,150,105,1);
-}
-.fetchd-mini-spark{ margin-top:8px; }
-.fetchd-mini-spark svg{ width:100%; height:28px; }
-.fetchd-mini-spark path{
-    fill:none;
-    stroke: rgba(37,99,235,.9);
-    stroke-width:2.2;
-}
+        /* Toggle UI */
+        .view-toggle {
+            display: flex;
+            gap: 6px;
+            padding: 4px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,.12);
+            background: rgba(255,255,255,.6);
+        }
 
-/* Note row under cards */
-.fetchd-note{
-    margin-top:10px;
-    display:flex;
-    gap:8px;
-    align-items:center;
-    padding:10px 12px;
-    border-radius:12px;
-    border:1px solid rgba(0,0,0,.08);
-    background: rgba(37,99,235,.06);
-    font-size:12px;
-    opacity:.9;
-}
-.fetchd-note svg{ width:16px; height:16px; }
+        .vt-btn {
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            opacity: .65;
+        }
 
-/* Split (cards + mini flow) */
-.fetchd-split{
-    display:grid;
-    grid-template-columns: 2fr 1fr;
-    gap:12px;
-}
-@@media (max-width: 1100px){
-    .fetchd-split{ grid-template-columns: 1fr; }
-}
-.fetchd-mini-flow{
-    border:1px solid rgba(0,0,0,.08);
-    border-radius:14px;
-    padding:12px;
-    background: rgba(255,255,255,.85);
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-}
-.fetchd-flow-step{ display:flex; gap:10px; align-items:center; }
-.fetchd-flow-dot{
-    width:12px; height:12px;
-    border-radius:999px;
-    background: rgba(37,99,235,.9);
-    box-shadow: 0 0 0 6px rgba(37,99,235,.12);
-}
-.fetchd-flow-line{
-    height:24px;
-    margin-left:5px;
-    border-left:2px dashed rgba(0,0,0,.12);
-}
-.fetchd-flow-title{ font-weight:900; font-size:13px; }
-.fetchd-flow-sub{ font-size:12px; opacity:.75; }
+            .vt-btn.is-active {
+                background: rgba(37,99,235,.12);
+                color: #2563eb;
+                opacity: 1;
+            }
 
-/* Safeguards grid */
-.fetchd-sg-grid{
-    display:grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap:12px;
-}
-@@media (max-width: 1100px){
-    .fetchd-sg-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-.fetchd-sg{
-    border:1px solid rgba(0,0,0,.08);
-    border-radius:14px;
-    padding:12px;
-    background: rgba(255,255,255,.85);
-}
-.fetchd-sg-top{
-    display:flex; gap:10px; align-items:flex-start;
-}
-.fetchd-sg-top svg{ width:18px; height:18px; margin-top:2px; }
-.fetchd-sg-title{ font-weight:900; font-size:13px; }
-.fetchd-sg-sub{ font-size:12px; opacity:.75; margin-top:2px; }
+        /* Pills (local helpers) */
+        .pill-ok {
+            background: rgba(16, 185, 129, .12);
+            border: 1px solid rgba(16, 185, 129, .25);
+            color: rgba(5, 150, 105, 1);
+        }
 
-/* Mini bars */
-.fetchd-mini-bar{
-    height:8px;
-    border-radius:999px;
-    background: rgba(0,0,0,.06);
-    overflow:hidden;
-    margin-top:10px;
-}
-.fetchd-mini-bar > span{
-    display:block;
-    height:100%;
-    border-radius:999px;
-    background: rgba(37,99,235,.9);
-}
-.fetchd-mini-bar.good > span{ background: rgba(16,185,129,.9); }
-.fetchd-mini-bar.warn > span{ background: rgba(245,158,11,.95); }
+        .pill-warn {
+            background: rgba(245, 158, 11, .12);
+            border: 1px solid rgba(245, 158, 11, .25);
+            color: rgba(180, 83, 9, 1);
+        }
 
-/* Run chart header */
-.fetchd-runchart{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    padding:10px 12px;
-    border:1px solid rgba(0,0,0,.08);
-    border-radius:14px;
-    background: rgba(255,255,255,.85);
-    margin-bottom:10px;
-}
-.fetchd-runchart-title{ font-weight:900; font-size:13px; }
-.fetchd-runchart-sub{ font-size:12px; opacity:.75; }
-.fetchd-bars{ width:220px; height:40px; }
-.fetchd-bars rect{ fill: rgba(37,99,235,.85); opacity:.9; rx:4; }
+        /* =========================
+                           DETAILS UI (Scoped)
+                        ========================== */
+        .fetch-details-only .panel-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
 
-/* Runs table (force card-like grid even if site.css misses it) */
-.runs-table{
-    border:1px solid rgba(0,0,0,.08);
-    border-radius:14px;
-    overflow:hidden;
-    background: rgba(255,255,255,.85);
-}
-.runs-row{
-    display:grid;
-    grid-template-columns: 1.2fr 1.2fr 1fr 0.9fr 0.8fr 0.8fr;
-    gap:10px;
-    padding:10px 12px;
-    align-items:center;
-    border-top:1px solid rgba(0,0,0,.06);
-}
-.runs-row:first-child{ border-top:0; }
-.runs-head{
-    background: rgba(0,0,0,.03);
-    font-size:12px;
-    font-weight:900;
-    opacity:.8;
-}
-@@media (max-width: 1100px){
-    .runs-row{ grid-template-columns: 1fr 1fr; row-gap:6px; }
-    .runs-head{ display:none; }
-}
+        /* Diagnostics row */
+        .fetchd-diag-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
 
-/* Governance grid */
-.fetchd-gov-grid{
-    display:grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap:12px;
-}
-@@media (max-width: 1100px){
-    .fetchd-gov-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-.fetchd-gov{
-    border:1px solid rgba(0,0,0,.08);
-    border-radius:14px;
-    padding:12px;
-    background: rgba(255,255,255,.85);
-}
-.fetchd-gov-wide{ grid-column: span 2; }
-.fetchd-gov-k{ font-size:12px; opacity:.7; font-weight:800; }
-.fetchd-gov-v{ margin-top:4px; font-weight:900; font-size:13px; }
-</style>
+        @@media (max-width: 1100px) {
+            .fetchd-diag-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .fetchd-diag-card {
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            padding: 12px;
+            background: rgba(255,255,255,.8);
+        }
+
+        .fetchd-diag-top {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .fetchd-diag-ico {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(37,99,235,.08);
+        }
+
+            .fetchd-diag-ico svg {
+                width: 18px;
+                height: 18px;
+            }
+
+        .fetchd-diag-label {
+            font-size: 12px;
+            opacity: .7;
+            font-weight: 700;
+        }
+
+        .fetchd-diag-value {
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .fetchd-diag-foot {
+            margin-top: 8px;
+            font-size: 12px;
+            opacity: .75;
+        }
+
+        /* Card grid */
+        .fetchd-card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        @@media (max-width: 1100px) {
+            .fetchd-card-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .fetchd-card {
+            position: relative;
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            padding: 12px 12px 12px 44px;
+            background: rgba(255,255,255,.85);
+            min-height: 74px;
+        }
+
+        .fetchd-card-ico {
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            width: 26px;
+            height: 26px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(0,0,0,.04);
+        }
+
+            .fetchd-card-ico svg {
+                width: 16px;
+                height: 16px;
+                opacity: .85;
+            }
+
+        .fetchd-card-label {
+            font-size: 12px;
+            opacity: .7;
+            font-weight: 800;
+        }
+
+        .fetchd-card-value {
+            margin-top: 2px;
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .fetchd-card-sub {
+            margin-top: 4px;
+            font-size: 12px;
+            opacity: .75;
+        }
+
+        .fetchd-mini-tag {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.8);
+            font-weight: 800;
+        }
+
+            .fetchd-mini-tag.good {
+                background: rgba(16,185,129,.12);
+                border-color: rgba(16,185,129,.25);
+                color: rgba(5,150,105,1);
+            }
+
+        .fetchd-mini-spark {
+            margin-top: 8px;
+        }
+
+            .fetchd-mini-spark svg {
+                width: 100%;
+                height: 28px;
+            }
+
+            .fetchd-mini-spark path {
+                fill: none;
+                stroke: rgba(37,99,235,.9);
+                stroke-width: 2.2;
+            }
+
+        /* Note row under cards */
+        .fetchd-note {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(37,99,235,.06);
+            font-size: 12px;
+            opacity: .9;
+        }
+
+            .fetchd-note svg {
+                width: 16px;
+                height: 16px;
+            }
+
+        /* Split (cards + mini flow) */
+        .fetchd-split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 12px;
+        }
+
+        @@media (max-width: 1100px) {
+            .fetchd-split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fetchd-mini-flow {
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            padding: 12px;
+            background: rgba(255,255,255,.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .fetchd-flow-step {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .fetchd-flow-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(37,99,235,.9);
+            box-shadow: 0 0 0 6px rgba(37,99,235,.12);
+        }
+
+        .fetchd-flow-line {
+            height: 24px;
+            margin-left: 5px;
+            border-left: 2px dashed rgba(0,0,0,.12);
+        }
+
+        .fetchd-flow-title {
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .fetchd-flow-sub {
+            font-size: 12px;
+            opacity: .75;
+        }
+
+        /* Safeguards grid */
+        .fetchd-sg-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        @@media (max-width: 1100px) {
+            .fetchd-sg-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .fetchd-sg {
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            padding: 12px;
+            background: rgba(255,255,255,.85);
+        }
+
+        .fetchd-sg-top {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+            .fetchd-sg-top svg {
+                width: 18px;
+                height: 18px;
+                margin-top: 2px;
+            }
+
+        .fetchd-sg-title {
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .fetchd-sg-sub {
+            font-size: 12px;
+            opacity: .75;
+            margin-top: 2px;
+        }
+
+        /* Mini bars */
+        .fetchd-mini-bar {
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(0,0,0,.06);
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+            .fetchd-mini-bar > span {
+                display: block;
+                height: 100%;
+                border-radius: 999px;
+                background: rgba(37,99,235,.9);
+            }
+
+            .fetchd-mini-bar.good > span {
+                background: rgba(16,185,129,.9);
+            }
+
+            .fetchd-mini-bar.warn > span {
+                background: rgba(245,158,11,.95);
+            }
+
+        /* Run chart header */
+        .fetchd-runchart {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 12px;
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            background: rgba(255,255,255,.85);
+            margin-bottom: 10px;
+        }
+
+        .fetchd-runchart-title {
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .fetchd-runchart-sub {
+            font-size: 12px;
+            opacity: .75;
+        }
+
+        .fetchd-bars {
+            width: 220px;
+            height: 40px;
+        }
+
+            .fetchd-bars rect {
+                fill: rgba(37,99,235,.85);
+                opacity: .9;
+                rx: 4;
+            }
+
+        /* Runs table (force card-like grid even if site.css misses it) */
+        .runs-table {
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            overflow: hidden;
+            background: rgba(255,255,255,.85);
+        }
+
+        .runs-row {
+            display: grid;
+            grid-template-columns: 1.2fr 1.2fr 1fr 0.9fr 0.8fr 0.8fr;
+            gap: 10px;
+            padding: 10px 12px;
+            align-items: center;
+            border-top: 1px solid rgba(0,0,0,.06);
+        }
+
+            .runs-row:first-child {
+                border-top: 0;
+            }
+
+        .runs-head {
+            background: rgba(0,0,0,.03);
+            font-size: 12px;
+            font-weight: 900;
+            opacity: .8;
+        }
+
+        @@media (max-width: 1100px) {
+            .runs-row {
+                grid-template-columns: 1fr 1fr;
+                row-gap: 6px;
+            }
+
+            .runs-head {
+                display: none;
+            }
+        }
+
+        /* Governance grid */
+        .fetchd-gov-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        @@media (max-width: 1100px) {
+            .fetchd-gov-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .fetchd-gov {
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            padding: 12px;
+            background: rgba(255,255,255,.85);
+        }
+
+        .fetchd-gov-wide {
+            grid-column: span 2;
+        }
+
+        .fetchd-gov-k {
+            font-size: 12px;
+            opacity: .7;
+            font-weight: 800;
+        }
+
+        .fetchd-gov-v {
+            margin-top: 4px;
+            font-weight: 900;
+            font-size: 13px;
+        }
+    </style>
 }
 
 @section Scripts {
-<script>
-  if (window.lucide) lucide.createIcons();
+    <script>
+        if (window.lucide) lucide.createIcons();
 
-  (function () {
-    const KEY = "dmt_fetch_view";
-    const buttons = document.querySelectorAll(".view-toggle .vt-btn");
-    if (!buttons.length) return;
+        (function () {
+            const KEY = "dmt_fetch_view";
+            const buttons = document.querySelectorAll(".view-toggle .vt-btn");
+            if (!buttons.length) return;
 
-    function apply(view) {
-      document.body.classList.toggle("fetch-view-summary", view === "summary");
-      buttons.forEach(b => b.classList.toggle("is-active", b.dataset.view === view));
-      localStorage.setItem(KEY, view);
-    }
+            function apply(view) {
+                document.body.classList.toggle("fetch-view-summary", view === "summary");
+                buttons.forEach(b => b.classList.toggle("is-active", b.dataset.view === view));
+                localStorage.setItem(KEY, view);
+            }
 
-    const saved = localStorage.getItem(KEY);
-    apply(saved === "details" ? "details" : "summary");
+            const saved = localStorage.getItem(KEY);
+            apply(saved === "details" ? "details" : "summary");
 
-    buttons.forEach(btn => btn.addEventListener("click", () => apply(btn.dataset.view)));
-  })();
-</script>
+            buttons.forEach(btn => btn.addEventListener("click", () => apply(btn.dataset.view)));
+        })();
+    </script>
 }
