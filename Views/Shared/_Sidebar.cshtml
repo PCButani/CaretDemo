@@ -34,76 +34,58 @@
             </div>
         </div>
 
-        <div class="nav-label">USER</div>
+        <div class="nav-label">MIGRATION</div>
 
         <!-- GROUP: USER -->
-        <div class="nav-group">
-            <button class="nav-item group-header" type="button" data-group="user" aria-expanded="false">
-                <span class="nav-left">
-                    <i data-lucide="user" class="nav-ico"></i>
-                    <span>User</span>
-                </span>
+        <a class="nav-item @(isActive("Pipeline") ? "active" : "")" href="/Pipeline/Index">
+            <span class="nav-left">
+                <i data-lucide="git-branch" class="sub-ico"></i>
+                <span>Pipeline</span>
+            </span>
+        </a>
+        <a class="nav-item @(isActive("Projects") ? "active" : "")" href="/Projects/Index">
+            <span class="nav-left">
+                <i data-lucide="folder-kanban" class="sub-ico"></i>
+                <span>Projects</span>
+            </span>
+        </a>
+        <a class="nav-item @(isActive("UserManagement") ? "active" : "")" href="/UserManagement/Index">
+            <span class="nav-left">
+                <i data-lucide="users" class="sub-ico"></i>
+                <span>User Management</span>
+            </span>
+        </a>
+        <a class="nav-item @(isActive("Authentication") ? "active" : "")" href="/Authentication/Index">
+            <span class="nav-left">
+                <i data-lucide="shield-check" class="sub-ico"></i>
+                <span>Authentication</span>
+            </span>
+        </a>
 
-                <span class="nav-right">
-                    <i data-lucide="chevron-down" class="nav-chev" data-chevron></i>
-                </span>
-            </button>
-
-            <div class="group-items" data-group-items="user">
-                <a class="nav-subitem @(isActive("Pipeline") ? "active" : "")" href="/Pipeline/Index">
-                    <i data-lucide="git-branch" class="sub-ico"></i>
-                    <span>Pipeline</span>
-                </a>
-
-                <a class="nav-subitem @(isActive("Projects") ? "active" : "")" href="/Projects/Index">
-                    <i data-lucide="folder-kanban" class="sub-ico"></i>
-                    <span>Projects</span>
-                </a>
-
-                <a class="nav-subitem @(isActive("UserManagement") ? "active" : "")" href="/UserManagement/Index">
-                    <i data-lucide="users" class="sub-ico"></i>
-                    <span>User Management</span>
-                </a>
-
-                <a class="nav-subitem @(isActive("Authentication") ? "active" : "")" href="/Authentication/Index">
-                    <i data-lucide="shield-check" class="sub-ico"></i>
-                    <span>Authentication</span>
-                </a>
-            </div>
-        </div>
 
         <div class="nav-label">MASTER DATA</div>
 
         <!-- GROUP: MASTER DATA -->
-        <div class="nav-group">
-            <button class="nav-item group-header" type="button" data-group="master" aria-expanded="false">
-                <span class="nav-left">
-                    <i data-lucide="database" class="nav-ico"></i>
-                    <span>Master Data</span>
-                </span>
+        <a class="nav-item @(isActive("Vendors") ? "active" : "")" href="/Vendors/Index">
+            <span class="nav-left">
+                <i data-lucide="building-2" class="sub-ico"></i>
+                <span>Vendors</span>
+            </span>
+        </a>
 
-                <span class="nav-right">
-                    <i data-lucide="chevron-down" class="nav-chev" data-chevron></i>
-                </span>
-            </button>
+        <a class="nav-item @(isActive("Templates") ? "active" : "")" href="/Templates/Index">
+            <span class="nav-left">
+                <i data-lucide="file-text" class="sub-ico"></i>
+                <span>Templates</span>
+            </span>
+        </a>
 
-            <div class="group-items" data-group-items="master">
-                <a class="nav-subitem @(isActive("Vendors") ? "active" : "")" href="/Vendors/Index">
-                    <i data-lucide="building-2" class="sub-ico"></i>
-                    <span>Vendors</span>
-                </a>
-
-                <a class="nav-subitem @(isActive("Templates") ? "active" : "")" href="/Templates/Index">
-                    <i data-lucide="file-text" class="sub-ico"></i>
-                    <span>Templates</span>
-                </a>
-
-                <a class="nav-subitem @(isActive("KnowledgeHub") ? "active" : "")" href="/KnowledgeHub/Index">
-                    <i data-lucide="book-open" class="sub-ico"></i>
-                    <span>Knowledge Hub</span>
-                </a>
-            </div>
-        </div>
+        <a class="nav-item @(isActive("KnowledgeHub") ? "active" : "")" href="/KnowledgeHub/Index">
+            <span class="nav-left">
+                <i data-lucide="book-open" class="sub-ico"></i>
+                <span>Knowledge Hub</span>
+            </span>
+        </a>
 
         <div class="nav-label">SETTINGS</div>
 
