@@ -78,7 +78,7 @@
        asp-route-id="@Model.Id">Verify</a>
     <a class="tab-item" href="#" onclick="return false;">Process</a>
     <a class="tab-item" href="#" onclick="return false;">Config</a>
-    <a class="tab-item" href="#" onclick="return false;">Activity</a>
+    @* <a class="tab-item" href="#" onclick="return false;">Activity</a> *@
 
     <div class="tabs-spacer"></div>
 
@@ -103,86 +103,42 @@
                         <div class="panel-sub">Recent runs and outcomes</div>
                     </div>
                 </div>
-               @*  <table class="runs-table" style="width:100%">
-                    <thead class="runs-head" style="line-height:30px">
-                        <tr>
-                            <th>Rule</th>
-                            <th>Rows</th>
-                            <th>Rejects</th>
-                            <th>Comment</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><span class="badge bg-success">Missing Contact</span></td>
-                            <td>128,450</td>
-                            <td>0</td>
-                            <td>Today 09:10</td>
-                            <td><span class="badge bg-success">Success</span></td>
-                            <td></td>
-                        </tr>
-                        <tr >
-                            <td><span class="badge bg-warning">Duplicate Contact</span></td>
-                            <td>121,004</td>
-                            <td>18</td>
-                            <td>Yesterday 01:00</td>
-                            <td><span class="badge bg-warning">Warning</span></td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge bg-success">Incorrect Contact</span></td>
-                            <td>119,880</td>
-                            <td>0</td>
-                            <td>2 days ago 01:00</td>
-                            <td><span class="badge bg-success">Success</span></td>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
- *@
+               
                 <div class="runs-table">
                     <div class="runs-row runs-head">
                         <div>Rule</div>
                         <div>Rows</div>
-                        <div>Rejects</div>
-                        <div>Comment</div>
-                        <div>Status</div>
+                        <div>Failed</div>
+                        <div>AI Recommendation</div>
+                        <div>Impact</div>
                         
                         <div>Action</div>
                     </div>
 
                     <div class="runs-row">
-                        <div><span class="pill">Missing Contact</span></div>
-                        <div>128,450</div>
-                        <div>0</div>
+                        <div><span class="pill">Missing Last Name</span></div>
+                        <div>4,521</div>
+                        <div>80</div>
                         <div>Either Send a new file</div>
-                        <div><span class="pill pill-ok">Success</span></div>
-                        
-                       
+                        <div><span class="pill pill-ok">Low </span></div>
                         <div></div>
                     </div>
 
                     <div class="runs-row">
-                        <div><span class="pill">Duplicate Contact</span></div>
-                        <div>121,004</div>
-                        <div>18</div>
+                        <div><span class="pill">Missing Address</span></div>
+                        <div>4,521</div>
+                        <div>98</div>
                         <div>We can merge it though the AI</div>
-                        <div><span class="pill pill-warn">Warning</span></div>
-                        
-                        
+                        <div><span class="pill pill-warn">Medium</span></div>
                         <div></div>
                     </div>
 
                     <div class="runs-row">
-                        <div><span class="pill">Incorrect Contact</span></div>
-                        <div>119,880</div>
-                        <div>0</div>
+                        <div><span class="pill">Invalid Email</span></div>
+                        <div> 4,521</div>
+                        <div>193</div>
                         <div>We can get a list of records which are not correct</div>
-                        <div><span class="pill pill-ok">Success</span></div>
-                        
-                        
+                        <div><span class="pill pill-denger">High</span></div>
                         <div></div>
                     </div>
                 </div>
@@ -294,6 +250,11 @@
             color: rgba(180, 83, 9, 1);
         }
 
+        .pill-denger {
+            background: rgb(185 16 16 / 12%);
+            border: 1px solid rgb(185 16 16 / 25%);
+            color: rgb(246 36 46);
+        }
         .pill {
             font-size:11px;
         }

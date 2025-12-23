@@ -1,0 +1,213 @@
+﻿@model DataSync.Web.Models.ViewModels.ProjectDetailsVm
+@{
+    ViewData["Title"] = "Issue Details";
+    var activeTab = (ViewData["ActiveTab"] as string) ?? "IssueDetails";
+}
+
+<!-- =========================
+   PROJECT HERO (Same as Details)
+========================== -->
+<div class="project-hero">
+    <div class="hero-left">
+        <div class="hero-logo" aria-hidden="true">
+            @(string.IsNullOrWhiteSpace(Model.ClientName)
+                        ? "C"
+                        : Model.ClientName.Trim().Substring(0, 1).ToUpperInvariant())
+        </div>
+
+        <div class="hero-text">
+            <div class="hero-topline">
+                <a class="crumb-link" asp-controller="Projects" asp-action="Index">Projects</a>
+                <span class="crumb-sep">/</span>
+                <span class="crumb-current">@Model.Name</span>
+            </div>
+
+            <div class="hero-title-row">
+                <h1 class="hero-title">@Model.Name</h1>
+
+                <div class="hero-badges">
+                    <span class="pill pill-status">@Model.Status</span>
+                    <span class="pill pill-health">@Model.Health</span>
+                    <span class="pill pill-env">@Model.Environment</span>
+                </div>
+            </div>
+
+            <div class="hero-meta">
+                <span><strong>Client:</strong> @Model.ClientName</span>
+                <span class="subdot">•</span>
+                <span><strong>Source:</strong> @Model.SourcePlatform</span>
+                <span class="subdot">•</span>
+                <span><strong>Target:</strong> @Model.TargetPlatform</span>
+                <span class="subdot">•</span>
+                <span><strong>Owner:</strong> @Model.Owner</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-right">
+        <button class="btn btn-secondary" type="button">
+            <i data-lucide="download"></i>
+            Export
+        </button>
+
+        <button class="btn btn-secondary" type="button">
+            <i data-lucide="settings"></i>
+            Settings
+        </button>
+
+        <button class="btn btn-primary" type="button">
+            <i data-lucide="play"></i>
+            Run Now
+        </button>
+    </div>
+</div>
+
+<!-- =========================
+   TABS BAR + VIEW TOGGLE
+========================== -->
+<div class="details-tabs">
+    <a class="tab-item @(activeTab == "Overview" ? "is-active" : "")"
+       asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Id">Overview</a>
+
+    <a class="tab-item @(activeTab == "Fetch" ? "is-active" : "")"
+       asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
+
+    <a class="tab-item @(activeTab == "Verify" ? "is-active" : "")"
+       asp-controller="Projects"
+       asp-action="Verify"
+       asp-route-id="@Model.Id">Verify</a>
+    <a class="tab-item" href="#" onclick="return false;">Process</a>
+    <a class="tab-item" href="#" onclick="return false;">Config</a>
+    <a class="tab-item" href="#" onclick="return false;">Activity</a>
+
+    <div class="tabs-spacer"></div>
+
+
+</div>
+
+<div class="verify-page">
+    <div class="details-grid">
+        <section class="details-main">
+
+            <div>
+                
+                <h2 style="padding-left:10px;">Contacts</h2>
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <div class="panel-title">Blockers & Failed Rules</div>
+                            <div class="panel-sub">Critical issues requiring governance review</div>
+                        </div>
+                    </div>
+
+                    <div class="verify-blockers-grid">
+                        <div class="verify-blocker-card">
+                            <div class="verify-blocker-num">2</div>
+                            <div class="verify-blocker-label">Critical Blockers</div>
+                        </div>
+                        <div class="verify-blocker-detail">
+                            <div class="verify-blocker-section">
+                                <div class="verify-blocker-subtitle">Top Failing Categories</div>
+                                <div class="verify-blocker-chips">
+                                    <span class="pill pill-fail">Uniqueness</span>
+                                    <span class="pill pill-fail">Referential Integrity</span>
+                                    <span class="pill pill-warn">Schema Drift</span>
+                                </div>
+                            </div>
+
+                            <div class="verify-blocker-section">
+                                <div class="verify-blocker-subtitle">Exception Rows Impacted</div>
+                                <div class="verify-blocker-impact">18 rows</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <div class="panel-title">SQL Validation Breakdown</div>
+                            <div class="panel-sub">Validation rules executed by category</div>
+                        </div>
+                    </div>
+
+                    <div class="verify-validation-table">
+                        <div class="verify-val-row verify-val-head">
+                            <div>Category</div><div>Executed</div><div>Passed</div><div>Failed</div><div>Severity</div><div>Coverage</div>
+                        </div>
+                        <div class="verify-val-row">
+                            <div class="verify-val-category">Uniqueness</div>
+                            <div>18</div>
+                            <div class="verify-val-good">15</div>
+                            <div class="verify-val-bad">3</div>
+                            <div><span class="pill pill-severity-critical">Critical</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 83%"></span></div>
+                                <span class="verify-coverage-text">83%</span>
+                            </div>
+                        </div>
+                        <div class="verify-val-row">
+                            <div class="verify-val-category">Referential Integrity</div>
+                            <div>12</div>
+                            <div class="verify-val-good">10</div>
+                            <div class="verify-val-bad">2</div>
+                            <div><span class="pill pill-severity-high">High</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 83%"></span></div>
+                                <span class="verify-coverage-text">83%</span>
+                            </div>
+                        </div>
+                        <div class="verify-val-row">
+                            <div class="verify-val-category">Data Type</div>
+                            <div>24</div>
+                            <div class="verify-val-good">22</div>
+                            <div class="verify-val-bad">2</div>
+                            <div><span class="pill pill-severity-high">High</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 92%"></span></div>
+                                <span class="verify-coverage-text">92%</span>
+                            </div>
+                        </div>
+                        <div class="verify-val-row">
+                            <div class="verify-val-category">Nullability</div>
+                            <div>16</div>
+                            <div class="verify-val-good">16</div>
+                            <div class="verify-val-good">0</div>
+                            <div><span class="pill pill-severity-medium">Medium</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
+                                <span class="verify-coverage-text">100%</span>
+                            </div>
+                        </div>
+                        <div class="verify-val-row">
+                            <div class="verify-val-category">Schema Drift</div>
+                            <div>8</div>
+                            <div class="verify-val-good">8</div>
+                            <div class="verify-val-good">0</div>
+                            <div><span class="pill pill-severity-medium">Medium</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
+                                <span class="verify-coverage-text">100%</span>
+                            </div>
+                        </div>
+                        <div class="verify-val-row">
+                            <div class="verify-val-category">Business Rules</div>
+                            <div>14</div>
+                            <div class="verify-val-good">14</div>
+                            <div class="verify-val-good">0</div>
+                            <div><span class="pill pill-severity-low">Low</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
+                                <span class="verify-coverage-text">100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/verify.css" />
+}

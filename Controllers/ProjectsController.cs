@@ -78,15 +78,15 @@ namespace DataSync.Web.Controllers
         // VERIFY (Step 1)
         // =========================
         public IActionResult Process(int id)
-{
-    var vm = BuildProjectDetailsVm(id);
-    if (vm == null) return NotFound();
+        {
+            var vm = BuildProjectDetailsVm(id);
+            if (vm == null) return NotFound();
 
-    ViewData["ActiveTab"] = "process";
+            ViewData["ActiveTab"] = "process";
 
-    // IMPORTANT: render Verify.cshtml, not Details.cshtml
-    return View(vm); // will load Views/Projects/Verify.cshtml
-}
+            // IMPORTANT: render Verify.cshtml, not Details.cshtml
+            return View(vm); // will load Views/Projects/Verify.cshtml
+        }
         public IActionResult Verify(int id)
         {
             var vm = BuildProjectDetailsVm(id);
@@ -94,8 +94,17 @@ namespace DataSync.Web.Controllers
 
             ViewData["ActiveTab"] = "Verify";
 
-    // IMPORTANT: render Verify.cshtml, not Details.cshtml
-    return View(vm); // will load Views/Projects/Verify.cshtml
+            // IMPORTANT: render Verify.cshtml, not Details.cshtml
+            return View(vm); // will load Views/Projects/Verify.cshtml
+        }
+
+        public IActionResult IssueDetails(int id)
+        {
+            var vm = BuildProjectDetailsVm(id);
+            if (vm == null) return NotFound();
+            ViewData["ActiveTab"] = "Verify";
+            // IMPORTANT: render IssueDetails.cshtml, not Details.cshtml
+            return View(vm); // will load Views/Projects/IssueDetails.cshtml
         }
         public IActionResult ContactSummary(int id)
         {

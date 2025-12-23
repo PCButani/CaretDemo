@@ -216,7 +216,7 @@ body .verify-page .verify-object-table {
 
 body .verify-page .verify-obj-row {
     display: grid;
-    grid-template-columns: 1.5fr repeat(3, 0.8fr) 1fr 0.7fr 0.8fr 1fr;
+    grid-template-columns: 1fr 2fr repeat(3, 0.8fr) 0.2fr;
     gap: 12px;
     padding: 12px 14px;
     align-items: center;
