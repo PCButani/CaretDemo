@@ -1,0 +1,369 @@
+@model List<DataSync.Web.Models.ProjectListItemVm>
+
+@using System
+
+@functions {
+    // deterministic seed (stable across refresh)
+    private int StableSeed(string s)
+    {
+        unchecked
+        {
+            int h = 23;
+            foreach (var ch in (s ?? "")) h = (h * 31) + ch;
+            return Math.Abs(h);
+        }
+    }
+
+    // Simple SVG logo as data URI (stable per client)
+    private string LogoSvgDataUri(string clientName)
+    {
+        var seed = StableSeed(clientName);
+
+        var palette = new[] { "#2563EB", "#7C3AED", "#059669", "#DB2777", "#EA580C", "#0EA5E9" };
+        var a = palette[seed % palette.Length];
+        var b = palette[(seed + 2) % palette.Length];
+
+        var initial = (clientName ?? "").Trim();
+        initial = initial.Length > 0 ? initial.Substring(0, 1).ToUpperInvariant() : "?";
+
+        var svg =
+$@"<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'>
+<defs>
+  <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+    <stop offset='0' stop-color='{a}'/>
+    <stop offset='1' stop-color='{b}'/>
+  </linearGradient>
+</defs>
+<rect x='0' y='0' width='44' height='44' rx='22' fill='url(#g)'/>
+<text x='22' y='26' text-anchor='middle' font-family='Inter, Arial' font-size='16' font-weight='900' fill='white'>{initial}</text>
+</svg>";
+
+        return "data:image/svg+xml;utf8," + Uri.EscapeDataString(svg);
+    }
+}
+
+@{
+    // Counters
+    var total = Model?.Count ?? 0;
+    var needsAttention = Model?.Count(p => string.Equals(p.Risk, "Red", StringComparison.OrdinalIgnoreCase)) ?? 0;
+    var activeNow = Model?.Count(p => string.Equals(p.Status, "IN PROGRESS", StringComparison.OrdinalIgnoreCase)) ?? 0;
+    var inQueue = Model?.Count(p => string.Equals(p.Status, "QUEUED", StringComparison.OrdinalIgnoreCase)) ?? 0;
+
+    var statusOptions = new[] { "All", "IN PROGRESS", "QUEUED", "COMPLETED", "PAUSED", "FAILED" };
+
+    var platformOptions = Model?
+        .Select(p => p.Platform)
+        .Where(x => !string.IsNullOrWhiteSpace(x))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .OrderBy(x => x)
+        .ToList() ?? new List<string>();
+
+    var idx = 0; // for priority assignment
+}
+
+<div class="projects-page">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Project Overview</h1>
+            <p class="page-subtitle">Track migration progress, risks, and system health at a glance.</p>
+        </div>
+
+        <div class="page-actions">
+            <button class="btn btn-secondary" type="button">
+                <i data-lucide="download"></i>
+                Export
+            </button>
+
+            <button class="btn btn-primary" type="button">
+                <i data-lucide="plus"></i>
+                New Project
+            </button>
+        </div>
+    </div>
+
+    <!-- STATS STRIP -->
+    <div class="stats-strip">
+        <div class="stat-chip">
+            <div class="k">Total Projects</div>
+            <div class="v">@total</div>
+        </div>
+
+        <div class="stat-chip">
+            <div class="k">Active Now</div>
+            <div class="v">@activeNow</div>
+        </div>
+
+        <div class="stat-chip">
+            <div class="k">In Queue</div>
+            <div class="v">@inQueue</div>
+        </div>
+
+        <div class="stat-chip attn">
+            <div class="k">Needs Attention</div>
+            <div class="v">@needsAttention</div>
+        </div>
+    </div>
+
+    <!-- FILTERS (Improved UI) -->
+    <div class="filters-bar modern">
+
+        <div class="filters-left">
+            <i data-lucide="search"></i>
+            <input id="projectSearch" type="search" placeholder="Search by client, code, platform..." />
+        </div>
+
+        <div class="filters-right">
+
+            <select id="statusFilter" aria-label="Status Filter">
+                @foreach (var s in statusOptions)
+                {
+                    <option value="@s">@s</option>
+                }
+            </select>
+
+            <select id="platformFilter" aria-label="Platform Filter">
+                <option value="All">All Platforms</option>
+                @foreach (var pf in platformOptions)
+                {
+                    <option value="@pf">@pf</option>
+                }
+            </select>
+
+            <button id="resetFilters" class="btn-reset" type="button">
+                <i data-lucide="rotate-ccw"></i>
+                Reset
+            </button>
+
+        </div>
+    </div>
+
+    <!-- PROJECTS GRID -->
+    <div class="projects-grid" id="projectsGrid">
+        @foreach (var p in Model ?? Enumerable.Empty<DataSync.Web.Models.ProjectListItemVm>())
+        {
+            idx++;
+
+            // Normalize
+            var status = (p.Status ?? "").Trim();
+            var statusKey = status.ToLowerInvariant().Replace(" ", "").Replace("_", "");
+
+            var risk = (p.Risk ?? "").Trim();
+            var riskKey = risk.ToLowerInvariant();
+
+            // Risk color (used only for risk label/dot)
+            var riskColor =
+                riskKey == "red" ? "var(--danger)" :
+                riskKey == "amber" ? "var(--warning)" :
+                "var(--success)";
+
+            // Status badge class
+            var statusBadge =
+                statusKey.Contains("inprogress") ? "badge-running" :
+                statusKey.Contains("queued") ? "badge-queued" :
+                statusKey.Contains("completed") ? "badge-completed" :
+                statusKey.Contains("failed") ? "badge-failed" :
+                "badge-queued";
+
+            // Values
+            var clientName = p.ClientName ?? "—";
+            var projectCode = p.ProjectCode ?? "—";
+            var platform = p.Platform ?? "—";
+            var owner = p.Owner ?? "—";
+            var riskLabel = string.IsNullOrWhiteSpace(p.Risk) ? "—" : p.Risk;
+
+            // Progress
+            var pct = Math.Clamp(p.ProgressPercent, 0, 100);
+
+            // Progress color suggestion: Red (<30), Amber (30–69), Green (70+)
+            var progColor =
+                pct < 30 ? "var(--danger)" :
+                pct < 70 ? "var(--warning)" :
+                "var(--success)";
+
+            // Circular progress SVG values
+            var r = 34;
+            var c = Math.Round(2 * Math.PI * r, 2);
+            var offset = Math.Round(c - (pct / 100.0) * c, 2);
+
+            // Exp End Date: 15–30 days from today (stable per client)
+            var seed = StableSeed(p.ClientName ?? "");
+            var days = 15 + (seed % 16); // 15..30
+            var expEnd = DateTime.Today.AddDays(days);
+            var expEndDateText = expEnd.ToString("dd MMM, yyyy");
+
+            // Vendor: use platform for now
+            var vendorText = platform;
+
+            // Priority: 1st High, 2nd Low, 3rd Medium (as requested)
+            var priorityText =
+                idx == 1 ? "High" :
+                idx == 2 ? "Low" :
+                idx == 3 ? "Medium" :
+                (pct < 30 ? "High" : pct < 70 ? "Medium" : "Low");
+
+            var prKey = (priorityText ?? "").ToLowerInvariant();
+            var priorityClass =
+                prKey.Contains("high") ? "prio-high" :
+                prKey.Contains("low") ? "prio-low" :
+                "prio-med";
+
+            <div class="proj-card"
+                 data-href="/Projects/Details/1"
+                 data-client="@((p.ClientName ?? "").ToLowerInvariant())"
+                 data-code="@((p.ProjectCode ?? "").ToLowerInvariant())"
+                 data-platform="@((p.Platform ?? "").ToLowerInvariant())"
+                 data-status="@statusKey"
+                 style="cursor:pointer;">
+
+                @{
+                    var safeClientName = string.IsNullOrWhiteSpace(p.ClientName) ? "Client" : p.ClientName.Trim();
+                    var logoSrc = LogoSvgDataUri(safeClientName);
+                    var logoAlt = $"{safeClientName} logo";
+                }
+
+                <!-- Header -->
+                <div class="proj-head">
+                    <div class="proj-identity">
+                        <img class="client-logo-img" src="@logoSrc" alt="@logoAlt" />
+                        <div class="proj-title-wrap">
+                            <div class="proj-title-row">
+                                <div class="proj-name">@clientName</div>
+                                <div class="proj-head-actions">
+                                    <span class="proj-badge @statusBadge">@status</span>
+
+                                    <button class="kebab-btn" type="button" title="More">
+                                        <i data-lucide="more-horizontal"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="proj-sub">
+                                <span class="proj-code">@projectCode</span>
+                                <span class="dot-sep">•</span>
+                                <span class="proj-mig">@platform migration</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="proj-body">
+
+                    <!-- Left: Circular Progress -->
+                    <div class="proj-progress">
+                        <div class="ring">
+                            <svg class="ring-svg" viewBox="0 0 80 80" aria-label="Progress @pct%">
+                                <circle class="ring-bg" cx="40" cy="40" r="@r"></circle>
+                                <circle class="ring-fg" cx="40" cy="40" r="@r"
+                                        style="stroke:@progColor; stroke-dasharray:@c; stroke-dashoffset:@offset;"></circle>
+                            </svg>
+
+                            <div class="ring-text">
+                                <div class="ring-val">@pct</div>
+                                <div class="ring-max">/100</div>
+                            </div>
+                        </div>
+
+                        <div class="risk-row">
+                            <span class="risk-dot" style="background:@riskColor"></span>
+                            <span class="risk-text" style="color:@riskColor">@riskLabel risk</span>
+                        </div>
+                    </div>
+
+                    <!-- Right: meta -->
+                    <div class="proj-meta">
+
+                        <div class="meta-grid">
+                            <div class="meta-pill">
+                                <div class="meta-top">@expEndDateText</div>
+                                <div class="meta-label">Exp. End Date</div>
+                            </div>
+
+                            <div class="meta-pill">
+                                <div class="meta-top">@vendorText</div>
+                                <div class="meta-label">Vendor</div>
+                            </div>
+
+                            <div class="meta-pill">
+                                <div class="meta-top @priorityClass">@priorityText</div>
+                                <div class="meta-label">Priority</div>
+                            </div>
+                        </div>
+
+                        <div class="mini-stats">
+                            <div class="mini">
+                                <div class="mini-k">Owner</div>
+                                <div class="mini-v">@owner</div>
+                            </div>
+
+                            <div class="mini">
+                                <div class="mini-k">Last Sync</div>
+                                <div class="mini-v">@(p.LastRunUtc?.ToString("MMM dd, HH:mm") ?? "Never")</div>
+                            </div>
+
+                            <div class="mini">
+                                <div class="mini-k">Environment</div>
+                                <div class="mini-v">Production</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    // Render icons
+    if (window.lucide) lucide.createIcons();
+
+    // Filtering
+    const searchEl = document.getElementById("projectSearch");
+    const statusEl = document.getElementById("statusFilter");
+    const platformEl = document.getElementById("platformFilter");
+    const resetEl = document.getElementById("resetFilters");
+    const cards = Array.from(document.querySelectorAll(".proj-card"));
+
+    function applyFilters() {
+        const q = (searchEl?.value || "").trim().toLowerCase();
+        const status = (statusEl?.value || "All").toLowerCase().replaceAll(" ", "").replaceAll("_", "");
+        const platform = (platformEl?.value || "All").toLowerCase();
+
+        cards.forEach(card => {
+            const client = card.getAttribute("data-client") || "";
+            const code = card.getAttribute("data-code") || "";
+            const pf = card.getAttribute("data-platform") || "";
+            const st = card.getAttribute("data-status") || "";
+
+            const matchesSearch = !q || client.includes(q) || code.includes(q) || pf.includes(q);
+            const matchesStatus = (status === "all") || st.includes(status);
+            const matchesPlatform = (platform === "all") || pf.includes(platform);
+
+            card.style.display = (matchesSearch && matchesStatus && matchesPlatform) ? "" : "none";
+        });
+    }
+
+    searchEl?.addEventListener("input", applyFilters);
+    statusEl?.addEventListener("change", applyFilters);
+    platformEl?.addEventListener("change", applyFilters);
+
+    resetEl?.addEventListener("click", () => {
+        if (searchEl) searchEl.value = "";
+        if (statusEl) statusEl.value = "All";
+        if (platformEl) platformEl.value = "All";
+        applyFilters();
+    });
+
+    // ✅ Navigation: click card -> go to project details
+    document.querySelectorAll(".proj-card").forEach(card => {
+        card.addEventListener("click", (e) => {
+            // Don't navigate if user clicked the kebab button
+            if (e.target.closest(".kebab-btn")) return;
+
+            const url = card.getAttribute("data-href");
+            if (url) window.location.href = url;
+        });
+    });
+</script>

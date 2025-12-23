@@ -1,0 +1,1114 @@
+@model DataSync.Web.Models.ViewModels.ProjectDetailsVm
+@{
+    ViewData["Title"] = "Project Fetch";
+    var activeTab = (ViewData["ActiveTab"] as string) ?? "Fetch";
+}
+
+<!-- =========================
+   PROJECT HERO (Same as Details)
+========================== -->
+<div class="project-hero">
+    <div class="hero-left">
+        <div class="hero-logo" aria-hidden="true">
+            @(string.IsNullOrWhiteSpace(Model.ClientName)
+                ? "C"
+                : Model.ClientName.Trim().Substring(0, 1).ToUpperInvariant())
+        </div>
+
+        <div class="hero-text">
+            <div class="hero-topline">
+                <a class="crumb-link" asp-controller="Projects" asp-action="Index">Projects</a>
+                <span class="crumb-sep">/</span>
+                <span class="crumb-current">@Model.Name</span>
+            </div>
+
+            <div class="hero-title-row">
+                <h1 class="hero-title">@Model.Name</h1>
+
+                <div class="hero-badges">
+                    <span class="pill pill-status">@Model.Status</span>
+                    <span class="pill pill-health">@Model.Health</span>
+                    <span class="pill pill-env">@Model.Environment</span>
+                </div>
+            </div>
+
+            <div class="hero-meta">
+                <span><strong>Client:</strong> @Model.ClientName</span>
+                <span class="subdot">•</span>
+                <span><strong>Source:</strong> @Model.SourcePlatform</span>
+                <span class="subdot">•</span>
+                <span><strong>Target:</strong> @Model.TargetPlatform</span>
+                <span class="subdot">•</span>
+                <span><strong>Owner:</strong> @Model.Owner</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-right">
+        <button class="btn btn-secondary" type="button">
+            <i data-lucide="download"></i>
+            Export
+        </button>
+
+        <button class="btn btn-secondary" type="button">
+            <i data-lucide="settings"></i>
+            Settings
+        </button>
+
+        <button class="btn btn-primary" type="button">
+            <i data-lucide="play"></i>
+            Run Now
+        </button>
+    </div>
+</div>
+
+<!-- =========================
+   TABS BAR + VIEW TOGGLE
+========================== -->
+<div class="details-tabs">
+    <a class="tab-item @(activeTab=="Overview" ? "is-active" : "")"
+       asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Id">Overview</a>
+
+    <a class="tab-item @(activeTab=="Fetch" ? "is-active" : "")"
+       asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
+
+    <a class="tab-item @(activeTab=="Verify" ? "is-active" : "")"
+        asp-controller="Projects"
+        asp-action="Verify"
+        asp-route-id="@Model.Id">Verify</a>
+    <a class="tab-item" href="#" onclick="return false;">Process</a>
+    <a class="tab-item" href="#" onclick="return false;">Config</a>
+    <a class="tab-item" href="#" onclick="return false;">Activity</a>
+
+    <div class="tabs-spacer"></div>
+
+    <div class="view-toggle" role="tablist" aria-label="Fetch view toggle">
+        <button class="vt-btn is-active" type="button" data-view="summary">Summary</button>
+        <button class="vt-btn" type="button" data-view="details">Details</button>
+    </div>
+
+    <button class="tab-icon-btn" type="button" title="Notes">
+        <i data-lucide="file-text"></i>
+    </button>
+    <button class="tab-icon-btn" type="button" title="More">
+        <i data-lucide="more-horizontal"></i>
+    </button>
+</div>
+
+<!-- =========================
+   SUMMARY VIEW (high-level + object health)
+========================== -->
+<div class="fetch-summary-only">
+
+    <!-- KPI Row (summary-only) -->
+    <div class="kpi-row">
+        <div class="kpi-card kpi-good">
+            <div class="kpi-label">Connection</div>
+            <div class="kpi-value">Connected</div>
+            <div class="kpi-subrow">
+                <span class="mini neutral">Source: @Model.SourcePlatform</span>
+                <span class="mini good">Auth: Valid</span>
+                <span class="mini neutral">Latency: 180ms</span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Last Fetch</div>
+            <div class="kpi-value">@Model.LastRunText</div>
+            <div class="kpi-subrow">
+                <span class="mini neutral">Duration: 2m 14s</span>
+                <span class="mini good">Rows: 128,450</span>
+                <span class="mini neutral">Rejects: 0</span>
+            </div>
+        </div>
+
+        <div class="kpi-card kpi-warn">
+            <div class="kpi-label">Objects Selected</div>
+            <div class="kpi-value">12</div>
+            <div class="kpi-subrow">
+                <span class="mini neutral">3 excluded</span>
+                <span class="mini bad">2 need config</span>
+                <span class="mini neutral">Full + Incremental</span>
+            </div>
+        </div>
+
+        <div class="kpi-card kpi-good">
+            <div class="kpi-label">Load Validation</div>
+            <div class="kpi-value">PASS</div>
+            <div class="kpi-subrow">
+                <span class="mini good">Row count match</span>
+                <span class="mini neutral">Schema drift: none</span>
+                <span class="mini neutral">Freshness: OK</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Summary (summary-only) -->
+    <div class="panel">
+        <div class="panel-head">
+            <div>
+                <div class="panel-title">Fetch Health Summary</div>
+                <div class="panel-sub">Readiness score + run trend</div>
+            </div>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-tile stat-wide" style="display:flex; gap:12px; align-items:center;">
+                <div class="donut" style="--p: 72">
+                    <div class="donut-inner">
+                        <div class="donut-num">72</div>
+                        <div class="donut-cap">Score</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="stat-label">Ingestion Readiness</div>
+                    <div class="stat-value">Below threshold</div>
+                    <div class="stat-foot">Target 80% for automated migration eligibility</div>
+                    <div class="pills">
+                        <span class="mini warn">2 objects need config</span>
+                        <span class="mini neutral">Rejects: 0</span>
+                        <span class="mini good">Connection stable</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="spark-wrap">
+                <div class="spark-head">
+                    <div>
+                        <div class="spark-title">Run Trend</div>
+                        <div class="spark-sub">Rows loaded (last 7 runs)</div>
+                    </div>
+                    <div class="spark-metric">+8%</div>
+                </div>
+
+                <svg class="sparkline" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true">
+                    <path class="bg" d="M0,45 L50,44 L100,40 L150,42 L200,30 L250,28 L300,22"></path>
+                    <path d="M0,45 L50,44 L100,40 L150,42 L200,30 L250,28 L300,22"></path>
+                </svg>
+
+                <div class="stat-foot">Latest: 128,450 rows • Avg: 121k</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary: Object Health + Right rail -->
+    <div class="details-grid">
+        <section class="details-main">
+
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Object Health</div>
+                        <div class="panel-sub">Top objects readiness (summary view)</div>
+                    </div>
+                    <button class="btn btn-secondary" type="button" disabled>View full list</button>
+                </div>
+
+                <div class="obj-list">
+                    <!-- 6 objects (summary-only) -->
+                    
+                    <div class="obj-row">
+                        <div class="obj-top">
+                            <div>
+                                <div class="obj-name">Contacts</div>
+                                <div class="obj-meta">Incremental • Last: Today 09:10 • Rows: 45,210</div>
+                            </div>
+                            <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
+                        </div>
+                        <div class="pbar good"><span style="width: 92%"></span></div>
+                        <div class="pills">
+                            <span class="mini good">Load: OK</span>
+                            <span class="mini neutral">Rejects: 0</span>
+                        </div>
+                    </div>
+
+                    <div class="obj-row">
+                        <div class="obj-top">
+                            <div>
+                                <div class="obj-name">Invoices</div>
+                                <div class="obj-meta">Full • Last: Today 09:10 • Rows: 61,880</div>
+                            </div>
+                            <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
+                        </div>
+                        <div class="pbar good"><span style="width: 100%"></span></div>
+                        <div class="pills">
+                            <span class="mini good">Complete</span>
+                            <span class="mini neutral">Rejects: 0</span>
+                        </div>
+                    </div>
+
+                    <div class="obj-row">
+                        <div class="obj-top">
+                            <div>
+                                <div class="obj-name">Matters</div>
+                                <div class="obj-meta">Incremental • Last: — • Rows: —</div>
+                            </div>
+                            <div class="obj-right"><span class="pill pill-warn">Needs config</span></div>
+                        </div>
+                        <div class="pbar warn"><span style="width: 38%"></span></div>
+                        <div class="pills">
+                            <span class="mini warn">Missing watermark</span>
+                            <span class="mini neutral">Mapping pending</span>
+                        </div>
+                    </div>
+
+                    <div class="obj-row">
+                        <div class="obj-top">
+                            <div>
+                                <div class="obj-name">Time Entries</div>
+                                <div class="obj-meta">Incremental • Last: Today 09:10 • Rows: 12,340</div>
+                            </div>
+                            <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
+                        </div>
+                        <div class="pbar good"><span style="width: 88%"></span></div>
+                        <div class="pills">
+                            <span class="mini good">Load: OK</span>
+                            <span class="mini neutral">Rejects: 1</span>
+                        </div>
+                    </div>
+
+                    <div class="obj-row">
+                        <div class="obj-top">
+                            <div>
+                                <div class="obj-name">Payments</div>
+                                <div class="obj-meta">Full • Last: Today 09:10 • Rows: 4,560</div>
+                            </div>
+                            <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
+                        </div>
+                        <div class="pbar good"><span style="width: 96%"></span></div>
+                        <div class="pills">
+                            <span class="mini good">Freshness OK</span>
+                            <span class="mini neutral">Rejects: 0</span>
+                        </div>
+                    </div>
+
+                    <div class="obj-row">
+                        <div class="obj-top">
+                            <div>
+                                <div class="obj-name">Users</div>
+                                <div class="obj-meta">Incremental • Last: Yesterday 01:00 • Rows: 2,110</div>
+                            </div>
+                            <div class="obj-right"><span class="pill pill-warn">Warning</span></div>
+                        </div>
+                        <div class="pbar warn"><span style="width: 64%"></span></div>
+                        <div class="pills">
+                            <span class="mini warn">18 rejects</span>
+                            <span class="mini neutral">Re-run advised</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <aside class="details-side">
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Operational</div>
+                        <div class="panel-sub">Next run + health</div>
+                    </div>
+                </div>
+
+                <div class="kv">
+                    <div class="kv-row"><div class="kv-k">Next Run</div><div class="kv-v">@Model.NextRunText</div></div>
+                    <div class="kv-row"><div class="kv-k">Frequency</div><div class="kv-v">Daily</div></div>
+                    <div class="kv-row"><div class="kv-k">Timezone</div><div class="kv-v">UTC</div></div>
+                    <div class="kv-row"><div class="kv-k">Latency</div><div class="kv-v">180 ms</div></div>
+                    <div class="kv-row"><div class="kv-k">Auth Expiry</div><div class="kv-v">In 14 days</div></div>
+                </div>
+
+                <div style="margin-top:12px;">
+                    <button class="btn btn-primary w-100" type="button" disabled>Run Fetch Now</button>
+                </div>
+                <div style="margin-top:10px;">
+                    <button class="btn btn-secondary w-100" type="button" disabled>View Logs</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- =========================
+   DETAILS VIEW (Improved UI: cards + visuals)
+   NOTE: No KPIs, no object list, no donut/trend
+========================== -->
+<div class="fetch-details-only">
+    <div class="details-grid">
+        <section class="details-main">
+
+            <!-- A) Quick Diagnostics (visual, non-technical) -->
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Diagnostics</div>
+                        <div class="panel-sub">Quick signals for stability and eligibility</div>
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn btn-secondary" type="button" disabled>Open Logs</button>
+                    </div>
+                </div>
+
+                <div class="fetchd-diag-grid">
+                    <div class="fetchd-diag-card">
+                        <div class="fetchd-diag-top">
+                            <div class="fetchd-diag-ico"><i data-lucide="activity"></i></div>
+                            <div>
+                                <div class="fetchd-diag-label">Run Stability</div>
+                                <div class="fetchd-diag-value">Good</div>
+                            </div>
+                        </div>
+                        <div class="fetchd-mini-bar good"><span style="width:84%"></span></div>
+                        <div class="fetchd-diag-foot">Last 7 runs mostly successful</div>
+                    </div>
+
+                    <div class="fetchd-diag-card">
+                        <div class="fetchd-diag-top">
+                            <div class="fetchd-diag-ico"><i data-lucide="gauge"></i></div>
+                            <div>
+                                <div class="fetchd-diag-label">Speed</div>
+                                <div class="fetchd-diag-value">Fast</div>
+                            </div>
+                        </div>
+                        <div class="fetchd-mini-bar good"><span style="width:76%"></span></div>
+                        <div class="fetchd-diag-foot">Typical duration ~2–3 min</div>
+                    </div>
+
+                    <div class="fetchd-diag-card">
+                        <div class="fetchd-diag-top">
+                            <div class="fetchd-diag-ico"><i data-lucide="shield-check"></i></div>
+                            <div>
+                                <div class="fetchd-diag-label">Validation</div>
+                                <div class="fetchd-diag-value">Passing</div>
+                            </div>
+                        </div>
+                        <div class="fetchd-mini-bar good"><span style="width:92%"></span></div>
+                        <div class="fetchd-diag-foot">Row match + drift checks OK</div>
+                    </div>
+
+                    <div class="fetchd-diag-card">
+                        <div class="fetchd-diag-top">
+                            <div class="fetchd-diag-ico"><i data-lucide="triangle-alert"></i></div>
+                            <div>
+                                <div class="fetchd-diag-label">Attention</div>
+                                <div class="fetchd-diag-value">2 items</div>
+                            </div>
+                        </div>
+                        <div class="fetchd-mini-bar warn"><span style="width:48%"></span></div>
+                        <div class="fetchd-diag-foot">Some configuration still required</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1) Connector & Authentication (cards instead of plain list) -->
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Connector & Authentication</div>
+                        <div class="panel-sub">Connectivity and access setup</div>
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn btn-secondary" type="button" disabled>Test Connection</button>
+                        <button class="btn btn-secondary" type="button" disabled>Rotate Token</button>
+                    </div>
+                </div>
+
+                <div class="fetchd-card-grid">
+                    <div class="fetchd-card">
+                        <div class="fetchd-card-ico"><i data-lucide="plug"></i></div>
+                        <div class="fetchd-card-label">Source Type</div>
+                        <div class="fetchd-card-value">API (placeholder)</div>
+                    </div>
+
+                    <div class="fetchd-card">
+                        <div class="fetchd-card-ico"><i data-lucide="link-2"></i></div>
+                        <div class="fetchd-card-label">Endpoint</div>
+                        <div class="fetchd-card-value">https://***.example.com</div>
+                        <div class="fetchd-card-sub">Masked for security</div>
+                    </div>
+
+                    <div class="fetchd-card">
+                        <div class="fetchd-card-ico"><i data-lucide="key-round"></i></div>
+                        <div class="fetchd-card-label">Auth Method</div>
+                        <div class="fetchd-card-value">OAuth / Token</div>
+                    </div>
+
+                    <div class="fetchd-card">
+                        <div class="fetchd-card-ico"><i data-lucide="clock"></i></div>
+                        <div class="fetchd-card-label">Token Expiry</div>
+                        <div class="fetchd-card-value">In 14 days</div>
+                        <div class="fetchd-mini-tag good">Healthy</div>
+                    </div>
+
+                    <div class="fetchd-card">
+                        <div class="fetchd-card-ico"><i data-lucide="wifi"></i></div>
+                        <div class="fetchd-card-label">Latency</div>
+                        <div class="fetchd-card-value">180 ms</div>
+                        <div class="fetchd-mini-spark">
+                            <svg viewBox="0 0 120 28" preserveAspectRatio="none" aria-hidden="true">
+                                <path d="M0,20 L20,18 L40,19 L60,14 L80,16 L100,12 L120,13"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="fetchd-card">
+                        <div class="fetchd-card-ico"><i data-lucide="lock"></i></div>
+                        <div class="fetchd-card-label">Credential Store</div>
+                        <div class="fetchd-card-value">Azure Key Vault</div>
+                    </div>
+                </div>
+
+                <div class="fetchd-note">
+                    <i data-lucide="info"></i>
+                    Permissions Scope: <strong>Contacts, Invoices, Matters</strong> (placeholder)
+                </div>
+            </div>
+
+            <!-- 2) Ingestion Settings (cards) -->
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Ingestion Settings</div>
+                        <div class="panel-sub">How the source is read and batched</div>
+                    </div>
+                </div>
+
+                <div class="fetchd-card-grid">
+                    <div class="fetchd-card">
+                        <div class="fetchd-card-ico"><i data-lucide="layers"></i></div>
+                        <div class="fetchd-card-label">Load Mode</div>
+                        <div class="fetchd-card-value">Incremental</div>
+                        <div class="fetchd-card-sub">Default (read-only)</div>
+                    </div>
+
+                    <div class="fetchd-card">
+                        <div class="fetchd-card-ico"><i data-lucide="flag"></i></div>
+                        <div class="fetchd-card-label">Watermark</div>
+                        <div class="fetchd-card-value">UpdatedAt</div>
+                        <div class="fetchd-card-sub">Timezone: UTC</div>
+                    </div>
+
+                    <div class="fetchd-card">
+                        <div class="fetchd-card-ico"><i data-lucide="package"></i></div>
+                        <div class="fetchd-card-label">Batch Size</div>
+                        <div class="fetchd-card-value">10,000</div>
+                        <div class="fetchd-card-sub">rows / request</div>
+                    </div>
+
+                    <div class="fetchd-card">
+                        <div class="fetchd-card-ico"><i data-lucide="git-branch"></i></div>
+                        <div class="fetchd-card-label">Concurrency</div>
+                        <div class="fetchd-card-value">4</div>
+                        <div class="fetchd-card-sub">parallel objects</div>
+                    </div>
+
+                    <div class="fetchd-card">
+                        <div class="fetchd-card-ico"><i data-lucide="refresh-ccw"></i></div>
+                        <div class="fetchd-card-label">Retry Policy</div>
+                        <div class="fetchd-card-value">3 retries</div>
+                        <div class="fetchd-card-sub">exp backoff</div>
+                    </div>
+
+                    <div class="fetchd-card">
+                        <div class="fetchd-card-ico"><i data-lucide="zap"></i></div>
+                        <div class="fetchd-card-label">Throttle</div>
+                        <div class="fetchd-card-value">60 req/min</div>
+                        <div class="fetchd-card-sub">API limit (placeholder)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3) Landing & Staging (cards + mini diagram) -->
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Landing & Staging</div>
+                        <div class="panel-sub">Where data lands before processing</div>
+                    </div>
+                </div>
+
+                <div class="fetchd-split">
+                    <div class="fetchd-card-grid">
+                        <div class="fetchd-card">
+                            <div class="fetchd-card-ico"><i data-lucide="database"></i></div>
+                            <div class="fetchd-card-label">Staging Schema</div>
+                            <div class="fetchd-card-value">stg_zolasuite</div>
+                        </div>
+
+                        <div class="fetchd-card">
+                            <div class="fetchd-card-ico"><i data-lucide="folder"></i></div>
+                            <div class="fetchd-card-label">Landing Zone</div>
+                            <div class="fetchd-card-value">/landing/zolasuite/</div>
+                            <div class="fetchd-card-sub">Blob path (placeholder)</div>
+                        </div>
+
+                        <div class="fetchd-card">
+                            <div class="fetchd-card-ico"><i data-lucide="file"></i></div>
+                            <div class="fetchd-card-label">File Format</div>
+                            <div class="fetchd-card-value">Parquet</div>
+                            <div class="fetchd-card-sub">Snappy compression</div>
+                        </div>
+
+                        <div class="fetchd-card">
+                            <div class="fetchd-card-ico"><i data-lucide="split"></i></div>
+                            <div class="fetchd-card-label">Partitioning</div>
+                            <div class="fetchd-card-value">Date + Object</div>
+                        </div>
+
+                        <div class="fetchd-card">
+                            <div class="fetchd-card-ico"><i data-lucide="trash-2"></i></div>
+                            <div class="fetchd-card-label">Retention</div>
+                            <div class="fetchd-card-value">30 days</div>
+                        </div>
+
+                        <div class="fetchd-card">
+                            <div class="fetchd-card-ico"><i data-lucide="shield"></i></div>
+                            <div class="fetchd-card-label">Encryption</div>
+                            <div class="fetchd-card-value">Enabled</div>
+                            <div class="fetchd-mini-tag good">At-rest</div>
+                        </div>
+                    </div>
+
+                    <div class="fetchd-mini-flow" aria-hidden="true">
+                        <div class="fetchd-flow-step">
+                            <div class="fetchd-flow-dot"></div>
+                            <div class="fetchd-flow-text">
+                                <div class="fetchd-flow-title">Source</div>
+                                <div class="fetchd-flow-sub">@Model.SourcePlatform</div>
+                            </div>
+                        </div>
+                        <div class="fetchd-flow-line"></div>
+                        <div class="fetchd-flow-step">
+                            <div class="fetchd-flow-dot"></div>
+                            <div class="fetchd-flow-text">
+                                <div class="fetchd-flow-title">Landing</div>
+                                <div class="fetchd-flow-sub">Blob storage</div>
+                            </div>
+                        </div>
+                        <div class="fetchd-flow-line"></div>
+                        <div class="fetchd-flow-step">
+                            <div class="fetchd-flow-dot"></div>
+                            <div class="fetchd-flow-text">
+                                <div class="fetchd-flow-title">Staging</div>
+                                <div class="fetchd-flow-sub">SQL schema</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4) Validation & Safeguards (visual tiles) -->
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Safeguards</div>
+                        <div class="panel-sub">What prevents bad loads</div>
+                    </div>
+                    <button class="btn btn-secondary" type="button" disabled>View Report</button>
+                </div>
+
+                <div class="fetchd-sg-grid">
+                    <div class="fetchd-sg">
+                        <div class="fetchd-sg-top">
+                            <i data-lucide="check-check"></i>
+                            <div>
+                                <div class="fetchd-sg-title">Row Count Match</div>
+                                <div class="fetchd-sg-sub">Strict reconciliation</div>
+                            </div>
+                        </div>
+                        <div class="fetchd-mini-bar good"><span style="width:100%"></span></div>
+                    </div>
+
+                    <div class="fetchd-sg">
+                        <div class="fetchd-sg-top">
+                            <i data-lucide="copy"></i>
+                            <div>
+                                <div class="fetchd-sg-title">Duplicates</div>
+                                <div class="fetchd-sg-sub">By primary key</div>
+                            </div>
+                        </div>
+                        <div class="fetchd-mini-bar good"><span style="width:92%"></span></div>
+                    </div>
+
+                    <div class="fetchd-sg">
+                        <div class="fetchd-sg-top">
+                            <i data-lucide="archive"></i>
+                            <div>
+                                <div class="fetchd-sg-title">Rejects</div>
+                                <div class="fetchd-sg-sub">Quarantine handling</div>
+                            </div>
+                        </div>
+                        <div class="fetchd-mini-bar good"><span style="width:88%"></span></div>
+                    </div>
+
+                    <div class="fetchd-sg">
+                        <div class="fetchd-sg-top">
+                            <i data-lucide="alarm-clock"></i>
+                            <div>
+                                <div class="fetchd-sg-title">Freshness</div>
+                                <div class="fetchd-sg-sub">SLA window</div>
+                            </div>
+                        </div>
+                        <div class="fetchd-mini-bar warn"><span style="width:78%"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5) Run History (table + bar chart header) -->
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Run History</div>
+                        <div class="panel-sub">Recent runs and outcomes</div>
+                    </div>
+                    <button class="btn btn-secondary" type="button" disabled>Open Full History</button>
+                </div>
+
+                <div class="fetchd-runchart">
+                    <div class="fetchd-runchart-left">
+                        <div class="fetchd-runchart-title">Volume trend</div>
+                        <div class="fetchd-runchart-sub">Rows loaded (recent)</div>
+                    </div>
+                    <svg class="fetchd-bars" viewBox="0 0 220 40" preserveAspectRatio="none" aria-hidden="true">
+                        <rect x="5"   y="18" width="18" height="20"></rect>
+                        <rect x="35"  y="14" width="18" height="24"></rect>
+                        <rect x="65"  y="16" width="18" height="22"></rect>
+                        <rect x="95"  y="12" width="18" height="26"></rect>
+                        <rect x="125" y="10" width="18" height="28"></rect>
+                        <rect x="155" y="8"  width="18" height="30"></rect>
+                        <rect x="185" y="6"  width="18" height="32"></rect>
+                    </svg>
+                </div>
+
+                <div class="runs-table">
+                    <div class="runs-row runs-head">
+                        <div>Run</div><div>Start</div><div>Status</div><div>Rows</div><div>Rejects</div><div>Duration</div>
+                    </div>
+
+                    <div class="runs-row">
+                        <div><span class="pill">RUN-10921</span></div>
+                        <div>Today 09:10</div>
+                        <div><span class="pill pill-ok">Success</span></div>
+                        <div>128,450</div>
+                        <div>0</div>
+                        <div>2m 14s</div>
+                    </div>
+
+                    <div class="runs-row">
+                        <div><span class="pill">RUN-10920</span></div>
+                        <div>Yesterday 01:00</div>
+                        <div><span class="pill pill-warn">Warning</span></div>
+                        <div>121,004</div>
+                        <div>18</div>
+                        <div>3m 02s</div>
+                    </div>
+
+                    <div class="runs-row">
+                        <div><span class="pill">RUN-10919</span></div>
+                        <div>2 days ago 01:00</div>
+                        <div><span class="pill pill-ok">Success</span></div>
+                        <div>119,880</div>
+                        <div>0</div>
+                        <div>2m 41s</div>
+                    </div>
+                </div>
+
+                <div class="panel-footnote">
+                    Observability: Logs → Log Analytics (placeholder) • Correlation ID enabled (placeholder)
+                </div>
+            </div>
+
+            <!-- 6) Change Control (card row, not plain list) -->
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Governance</div>
+                        <div class="panel-sub">Recent configuration change info</div>
+                    </div>
+                </div>
+
+                <div class="fetchd-gov-grid">
+                    <div class="fetchd-gov">
+                        <div class="fetchd-gov-k">Last Changed By</div>
+                        <div class="fetchd-gov-v">Sarah Chen (placeholder)</div>
+                    </div>
+                    <div class="fetchd-gov">
+                        <div class="fetchd-gov-k">Last Changed At</div>
+                        <div class="fetchd-gov-v">Yesterday 18:12 (placeholder)</div>
+                    </div>
+                    <div class="fetchd-gov fetchd-gov-wide">
+                        <div class="fetchd-gov-k">Change Note</div>
+                        <div class="fetchd-gov-v">Added watermark field for Matters (placeholder)</div>
+                    </div>
+                    <div class="fetchd-gov">
+                        <div class="fetchd-gov-k">Approval</div>
+                        <div class="fetchd-gov-v"><span class="pill pill-warn">Pending review</span></div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <aside class="details-side">
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Schedule</div>
+                        <div class="panel-sub">Read-only</div>
+                    </div>
+                </div>
+
+                <div class="kv">
+                    <div class="kv-row"><div class="kv-k">Next Run</div><div class="kv-v">@Model.NextRunText</div></div>
+                    <div class="kv-row"><div class="kv-k">Frequency</div><div class="kv-v">Daily</div></div>
+                    <div class="kv-row"><div class="kv-k">Timezone</div><div class="kv-v">UTC</div></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Actions</div>
+                        <div class="panel-sub">Shortcuts</div>
+                    </div>
+                </div>
+
+                <div class="side-actions">
+                    <button class="btn btn-secondary w-100" type="button" disabled>Test Connection</button>
+                    <button class="btn btn-primary w-100" type="button" disabled>Run Fetch Now</button>
+                    <button class="btn btn-secondary w-100" type="button" disabled>View Logs</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Run Safeguards</div>
+                        <div class="panel-sub">Prevent bad loads</div>
+                    </div>
+                </div>
+
+                <div class="kv">
+                    <div class="kv-row"><div class="kv-k">Fail on drift</div><div class="kv-v">No (warn)</div></div>
+                    <div class="kv-row"><div class="kv-k">Fail on rejects</div><div class="kv-v">No (quarantine)</div></div>
+                    <div class="kv-row"><div class="kv-k">Fail on mismatch</div><div class="kv-v">Yes (strict)</div></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+@section PageStyles {
+<style>
+/* =========================
+   Toggle: Summary vs Details
+========================== */
+.fetch-summary-only { display: none; }
+.fetch-details-only { display: none; }
+
+body.fetch-view-summary .fetch-summary-only { display: block; }
+body.fetch-view-summary .fetch-details-only { display: none; }
+body:not(.fetch-view-summary) .fetch-summary-only { display: none; }
+body:not(.fetch-view-summary) .fetch-details-only { display: block; }
+
+/* Toggle UI */
+.view-toggle{
+    display:flex;
+    gap:6px;
+    padding:4px;
+    border-radius:999px;
+    border:1px solid rgba(0,0,0,.12);
+    background: rgba(255,255,255,.6);
+}
+.vt-btn{
+    padding:6px 14px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+    border:0;
+    background:transparent;
+    cursor:pointer;
+    opacity:.65;
+}
+.vt-btn.is-active{
+    background: rgba(37,99,235,.12);
+    color:#2563eb;
+    opacity:1;
+}
+
+/* Pills (local helpers) */
+.pill-ok{
+    background: rgba(16, 185, 129, .12);
+    border: 1px solid rgba(16, 185, 129, .25);
+    color: rgba(5, 150, 105, 1);
+}
+.pill-warn{
+    background: rgba(245, 158, 11, .12);
+    border: 1px solid rgba(245, 158, 11, .25);
+    color: rgba(180, 83, 9, 1);
+}
+
+/* =========================
+   DETAILS UI (Scoped)
+========================== */
+.fetch-details-only .panel-actions{
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+
+/* Diagnostics row */
+.fetchd-diag-grid{
+    display:grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap:12px;
+}
+@@media (max-width: 1100px){
+    .fetchd-diag-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.fetchd-diag-card{
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:14px;
+    padding:12px;
+    background: rgba(255,255,255,.8);
+}
+.fetchd-diag-top{ display:flex; gap:10px; align-items:center; }
+.fetchd-diag-ico{
+    width:34px; height:34px;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid rgba(0,0,0,.08);
+    background: rgba(37,99,235,.08);
+}
+.fetchd-diag-ico svg{ width:18px; height:18px; }
+.fetchd-diag-label{ font-size:12px; opacity:.7; font-weight:700; }
+.fetchd-diag-value{ font-size:16px; font-weight:900; }
+.fetchd-diag-foot{ margin-top:8px; font-size:12px; opacity:.75; }
+
+/* Card grid */
+.fetchd-card-grid{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap:12px;
+}
+@@media (max-width: 1100px){
+    .fetchd-card-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.fetchd-card{
+    position:relative;
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:14px;
+    padding:12px 12px 12px 44px;
+    background: rgba(255,255,255,.85);
+    min-height:74px;
+}
+.fetchd-card-ico{
+    position:absolute;
+    left:12px; top:12px;
+    width:26px; height:26px;
+    border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid rgba(0,0,0,.08);
+    background: rgba(0,0,0,.04);
+}
+.fetchd-card-ico svg{ width:16px; height:16px; opacity:.85; }
+.fetchd-card-label{ font-size:12px; opacity:.7; font-weight:800; }
+.fetchd-card-value{ margin-top:2px; font-size:14px; font-weight:900; }
+.fetchd-card-sub{ margin-top:4px; font-size:12px; opacity:.75; }
+.fetchd-mini-tag{
+    position:absolute;
+    right:10px; top:10px;
+    font-size:11px;
+    padding:3px 8px;
+    border-radius:999px;
+    border:1px solid rgba(0,0,0,.08);
+    background: rgba(255,255,255,.8);
+    font-weight:800;
+}
+.fetchd-mini-tag.good{
+    background: rgba(16,185,129,.12);
+    border-color: rgba(16,185,129,.25);
+    color: rgba(5,150,105,1);
+}
+.fetchd-mini-spark{ margin-top:8px; }
+.fetchd-mini-spark svg{ width:100%; height:28px; }
+.fetchd-mini-spark path{
+    fill:none;
+    stroke: rgba(37,99,235,.9);
+    stroke-width:2.2;
+}
+
+/* Note row under cards */
+.fetchd-note{
+    margin-top:10px;
+    display:flex;
+    gap:8px;
+    align-items:center;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(0,0,0,.08);
+    background: rgba(37,99,235,.06);
+    font-size:12px;
+    opacity:.9;
+}
+.fetchd-note svg{ width:16px; height:16px; }
+
+/* Split (cards + mini flow) */
+.fetchd-split{
+    display:grid;
+    grid-template-columns: 2fr 1fr;
+    gap:12px;
+}
+@@media (max-width: 1100px){
+    .fetchd-split{ grid-template-columns: 1fr; }
+}
+.fetchd-mini-flow{
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:14px;
+    padding:12px;
+    background: rgba(255,255,255,.85);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+.fetchd-flow-step{ display:flex; gap:10px; align-items:center; }
+.fetchd-flow-dot{
+    width:12px; height:12px;
+    border-radius:999px;
+    background: rgba(37,99,235,.9);
+    box-shadow: 0 0 0 6px rgba(37,99,235,.12);
+}
+.fetchd-flow-line{
+    height:24px;
+    margin-left:5px;
+    border-left:2px dashed rgba(0,0,0,.12);
+}
+.fetchd-flow-title{ font-weight:900; font-size:13px; }
+.fetchd-flow-sub{ font-size:12px; opacity:.75; }
+
+/* Safeguards grid */
+.fetchd-sg-grid{
+    display:grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap:12px;
+}
+@@media (max-width: 1100px){
+    .fetchd-sg-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.fetchd-sg{
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:14px;
+    padding:12px;
+    background: rgba(255,255,255,.85);
+}
+.fetchd-sg-top{
+    display:flex; gap:10px; align-items:flex-start;
+}
+.fetchd-sg-top svg{ width:18px; height:18px; margin-top:2px; }
+.fetchd-sg-title{ font-weight:900; font-size:13px; }
+.fetchd-sg-sub{ font-size:12px; opacity:.75; margin-top:2px; }
+
+/* Mini bars */
+.fetchd-mini-bar{
+    height:8px;
+    border-radius:999px;
+    background: rgba(0,0,0,.06);
+    overflow:hidden;
+    margin-top:10px;
+}
+.fetchd-mini-bar > span{
+    display:block;
+    height:100%;
+    border-radius:999px;
+    background: rgba(37,99,235,.9);
+}
+.fetchd-mini-bar.good > span{ background: rgba(16,185,129,.9); }
+.fetchd-mini-bar.warn > span{ background: rgba(245,158,11,.95); }
+
+/* Run chart header */
+.fetchd-runchart{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:10px 12px;
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:14px;
+    background: rgba(255,255,255,.85);
+    margin-bottom:10px;
+}
+.fetchd-runchart-title{ font-weight:900; font-size:13px; }
+.fetchd-runchart-sub{ font-size:12px; opacity:.75; }
+.fetchd-bars{ width:220px; height:40px; }
+.fetchd-bars rect{ fill: rgba(37,99,235,.85); opacity:.9; rx:4; }
+
+/* Runs table (force card-like grid even if site.css misses it) */
+.runs-table{
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:14px;
+    overflow:hidden;
+    background: rgba(255,255,255,.85);
+}
+.runs-row{
+    display:grid;
+    grid-template-columns: 1.2fr 1.2fr 1fr 0.9fr 0.8fr 0.8fr;
+    gap:10px;
+    padding:10px 12px;
+    align-items:center;
+    border-top:1px solid rgba(0,0,0,.06);
+}
+.runs-row:first-child{ border-top:0; }
+.runs-head{
+    background: rgba(0,0,0,.03);
+    font-size:12px;
+    font-weight:900;
+    opacity:.8;
+}
+@@media (max-width: 1100px){
+    .runs-row{ grid-template-columns: 1fr 1fr; row-gap:6px; }
+    .runs-head{ display:none; }
+}
+
+/* Governance grid */
+.fetchd-gov-grid{
+    display:grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap:12px;
+}
+@@media (max-width: 1100px){
+    .fetchd-gov-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.fetchd-gov{
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:14px;
+    padding:12px;
+    background: rgba(255,255,255,.85);
+}
+.fetchd-gov-wide{ grid-column: span 2; }
+.fetchd-gov-k{ font-size:12px; opacity:.7; font-weight:800; }
+.fetchd-gov-v{ margin-top:4px; font-weight:900; font-size:13px; }
+</style>
+}
+
+@section Scripts {
+<script>
+  if (window.lucide) lucide.createIcons();
+
+  (function () {
+    const KEY = "dmt_fetch_view";
+    const buttons = document.querySelectorAll(".view-toggle .vt-btn");
+    if (!buttons.length) return;
+
+    function apply(view) {
+      document.body.classList.toggle("fetch-view-summary", view === "summary");
+      buttons.forEach(b => b.classList.toggle("is-active", b.dataset.view === view));
+      localStorage.setItem(KEY, view);
+    }
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved === "details" ? "details" : "summary");
+
+    buttons.forEach(btn => btn.addEventListener("click", () => apply(btn.dataset.view)));
+  })();
+</script>
+}

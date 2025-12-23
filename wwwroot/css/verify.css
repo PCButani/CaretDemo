@@ -1,0 +1,654 @@
+/* =========================================================
+   Verify Page CSS (Scoped)
+   IMPORTANT: This file must NOT override global app styles.
+   Everything is scoped under .verify-page.
+========================================================= */
+
+.verify-page {
+  --v-border: rgba(15, 23, 42, 0.10);
+  --v-border-soft: rgba(15, 23, 42, 0.08);
+  --v-bg-soft: rgba(15, 23, 42, 0.03);
+  --v-text: rgba(15, 23, 42, 0.92);
+  --v-muted: rgba(15, 23, 42, 0.68);
+  --v-muted2: rgba(15, 23, 42, 0.55);
+
+  --v-good: rgba(34, 197, 94, 1);
+  --v-warn: rgba(245, 158, 11, 1);
+  --v-bad: rgba(239, 68, 68, 1);
+  --v-accent: rgba(37, 99, 235, 1);
+
+  color: var(--v-text);
+}
+
+/* =========================================================
+   Verify Page Header (title row under tabs)
+========================================================= */
+
+.verify-page .verify-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 10px 0 14px;
+}
+
+.verify-page .verify-title {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -0.6px;
+}
+
+.verify-page .verify-subtitle {
+  margin-top: 6px;
+  opacity: 0.78;
+  font-weight: 650;
+}
+
+.verify-page .verify-runmeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.verify-page .verify-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.verify-page .mini.neutral {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--v-border);
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--v-muted);
+}
+
+/* =========================================================
+   Grid layout (uses your existing .details-grid)
+   If your Verify page uses .details-grid already, this stays aligned.
+========================================================= */
+
+/* Main metrics grid */
+.verify-page .verify-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+/* Each metric card (do NOT use .card or .panel to avoid override) */
+.verify-page .vcard {
+  border-radius: 14px;
+  border: 1px solid var(--v-border-soft);
+  background: var(--v-bg-soft);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 210px;
+}
+
+.verify-page .vcard-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.verify-page .vcard-label {
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--v-muted);
+}
+
+.verify-page .vcard-foot {
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--v-muted2);
+  font-weight: 700;
+}
+
+/* KPI split inside card */
+.verify-page .vcard-split {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.verify-page .mini-kpi {
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+}
+
+.verify-page .mini-num {
+  font-weight: 950;
+  letter-spacing: -0.3px;
+  font-size: 18px;
+}
+
+.verify-page .mini-lbl {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--v-muted);
+  font-weight: 750;
+}
+
+.verify-page .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+/* =========================================================
+   Donut (Confidence score)
+========================================================= */
+
+.verify-page .donut {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  margin: 0 auto;
+  background: conic-gradient(var(--v-accent) calc(var(--p) * 1%), rgba(15, 23, 42, 0.10) 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.verify-page .donut::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.verify-page .donut-inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.verify-page .donut-num {
+  font-size: 28px;
+  font-weight: 950;
+  letter-spacing: -0.6px;
+}
+
+.verify-page .donut-cap {
+  font-size: 12px;
+  color: var(--v-muted);
+  font-weight: 800;
+}
+
+/* =========================================================
+   Evidence tiles
+========================================================= */
+
+.verify-page .evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.verify-page .ev-tile {
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(255, 255, 255, 0.75);
+  padding: 10px;
+}
+
+.verify-page .ev-num {
+  font-weight: 950;
+  letter-spacing: -0.3px;
+}
+
+.verify-page .ev-lbl {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--v-muted);
+  font-weight: 750;
+}
+
+/* =========================================================
+   Sparkline trend (SVG)
+========================================================= */
+
+.verify-page .spark-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.verify-page .spark-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.verify-page .spark-title {
+  font-weight: 850;
+}
+
+.verify-page .spark-metric {
+  font-weight: 950;
+  color: var(--v-muted);
+}
+
+.verify-page .sparkline {
+  width: 100%;
+  height: 64px;
+}
+
+.verify-page .sparkline path {
+  fill: none;
+  stroke: var(--v-accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.verify-page .sparkline path.bg {
+  stroke: rgba(15, 23, 42, 0.12);
+  stroke-width: 3;
+}
+
+.verify-page .spark-foot {
+  font-size: 12px;
+  color: var(--v-muted2);
+}
+
+/* =========================================================
+   Risk concentration bars
+========================================================= */
+
+.verify-page .risk-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.verify-page .rb-row {
+  display: grid;
+  grid-template-columns: 220px 1fr 140px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: var(--v-bg-soft);
+}
+
+.verify-page .rb-name {
+  font-weight: 900;
+}
+
+.verify-page .rb-meta {
+  font-size: 12px;
+  color: var(--v-muted);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.verify-page .rb-bar {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.10);
+  overflow: hidden;
+}
+
+.verify-page .rb-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--v-accent);
+}
+
+.verify-page .rb-right {
+  text-align: right;
+}
+
+.verify-page .rb-aff {
+  font-size: 12px;
+  color: var(--v-muted);
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+/* =========================================================
+   Object verification progress table
+========================================================= */
+
+.verify-page .objtable {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.verify-page .objthead,
+.verify-page .objtrow {
+  display: grid;
+  grid-template-columns: 240px 1fr 1fr 1fr 120px 120px;
+  gap: 12px;
+  align-items: center;
+}
+
+.verify-page .objthead {
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--v-muted);
+  padding: 0 2px;
+}
+
+.verify-page .objtrow {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: var(--v-bg-soft);
+}
+
+.verify-page .objtitle {
+  font-weight: 900;
+}
+
+.verify-page .objsub {
+  font-size: 12px;
+  color: var(--v-muted);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* Progress bars */
+.verify-page .pbar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+}
+
+.verify-page .pbar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--v-accent);
+}
+
+.verify-page .pbar.good span { background: var(--v-good); }
+.verify-page .pbar.warn span { background: var(--v-warn); }
+.verify-page .pbar.bad span  { background: var(--v-bad); }
+
+/* Mini button (Verify only) */
+.verify-page .mini-btn {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.verify-page .mini-btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   Exceptions table
+========================================================= */
+
+.verify-page .ex-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.verify-page .chip {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.75);
+  font-weight: 850;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.verify-page .chip.is-active {
+  background: rgba(37, 99, 235, 0.10);
+  color: rgba(37, 99, 235, 1);
+  border-color: rgba(37, 99, 235, 0.20);
+  opacity: 1;
+}
+
+.verify-page .extable { display: flex; flex-direction: column; gap: 8px; }
+
+.verify-page .exthead,
+.verify-page .extrow {
+  display: grid;
+  grid-template-columns: 110px 120px 1fr 90px 170px 120px 120px;
+  gap: 12px;
+  align-items: center;
+}
+
+.verify-page .exthead {
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--v-muted);
+  padding: 0 2px;
+}
+
+.verify-page .extrow {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: var(--v-bg-soft);
+}
+
+/* Severity pills (Verify-only) */
+.verify-page .sev {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.verify-page .sev-bad {
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.10);
+  color: rgba(185, 28, 28, 1);
+}
+.verify-page .sev-warn {
+  border-color: rgba(245, 158, 11, 0.30);
+  background: rgba(245, 158, 11, 0.12);
+  color: rgba(180, 83, 9, 1);
+}
+.verify-page .sev-ok {
+  border-color: rgba(34, 197, 94, 0.25);
+  background: rgba(34, 197, 94, 0.12);
+  color: rgba(21, 128, 61, 1);
+}
+
+/* =========================================================
+   Copilot UI
+========================================================= */
+
+.verify-page .copilot {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.verify-page .suggested {
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: var(--v-bg-soft);
+  padding: 12px;
+}
+
+.verify-page .suggested-title {
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.verify-page .sug {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  padding: 10px;
+  font-weight: 850;
+  font-size: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.verify-page .copilot-chat {
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: var(--v-bg-soft);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 320px;
+}
+
+.verify-page .msg {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.verify-page .msg-user { align-items: flex-end; }
+.verify-page .msg-ai   { align-items: flex-start; }
+
+.verify-page .bubble {
+  max-width: 92%;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  background: rgba(255, 255, 255, 0.85);
+  font-weight: 650;
+}
+
+.verify-page .msg-user .bubble {
+  background: rgba(37, 99, 235, 0.10);
+  border-color: rgba(37, 99, 235, 0.20);
+}
+
+.verify-page .msg-meta {
+  font-size: 12px;
+  color: var(--v-muted2);
+  font-weight: 700;
+}
+
+.verify-page .chat-input {
+  margin-top: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.verify-page .chatbox {
+  flex: 1;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.90);
+  border-radius: 12px;
+  padding: 12px 12px;
+  outline: none;
+  font-weight: 650;
+}
+
+.verify-page .chat-foot {
+  font-size: 12px;
+  color: var(--v-muted2);
+}
+
+/* =========================================================
+   Right rail helpers (AI callout, bullets)
+========================================================= */
+
+.verify-page .ai-bullets {
+  margin: 0;
+  padding-left: 18px;
+  font-weight: 750;
+  color: rgba(15, 23, 42, 0.90);
+}
+
+.verify-page .ai-bullets li { margin: 8px 0; }
+
+.verify-page .ai-callout {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(255, 255, 255, 0.70);
+}
+
+.verify-page .ai-callout-title { font-weight: 900; }
+.verify-page .ai-callout-sub {
+  font-size: 12px;
+  color: var(--v-muted);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.verify-page .rec-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* =========================================================
+   Responsive
+========================================================= */
+
+@media (max-width: 1100px) {
+  .verify-page .verify-metrics { grid-template-columns: repeat(2, 1fr); }
+  .verify-page .copilot { grid-template-columns: 1fr; }
+  .verify-page .objthead { display: none; }
+  .verify-page .objtrow { grid-template-columns: 1fr; gap: 10px; }
+  .verify-page .exthead { display: none; }
+  .verify-page .extrow  { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  .verify-page .rb-row {
+    grid-template-columns: 1fr;
+  }
+  .verify-page .rb-right { text-align: left; }
+}
+
+@media (max-width: 640px) {
+  .verify-page .verify-head { flex-direction: column; }
+  .verify-page .verify-metrics { grid-template-columns: 1fr; }
+}
+
+/* Small utility */
+.verify-page .w-100 { width: 100%; }

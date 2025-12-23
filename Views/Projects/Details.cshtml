@@ -1,0 +1,459 @@
+@model DataSync.Web.Models.ViewModels.ProjectDetailsVm
+@{
+    ViewData["Title"] = "Project Details";
+}
+
+<!-- =========================
+   PROJECT HERO (Professional)
+========================== -->
+<div class="project-hero">
+    <div class="hero-left">
+        <div class="hero-logo" aria-hidden="true">
+            @(string.IsNullOrWhiteSpace(Model.ClientName)
+                ? "C"
+                : Model.ClientName.Trim().Substring(0, 1).ToUpperInvariant())
+        </div>
+
+        <div class="hero-text">
+            <div class="hero-topline">
+                <a class="crumb-link" asp-controller="Projects" asp-action="Index">Projects</a>
+                <span class="crumb-sep">/</span>
+                <span class="crumb-current">@Model.Name</span>
+            </div>
+
+            <div class="hero-title-row">
+                <h1 class="hero-title">@Model.Name</h1>
+
+                <div class="hero-badges">
+                    <span class="pill pill-status">@Model.Status</span>
+                    <span class="pill pill-health">@Model.Health</span>
+                    <span class="pill pill-env">@Model.Environment</span>
+                </div>
+            </div>
+
+            <div class="hero-meta">
+                <span><strong>Client:</strong> @Model.ClientName</span>
+                <span class="subdot">•</span>
+                <span><strong>Source:</strong> @Model.SourcePlatform</span>
+                <span class="subdot">•</span>
+                <span><strong>Target:</strong> @Model.TargetPlatform</span>
+                <span class="subdot">•</span>
+                <span><strong>Owner:</strong> @Model.Owner</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-right">
+        <button class="btn btn-secondary" type="button">
+            <i data-lucide="download"></i>
+            Export
+        </button>
+
+        <button class="btn btn-secondary" type="button">
+            <i data-lucide="settings"></i>
+            Settings
+        </button>
+
+        <button class="btn btn-primary" type="button">
+            <i data-lucide="play"></i>
+            Run Now
+        </button>
+    </div>
+</div>
+
+<!-- =========================
+   TABS BAR
+========================== -->
+@{
+    var activeTab = (ViewData["ActiveTab"] as string) ?? "Overview";
+}
+
+<div class="details-tabs">
+    <a class="tab-item @(activeTab=="Overview" ? "is-active" : "")"
+       asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Id">Overview</a>
+
+    <a class="tab-item @(activeTab=="Fetch" ? "is-active" : "")"
+       asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
+
+    <a class="tab-item @(activeTab=="Verify" ? "is-active" : "")"
+       asp-controller="Projects"
+       asp-action="Verify"
+       asp-route-id="@Model.Id">
+        Verify
+    </a>
+
+    <a class="tab-item @(activeTab=="Process" ? "is-active" : "")"
+       href="#" onclick="return false;">Process</a>
+
+    <a class="tab-item @(activeTab=="Config" ? "is-active" : "")"
+       href="#" onclick="return false;">Config</a>
+
+    <a class="tab-item @(activeTab=="Activity" ? "is-active" : "")"
+       href="#" onclick="return false;">Activity</a>
+
+    <div class="tabs-spacer"></div>
+
+    <button class="tab-icon-btn" type="button" title="Notes">
+        <i data-lucide="file-text"></i>
+    </button>
+    <button class="tab-icon-btn" type="button" title="More">
+        <i data-lucide="more-horizontal"></i>
+    </button>
+</div>
+
+<!-- =========================
+   MAIN CONTENT SWITCHER (Step 1)
+========================== -->
+@if (activeTab == "Verify")
+{
+    @await Html.PartialAsync("Verify", Model)
+}
+else
+{
+    <!-- =========================
+       MAIN GRID (Overview)
+    ========================== -->
+    <div class="details-grid">
+        <!-- LEFT -->
+        <section class="details-main">
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-label">Pipelines</div>
+                    <div class="kpi-value">@Model.PipelinesSucceeded/@Model.PipelinesTotal</div>
+                    <div class="kpi-foot">
+                        <span class="mini good">@Model.PipelinesSucceeded Succeeded</span>
+                        <span class="mini bad">@Model.PipelinesFailed Failed</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Exceptions (Open)</div>
+                    <div class="kpi-value">@Model.ExceptionsOpen</div>
+                    <div class="kpi-foot">
+                        <span class="mini neutral">Needs review</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Rules</div>
+                    <div class="kpi-value">@Model.RulesTotal</div>
+                    <div class="kpi-foot">
+                        <span class="mini bad">@Model.RulesFailed Failed</span>
+                        <span class="mini good">Rest OK</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">Run Schedule</div>
+                    <div class="kpi-value">@Model.LastRunText</div>
+                    <div class="kpi-foot">
+                        <span class="mini neutral">Next: @Model.NextRunText</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Latest Activity</div>
+                        <div class="panel-sub">Recent runs, validations, and exports</div>
+                    </div>
+                    <button class="link-btn" type="button">View all</button>
+                </div>
+
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-dot good"></div>
+                        <div class="activity-body">
+                            <div class="activity-title">ADF Ingestion completed</div>
+                            <div class="activity-meta">Today • 09:10 • Blob → Staging</div>
+                        </div>
+                        <div class="activity-right">2m 14s</div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-dot bad"></div>
+                        <div class="activity-body">
+                            <div class="activity-title">Validation failed (Uniqueness)</div>
+                            <div class="activity-meta">Today • 09:06 • Contacts table</div>
+                        </div>
+                        <div class="activity-right">7 issues</div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-dot neutral"></div>
+                        <div class="activity-body">
+                            <div class="activity-title">Export generated</div>
+                            <div class="activity-meta">Yesterday • 18:40 • CL Ready Dataset</div>
+                        </div>
+                        <div class="activity-right">CSV</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT -->
+        <aside class="details-side">
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Quick Info</div>
+                        <div class="panel-sub">Operational snapshot</div>
+                    </div>
+                </div>
+
+                <div class="kv">
+                    <div class="kv-row">
+                        <div class="kv-k">Project ID</div>
+                        <div class="kv-v">#@Model.Id</div>
+                    </div>
+                    <div class="kv-row">
+                        <div class="kv-k">Status</div>
+                        <div class="kv-v"><span class="pill pill-status">@Model.Status</span></div>
+                    </div>
+                    <div class="kv-row">
+                        <div class="kv-k">Health</div>
+                        <div class="kv-v"><span class="pill pill-health">@Model.Health</span></div>
+                    </div>
+                    <div class="kv-row">
+                        <div class="kv-k">Environment</div>
+                        <div class="kv-v"><span class="pill pill-env">@Model.Environment</span></div>
+                    </div>
+                    <div class="kv-row">
+                        <div class="kv-k">Last Run</div>
+                        <div class="kv-v">@Model.LastRunText</div>
+                    </div>
+                    <div class="kv-row">
+                        <div class="kv-k">Next Run</div>
+                        <div class="kv-v">@Model.NextRunText</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Actions</div>
+                        <div class="panel-sub">Most used shortcuts</div>
+                    </div>
+                </div>
+
+                <div class="side-actions">
+                    <button class="btn btn-secondary w-100" type="button">Open Exceptions</button>
+                    <button class="btn btn-secondary w-100" type="button">Run Validation</button>
+                    <button class="btn btn-secondary w-100" type="button">Generate Export</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+}
+
+@section PageStyles {
+    <style>
+        /* Project hero header */
+        .project-hero{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:16px;
+            padding:14px 14px;
+            border-radius:16px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.78);
+            margin: 18px 0 12px;
+        }
+
+        .hero-left{
+            display:flex;
+            gap:12px;
+            align-items:flex-start;
+            min-width: 0;
+        }
+
+        .hero-logo{
+            width:44px;
+            height:44px;
+            border-radius: 14px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:900;
+            letter-spacing:-.2px;
+            color:white;
+            background: linear-gradient(135deg, rgba(37,99,235,1), rgba(124,58,237,1));
+            flex: 0 0 auto;
+        }
+
+        .hero-text{ min-width:0; }
+
+        .hero-topline{
+            font-size:12px;
+            opacity:.85;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+
+        .hero-title-row{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            margin-top:6px;
+            flex-wrap:wrap;
+        }
+
+        .hero-title{
+            margin:0;
+            font-size:22px;
+            font-weight:850;
+            letter-spacing:-.4px;
+            line-height:1.2;
+        }
+
+        .hero-badges{
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+
+        .hero-meta{
+            margin-top:6px;
+            font-size:13px;
+            opacity:.9;
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+
+        .hero-right{
+            display:flex;
+            gap:10px;
+            align-items:center;
+            flex-wrap:wrap;
+        }
+
+        @@media (max-width: 1100px){
+            .project-hero{ flex-direction:column; align-items:stretch; }
+            .hero-right{ justify-content:flex-start; }
+        }
+
+        /* Tabs */
+        .details-tabs{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.75);
+            margin: 0 0 14px;
+            overflow:auto;
+        }
+        .tab-item{
+            text-decoration:none;
+            font-weight:700;
+            font-size:13px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            color: rgba(0,0,0,.72);
+            white-space: nowrap;
+        }
+        .tab-item:hover{ background: rgba(0,0,0,.04); }
+        .tab-item.is-active{
+            background: rgba(37, 99, 235, .10);
+            color: rgba(37, 99, 235, 1);
+            border: 1px solid rgba(37, 99, 235, .20);
+        }
+        .tabs-spacer{ flex:1; }
+        .tab-icon-btn{
+            width:36px;
+            height:36px;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,.10);
+            background: rgba(255,255,255,.9);
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .tab-icon-btn:hover{ background: rgba(0,0,0,.03); }
+
+        /* Layout grid */
+        .details-grid{ display:grid; grid-template-columns: 1fr 340px; gap:16px; }
+        @@media (max-width: 1100px){
+            .details-grid{ grid-template-columns: 1fr; }
+        }
+
+        /* Pills */
+        .pill{
+            display:inline-flex;
+            align-items:center;
+            padding:4px 10px;
+            border-radius:999px;
+            font-size:12px;
+            font-weight:600;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(0,0,0,.03);
+        }
+
+        /* KPIs */
+        .kpi-row{ display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:12px; }
+        @@media (max-width: 1100px){
+            .kpi-row{ grid-template-columns: repeat(2, 1fr); }
+        }
+        .kpi-card{
+            border-radius:14px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.7);
+            padding:12px 12px;
+        }
+        .kpi-label{ font-size:12px; opacity:.75; }
+        .kpi-value{ font-size:20px; font-weight:800; margin-top:6px; letter-spacing:-.3px; }
+        .kpi-foot{ display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; }
+        .mini{ font-size:12px; padding:3px 8px; border-radius:999px; background: rgba(0,0,0,.04); }
+
+        /* Panels */
+        .panel{
+            border-radius:16px;
+            border:1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.7);
+            padding:12px;
+            margin-bottom:12px;
+        }
+        .panel-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:10px; }
+        .panel-title{ font-weight:800; letter-spacing:-.2px; }
+        .panel-sub{ font-size:12px; opacity:.75; margin-top:2px; }
+        .link-btn{ border:0; background:transparent; font-weight:700; cursor:pointer; opacity:.8; }
+
+        /* Activity */
+        .activity-list{ display:flex; flex-direction:column; gap:10px; }
+        .activity-item{
+            display:flex;
+            gap:10px;
+            align-items:flex-start;
+            padding:10px;
+            border-radius:12px;
+            border:1px solid rgba(0,0,0,.06);
+            background: rgba(0,0,0,.02);
+        }
+        .activity-dot{ width:10px; height:10px; border-radius:999px; margin-top:5px; background: rgba(0,0,0,.25); }
+        .activity-body{ flex:1; }
+        .activity-title{ font-weight:700; }
+        .activity-meta{ font-size:12px; opacity:.75; margin-top:2px; }
+        .activity-right{ font-size:12px; opacity:.75; white-space:nowrap; }
+
+        /* Side */
+        .kv{ display:flex; flex-direction:column; gap:8px; }
+        .kv-row{ display:flex; justify-content:space-between; gap:10px; font-size:13px; }
+        .kv-k{ opacity:.75; }
+        .kv-v{ font-weight:600; }
+        .side-actions{ display:flex; flex-direction:column; gap:10px; }
+        .w-100{ width:100%; }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        if (window.lucide) lucide.createIcons();
+    </script>
+}

@@ -1,0 +1,49 @@
+﻿@{
+    var title = ViewData["Title"] as string ?? "DataSync Platform";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title | DataSync</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @RenderSection("PageStyles", required: false)
+</head>
+
+<body class="app-body">
+    <div class="app-shell">
+
+        @await Html.PartialAsync("_Sidebar")
+
+        <div class="app-main">
+            @await Html.PartialAsync("_Topbar")
+
+            <main class="app-content-wrapper" id="main-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <!-- Lucide (load once) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/sidebar.js" asp-append-version="true"></script>
+
+    <script>
+        // Render icons once after page load
+        lucide.createIcons();
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
