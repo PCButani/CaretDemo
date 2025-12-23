@@ -10,6 +10,7 @@
    ✅ CSS + JS in SAME file
    ✅ IMPORTANT: CSS uses @@media (Razor-safe)
 *@
+@model DataSync.Web.Models.ViewModels.ProjectDetailsVm
 @{
     ViewData["Title"] = "Project Process";
 
@@ -47,927 +48,1067 @@
 
     // Object list mock (replace later)
     var objects = new[] {
-        new { Name="Payments", Mode="Full", Last="Today 09:10", Rows=4560, Health=96, Rules=42, Passed=40, Failed=2, Status="Ready", Tag="OK" },
-        new { Name="Contacts", Mode="Delta", Last="Today 09:12", Rows=1820, Health=88, Rules=34, Passed=30, Failed=4, Status="Ready", Tag="WARN" },
-        new { Name="Matters", Mode="Full", Last="Today 09:15", Rows=620,  Health=74, Rules=28, Passed=20, Failed=8, Status="At risk", Tag="RISK" },
-        new { Name="Invoices", Mode="Full", Last="Today 09:18", Rows=9320, Health=99, Rules=51, Passed=51, Failed=0, Status="Ready", Tag="OK" },
-        new { Name="Users",    Mode="Delta", Last="Today 09:20", Rows=210,  Health=82, Rules=22, Passed=19, Failed=3, Status="Ready", Tag="WARN" },
-        new { Name="Ledger",   Mode="Full", Last="Today 09:22", Rows=12850,Health=91, Rules=46, Passed=44, Failed=2, Status="Ready", Tag="OK" }
+        new { Name="Payments", Mode="Full", Last="Today 09:10", Rows=4560, Health=96, Rules=42, Passed=40, Failed=2, Status="Complete", Tag="OK" },
+        new { Name="Contacts", Mode="Delta", Last="Today 09:12", Rows=1820, Health=88, Rules=34, Passed=30, Failed=4, Status="In Progress", Tag="WARN" },
+        new { Name="Matters", Mode="Full", Last="Today 09:15", Rows=620,  Health=74, Rules=28, Passed=20, Failed=8, Status="Action Required", Tag="RISK" },
+        new { Name="Invoices", Mode="Full", Last="Today 09:18", Rows=9320, Health=99, Rules=51, Passed=51, Failed=0, Status="Complete", Tag="OK" },
+        new { Name="Users",    Mode="Delta", Last="Today 09:20", Rows=210,  Health=82, Rules=22, Passed=19, Failed=3, Status="In Progress", Tag="WARN" },
+        new { Name="Ledger",   Mode="Full", Last="Today 09:22", Rows=12850,Health=91, Rules=46, Passed=44, Failed=2, Status="Complete", Tag="OK" }
     };
 }
 
 @section Styles {
-<style>
-/* =========================================================
-   PROCESS TAB — Scoped, page-only
-   Prefix: .pce-
-   NOTE: Razor-safe @@media used.
-   ========================================================= */
+    <style>
+        /* =========================================================
+           PROCESS TAB — Scoped, page-only
+           Prefix: .pce-
+           NOTE: Razor-safe @@media used.
+           ========================================================= */
 
-.pce-wrap{ padding: 18px 18px 28px; }
+        .pce-wrap {
+            padding: 18px 18px 28px;
+        }
 
-/* ---------------- Project header (match other tabs) ---------------- */
-.pce-project-hero{
-  background: #fff;
-  border: 1px solid rgba(10,15,30,.10);
-  border-radius: 18px;
-  padding: 16px 16px;
-  box-shadow: 0 10px 22px rgba(10,15,30,.06);
-}
+        /* ---------------- Project header (match other tabs) ---------------- */
+        .pce-project-hero {
+            background: #fff;
+            border: 1px solid rgba(10,15,30,.10);
+            border-radius: 18px;
+            padding: 16px 16px;
+            box-shadow: 0 10px 22px rgba(10,15,30,.06);
+        }
 
-.pce-hero-top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 14px;
-}
+        .pce-hero-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
 
-.pce-hero-left{
-  display:flex;
-  align-items:flex-start;
-  gap: 12px;
-  min-width: 0;
-}
+        .pce-hero-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            min-width: 0;
+        }
 
-.pce-hero-avatar{
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight: 950;
-  color:#fff;
-  background: linear-gradient(135deg, rgba(46,91,255,1), rgba(137,83,255,1));
-  border: 1px solid rgba(10,15,30,.08);
-  flex: 0 0 auto;
-}
+        .pce-hero-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 950;
+            color: #fff;
+            background: linear-gradient(135deg, rgba(46,91,255,1), rgba(137,83,255,1));
+            border: 1px solid rgba(10,15,30,.08);
+            flex: 0 0 auto;
+        }
 
-.pce-hero-crumb{
-  font-size: 12px;
-  color: rgba(10,15,30,.60);
-  display:flex;
-  gap: 8px;
-  align-items:center;
-  margin-bottom: 6px;
-}
-.pce-hero-crumb a{
-  color: rgba(10,15,30,.72);
-  text-decoration:none;
-  font-weight: 800;
-}
-.pce-hero-crumb a:hover{ text-decoration: underline; }
+        .pce-hero-crumb {
+            font-size: 12px;
+            color: rgba(10,15,30,.60);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 6px;
+        }
 
-.pce-hero-title{
-  margin:0;
-  font-size: 22px;
-  font-weight: 950;
-  color: rgba(10,15,30,.95);
-  letter-spacing: .2px;
-  white-space: nowrap;
-  overflow:hidden;
-  text-overflow: ellipsis;
-}
-.pce-hero-meta{
-  margin-top: 6px;
-  font-size: 13px;
-  color: rgba(10,15,30,.70);
-  display:flex;
-  flex-wrap:wrap;
-  gap: 10px 14px;
-}
-
-.pce-dot{ opacity:.45; }
-
-.pce-hero-tags{
-  display:flex;
-  align-items:center;
-  gap: 8px;
-  flex-wrap:wrap;
-  margin-top: 8px;
-}
-.pce-tag{
-  display:inline-flex;
-  align-items:center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(10,15,30,.12);
-  background: rgba(10,15,30,.02);
-  font-size: 12px;
-  font-weight: 900;
-  color: rgba(10,15,30,.78);
-}
-.pce-tag.primary{ background: rgba(46,91,255,.10); border-color: rgba(46,91,255,.22); color: rgba(18,54,145,.95); }
-.pce-tag.ok{ background: rgba(49,208,170,.14); border-color: rgba(49,208,170,.30); color: #0b5d4e; }
-.pce-tag.warn{ background: rgba(244,183,64,.16); border-color: rgba(244,183,64,.35); color: #6a4a00; }
-
-.pce-hero-actions{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  flex: 0 0 auto;
-}
-.pce-btn{
-  height: 40px;
-  padding: 0 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(10,15,30,.12);
-  background:#fff;
-  font-weight: 900;
-  font-size: 13px;
-  color: rgba(10,15,30,.86);
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  gap: 8px;
-}
-.pce-btn.primary{
-  background: linear-gradient(135deg, rgba(46,91,255,1), rgba(137,83,255,1));
-  color:#fff;
-  border-color: transparent;
-  box-shadow: 0 12px 22px rgba(46,91,255,.18);
-}
-.pce-btn:disabled{ opacity:.55; cursor:not-allowed; }
-
-/* ---------------- Tabs row ---------------- */
-.pce-tabs{
-  margin-top: 12px;
-  background:#fff;
-  border: 1px solid rgba(10,15,30,.10);
-  border-radius: 18px;
-  padding: 10px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-  box-shadow: 0 10px 22px rgba(10,15,30,.06);
-}
-
-.pce-tab-left{
-  display:flex;
-  gap: 6px;
-  flex-wrap:wrap;
-}
-.pce-tab{
-  display:inline-flex;
-  align-items:center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  text-decoration:none;
-  font-weight: 900;
-  font-size: 13px;
-  color: rgba(10,15,30,.70);
-  background: transparent;
-}
-.pce-tab:hover{
-  background: rgba(10,15,30,.03);
-  border-color: rgba(10,15,30,.08);
-}
-.pce-tab.is-active{
-  background: rgba(46,91,255,.10);
-  border-color: rgba(46,91,255,.22);
-  color: rgba(18,54,145,.95);
-}
-
-.pce-tab-right{
-  display:flex;
-  gap: 8px;
-}
-.pce-iconbtn{
-  width: 44px;
-  height: 40px;
-  border-radius: 14px;
-  border: 1px solid rgba(10,15,30,.12);
-  background:#fff;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-/* ---------------- Main page frame ---------------- */
-.pce-page{
-  margin-top: 12px;
-  background: #fff;
-  border: 1px solid rgba(10,15,30,.10);
-  border-radius: 18px;
-  padding: 14px;
-  box-shadow: 0 10px 22px rgba(10,15,30,.06);
-}
-
-.pce-grid{
-  display:grid;
-  grid-template-columns: 1fr 360px;
-  gap: 14px;
-  align-items:start;
-}
-
-/* IMPORTANT: Razor-safe @@media */
-@@media (max-width: 1180px){
-  .pce-grid{ grid-template-columns: 1fr; }
-  .pce-hero-actions{ width:100%; justify-content:flex-start; flex-wrap:wrap; }
-}
-
-@@media (max-width: 720px){
-  .pce-hero-top{ flex-direction: column; align-items: stretch; }
-  .pce-hero-left{ align-items: flex-start; }
-  .pce-hero-title{ white-space: normal; }
-  .pce-tabs{ flex-direction: column; align-items: stretch; }
-  .pce-tab-right{ justify-content:flex-end; }
-}
-
-/* ---------------- Run ribbon (minimal, low text) ---------------- */
-.pce-ribbon{
-  display:flex;
-  flex-wrap:wrap;
-  gap: 10px 10px;
-  align-items:center;
-  padding: 10px;
-  border-radius: 16px;
-  border: 1px solid rgba(10,15,30,.08);
-  background: rgba(10,15,30,.02);
-}
-
-.pce-pill{
-  display:inline-flex;
-  align-items:center;
-  gap: 7px;
-  padding: 7px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(10,15,30,.10);
-  background:#fff;
-  font-size: 12px;
-  font-weight: 850;
-  color: rgba(10,15,30,.82);
-  white-space: nowrap;
-}
-.pce-pill b{ color: rgba(10,15,30,.92); font-weight: 950; }
-
-.pce-copy{
-  width: 24px;
-  height: 24px;
-  border-radius: 10px;
-  border: 1px solid rgba(10,15,30,.10);
-  background:#fff;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-}
-.pce-copy:hover{ background: rgba(46,91,255,.08); border-color: rgba(46,91,255,.22); }
-
-.pce-ribbon-actions{
-  margin-left:auto;
-  display:flex;
-  gap: 10px;
-  align-items:center;
-}
-
-/* ---------------- KPI (minimal) ---------------- */
-.pce-kpis{
-  margin-top: 12px;
-  display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
-}
-@@media (max-width: 980px){
-  .pce-kpis{ grid-template-columns: 1fr; }
-}
-
-.pce-kpi{
-  border: 1px solid rgba(10,15,30,.10);
-  border-radius: 16px;
-  padding: 12px;
-  background:#fff;
-}
-.pce-kpi .row{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap: 10px;
-}
-.pce-kpi .t{
-  font-size: 12px;
-  font-weight: 950;
-  color: rgba(10,15,30,.88);
-}
-.pce-kpi .v{
-  margin-top: 6px;
-  font-size: 22px;
-  font-weight: 950;
-  color: rgba(10,15,30,.95);
-  line-height: 1.1;
-}
-.pce-kpi .s{
-  font-size: 12px;
-  color: rgba(10,15,30,.60);
-  font-weight: 800;
-}
-.pce-meter{
-  margin-top: 10px;
-  height: 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(10,15,30,.10);
-  background: rgba(10,15,30,.05);
-  overflow:hidden;
-}
-.pce-meter > span{
-  display:block;
-  height:100%;
-  width:0%;
-  background: linear-gradient(90deg, rgba(46,91,255,1), rgba(49,208,170,1));
-}
-
-/* ---------------- Charts (kept) ---------------- */
-.pce-section{
-  margin-top: 14px;
-}
-.pce-section-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.pce-h2{
-  margin:0;
-  font-size: 14px;
-  font-weight: 950;
-  color: rgba(10,15,30,.92);
-}
-.pce-sub{
-  font-size: 12px;
-  color: rgba(10,15,30,.60);
-  font-weight: 800;
-}
-
-.pce-charts{
-  display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
-}
-@@media (max-width: 980px){
-  .pce-charts{ grid-template-columns: 1fr; }
-}
-
-.pce-chart{
-  border: 1px solid rgba(10,15,30,.10);
-  border-radius: 18px;
-  padding: 12px;
-  background:#fff;
-}
-.pce-chart .ct{
-  font-size: 13px;
-  font-weight: 950;
-  color: rgba(10,15,30,.92);
-  margin:0;
-}
-.pce-chart .cs{
-  margin-top: 4px;
-  font-size: 12px;
-  color: rgba(10,15,30,.60);
-}
-.pce-svg{
-  margin-top: 10px;
-  width: 100%;
-  height: 130px;
-  border-radius: 14px;
-  border: 1px solid rgba(10,15,30,.08);
-  background: linear-gradient(180deg, rgba(10,15,30,.02), rgba(10,15,30,.01));
-}
-
-/* ---------------- Objects (kept) ---------------- */
-.pce-objects{
-  border: 1px solid rgba(10,15,30,.10);
-  border-radius: 18px;
-  overflow:hidden;
-  background:#fff;
-}
-.pce-objects-head{
-  padding: 12px 14px;
-  background: rgba(10,15,30,.02);
-  border-bottom: 1px solid rgba(10,15,30,.08);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-}
-.pce-seg{
-  display:inline-flex;
-  border: 1px solid rgba(10,15,30,.12);
-  background:#fff;
-  border-radius: 999px;
-  overflow:hidden;
-}
-.pce-seg button{
-  border:0;
-  background: transparent;
-  padding: 7px 10px;
-  font-size: 12px;
-  font-weight: 950;
-  color: rgba(10,15,30,.68);
-  cursor:pointer;
-}
-.pce-seg button.is-active{
-  background: rgba(46,91,255,.10);
-  color: rgba(18,54,145,.95);
-}
-
-.pce-obj-row{
-  padding: 12px 14px;
-  border-top: 1px solid rgba(10,15,30,.08);
-  display:grid;
-  grid-template-columns: 1fr 260px 140px;
-  gap: 12px;
-  align-items:center;
-}
-@@media (max-width: 980px){
-  .pce-obj-row{ grid-template-columns: 1fr; }
-}
-
-.pce-obj-name{
-  font-size: 13px;
-  font-weight: 950;
-  color: rgba(10,15,30,.92);
-}
-.pce-obj-meta{
-  margin-top: 3px;
-  font-size: 12px;
-  color: rgba(10,15,30,.62);
-  font-weight: 800;
-}
-.pce-obj-mid{
-  display:flex;
-  flex-direction:column;
-  gap: 8px;
-}
-.pce-pbar{
-  height: 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(10,15,30,.10);
-  background: rgba(10,15,30,.05);
-  overflow:hidden;
-}
-.pce-pbar > span{
-  display:block;
-  height:100%;
-  width:0%;
-  background: linear-gradient(90deg, rgba(46,91,255,1), rgba(49,208,170,1));
-}
-.pce-stats{
-  display:flex;
-  gap: 8px;
-  flex-wrap:wrap;
-}
-.pce-stat{
-  font-size: 11px;
-  font-weight: 950;
-  color: rgba(10,15,30,.74);
-  background: rgba(10,15,30,.02);
-  border: 1px solid rgba(10,15,30,.10);
-  border-radius: 999px;
-  padding: 4px 8px;
-}
-.pce-obj-right{
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  gap: 10px;
-}
-
-/* donut */
-.pce-donut{ width: 44px; height: 44px; display:inline-block; }
-.pce-donut svg{ width: 44px; height: 44px; display:block; }
-.pce-donut .bg{ stroke: rgba(10,15,30,.10); }
-.pce-donut .fg{ stroke-linecap: round; }
-.pce-donut .txt{
-  font-size: 10px;
-  font-weight: 950;
-  fill: rgba(10,15,30,.86);
-}
-
-/* Detail-only block */
-.pce-detail-only{ display:none; margin-top:8px; }
-.pce-detail-note{
-  font-size: 12px;
-  color: rgba(10,15,30,.62);
-  font-weight: 800;
-}
-
-/* ---------------- AI Advisor (kept) ---------------- */
-.pce-side{ position: sticky; top: 10px; }
-.pce-side-card{
-  background:#fff;
-  border: 1px solid rgba(10,15,30,.10);
-  border-radius: 18px;
-  padding: 12px;
-  box-shadow: 0 10px 22px rgba(10,15,30,.06);
-}
-.pce-side-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.pce-side-title{
-  font-size: 14px;
-  font-weight: 950;
-  color: rgba(10,15,30,.92);
-}
-.pce-close{
-  width: 34px;
-  height: 34px;
-  border-radius: 14px;
-  border: 1px solid rgba(10,15,30,.10);
-  background:#fff;
-  cursor:pointer;
-}
-.pce-locked{
-  margin-top: 10px;
-  border: 1px solid rgba(10,15,30,.10);
-  background: rgba(10,15,30,.02);
-  border-radius: 14px;
-  padding: 10px;
-}
-.pce-mini{
-  font-size: 12px;
-  color: rgba(10,15,30,.60);
-  font-weight: 800;
-}
-.pce-ask{
-  margin-top: 10px;
-  display:flex;
-  gap: 8px;
-}
-.pce-input{
-  flex:1;
-  height: 38px;
-  border-radius: 14px;
-  border: 1px solid rgba(10,15,30,.12);
-  padding: 0 10px;
-  font-size: 12px;
-  outline:none;
-}
-.pce-send{
-  width: 44px;
-  height: 38px;
-  border-radius: 14px;
-  border: 1px solid rgba(10,15,30,.12);
-  background: #0a0f1e;
-  color:#fff;
-  cursor:pointer;
-  font-weight: 950;
-}
-.pce-suggest{
-  margin-top: 10px;
-  border-top: 1px solid rgba(10,15,30,.08);
-  padding-top: 10px;
-}
-.pce-suggest .h{
-  font-size: 11px;
-  font-weight: 950;
-  color: rgba(10,15,30,.72);
-  text-transform: uppercase;
-  letter-spacing: .4px;
-  margin-bottom: 8px;
-}
-.pce-q{
-  font-size: 12px;
-  border-radius: 999px;
-  padding: 6px 10px;
-  border: 1px solid rgba(10,15,30,.10);
-  background: rgba(10,15,30,.02);
-  cursor:pointer;
-  color: rgba(10,15,30,.78);
-  font-weight: 900;
-  margin: 0 8px 8px 0;
-}
-.pce-q:hover{ background: rgba(46,91,255,.08); border-color: rgba(46,91,255,.20); }
-
-/* local toast */
-#pceToast{
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(10,15,30,.12);
-  background: #0a0f1e;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 900;
-  box-shadow: 0 14px 24px rgba(10,15,30,.22);
-  z-index: 9999;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: all 180ms ease;
-}
-</style>
-}
-
-<div class="pce-wrap">
-
-  <!-- =========================
-       PROJECT HEADER (with nav)
-  ========================== -->
-  <div class="pce-project-hero">
-    <div class="pce-hero-top">
-      <div class="pce-hero-left">
-        <div class="pce-hero-avatar" aria-hidden="true">Z</div>
-        <div style="min-width:0;">
-          <div class="pce-hero-crumb">
-            <a asp-controller="Projects" asp-action="Index">@projectCrumb</a>
-            <span class="pce-dot">/</span>
-            <span style="font-weight:900;color:rgba(10,15,30,.75);">Project @projectId</span>
-          </div>
-
-          <h1 class="pce-hero-title">@projectName</h1>
-
-          <div class="pce-hero-tags">
-            <span class="pce-tag primary">@status1</span>
-            <span class="pce-tag ok">@status2</span>
-            <span class="pce-tag warn">@status3</span>
-          </div>
-
-          <div class="pce-hero-meta">
-            <span><b>Client:</b> @clientName</span>
-            <span class="pce-dot">•</span>
-            <span><b>Source:</b> @sourceName</span>
-            <span class="pce-dot">•</span>
-            <span><b>Target:</b> @targetName</span>
-            <span class="pce-dot">•</span>
-            <span><b>Owner:</b> @ownerName</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="pce-hero-actions">
-        <button class="pce-btn" type="button" onclick="pceToast('Export queued (UI only).')">⬇️ Export</button>
-        <button class="pce-btn" type="button" onclick="pceToast('Settings opened (UI only).')">⚙️ Settings</button>
-        <button class="pce-btn primary" type="button" disabled title="Run Now is locked in UI prototype">▶ Run Now</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- =========================
-       TABS NAV (same as others)
-  ========================== -->
-  <div class="pce-tabs" role="navigation" aria-label="Project tabs">
-    <div class="pce-tab-left">
-      <a class="pce-tab @(activeTab=="Overview" ? "is-active" : "")" asp-controller="Projects" asp-action="Details" asp-route-id="@projectId">Overview</a>
-      <a class="pce-tab @(activeTab=="Fetch" ? "is-active" : "")" asp-controller="Projects" asp-action="Fetch" asp-route-id="@projectId">Fetch</a>
-      <a class="pce-tab @(activeTab=="Verify" ? "is-active" : "")" asp-controller="Projects" asp-action="Verify" asp-route-id="@projectId">Verify</a>
-      <a class="pce-tab @(activeTab=="Process" ? "is-active" : "")" asp-controller="Projects" asp-action="Process" asp-route-id="@projectId">Process</a>
-      <a class="pce-tab @(activeTab=="Config" ? "is-active" : "")" asp-controller="Projects" asp-action="Config" asp-route-id="@projectId">Config</a>
-      <a class="pce-tab @(activeTab=="Activity" ? "is-active" : "")" asp-controller="Projects" asp-action="Activity" asp-route-id="@projectId">Activity</a>
-    </div>
-
-    <div class="pce-tab-right">
-      <button class="pce-iconbtn" type="button" title="Notes" onclick="pceToast('Notes opened (UI only).')">🗒️</button>
-      <button class="pce-iconbtn" type="button" title="More" onclick="pceToast('More actions (UI only).')">⋯</button>
-    </div>
-  </div>
-
-  <!-- =========================
-       PROCESS PAGE (REDRAFT)
-  ========================== -->
-  <div class="pce-page">
-
-    <!-- Run context (minimal chips) -->
-    <div class="pce-ribbon" aria-label="Run context">
-      <span class="pce-pill"><b>Run</b>: <span id="pceRun">@runId</span>
-        <button class="pce-copy" type="button" title="Copy Run ID" onclick="pceCopy('pceRun')">⧉</button>
-      </span>
-      <span class="pce-pill"><b>Batch</b>: <span id="pceBatch">@batchId</span>
-        <button class="pce-copy" type="button" title="Copy Batch ID" onclick="pceCopy('pceBatch')">⧉</button>
-      </span>
-      <span class="pce-pill"><b>Mapping</b>: @mappingVersion</span>
-      <span class="pce-pill"><b>Ruleset</b>: @rulesetVersion</span>
-      <span class="pce-pill"><b>Target</b>: @targetSystem</span>
-      <span class="pce-pill"><b>Mode</b>: @execMode</span>
-      <span class="pce-pill"><b>Isolation</b>: @isolation</span>
-
-      <div class="pce-ribbon-actions">
-        <button class="pce-btn" type="button" onclick="pceToast('Pre-flight queued (UI only).')">Run Pre-Flight</button>
-        <button class="pce-btn primary" type="button" disabled>Execute (Locked)</button>
-      </div>
-    </div>
-
-    <div class="pce-grid" style="margin-top:12px;">
-
-      <!-- LEFT MAIN -->
-      <div>
-
-        <!-- Minimal KPI strip -->
-        <div class="pce-kpis" aria-label="Readiness KPIs">
-          <div class="pce-kpi">
-            <div class="row">
-              <div>
-                <div class="t">Data Readiness</div>
-                <div class="v">@kpiDataReadiness<span style="font-size:13px;font-weight:950;color:rgba(10,15,30,.70);">%</span></div>
-              </div>
-              <div class="s">Verify gate</div>
-            </div>
-            <div class="pce-meter"><span style="width:@kpiDataReadiness%"></span></div>
-          </div>
-
-          <div class="pce-kpi">
-            <div class="row">
-              <div>
-                <div class="t">Risk</div>
-                <div class="v">@kpiRisk</div>
-              </div>
-              <div class="s">Run impact</div>
-            </div>
-            @{
-              var riskPct = kpiRisk == "Low" ? 28 : (kpiRisk == "High" ? 85 : 55);
+            .pce-hero-crumb a {
+                color: rgba(10,15,30,.72);
+                text-decoration: none;
+                font-weight: 800;
             }
-            <div class="pce-meter"><span style="width:@riskPct%"></span></div>
-          </div>
 
-          <div class="pce-kpi">
-            <div class="row">
-              <div>
-                <div class="t">Estimated Runtime</div>
-                <div class="v">@kpiEtaMin–@kpiEtaMax<span style="font-size:13px;font-weight:950;color:rgba(10,15,30,.70);"> min</span></div>
-              </div>
-              <div class="s">Throughput ETA</div>
+                .pce-hero-crumb a:hover {
+                    text-decoration: underline;
+                }
+
+        .pce-hero-title {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 950;
+            color: rgba(10,15,30,.95);
+            letter-spacing: .2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pce-hero-meta {
+            margin-top: 6px;
+            font-size: 13px;
+            color: rgba(10,15,30,.70);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 14px;
+        }
+
+        .pce-dot {
+            opacity: .45;
+        }
+
+        .pce-hero-tags {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .pce-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(10,15,30,.12);
+            background: rgba(10,15,30,.02);
+            font-size: 12px;
+            font-weight: 900;
+            color: rgba(10,15,30,.78);
+        }
+
+            .pce-tag.primary {
+                background: rgba(46,91,255,.10);
+                border-color: rgba(46,91,255,.22);
+                color: rgba(18,54,145,.95);
+            }
+
+            .pce-tag.ok {
+                background: rgba(49,208,170,.14);
+                border-color: rgba(49,208,170,.30);
+                color: #0b5d4e;
+            }
+
+            .pce-tag.warn {
+                background: rgba(244,183,64,.16);
+                border-color: rgba(244,183,64,.35);
+                color: #6a4a00;
+            }
+
+        .pce-hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 0 0 auto;
+        }
+
+        .pce-btn {
+            height: 40px;
+            padding: 0 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(10,15,30,.12);
+            background: #fff;
+            font-weight: 900;
+            font-size: 13px;
+            color: rgba(10,15,30,.86);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .pce-btn.primary {
+                background: linear-gradient(135deg, rgba(46,91,255,1), rgba(137,83,255,1));
+                color: #fff;
+                border-color: transparent;
+                box-shadow: 0 12px 22px rgba(46,91,255,.18);
+            }
+
+            .pce-btn:disabled {
+                opacity: .55;
+                cursor: not-allowed;
+            }
+
+        /* ---------------- Tabs row ---------------- */
+        .pce-tabs {
+            margin-top: 12px;
+            background: #fff;
+            border: 1px solid rgba(10,15,30,.10);
+            border-radius: 18px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            box-shadow: 0 10px 22px rgba(10,15,30,.06);
+        }
+
+        .pce-tab-left {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .pce-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            text-decoration: none;
+            font-weight: 900;
+            font-size: 13px;
+            color: rgba(10,15,30,.70);
+            background: transparent;
+        }
+
+            .pce-tab:hover {
+                background: rgba(10,15,30,.03);
+                border-color: rgba(10,15,30,.08);
+            }
+
+            .pce-tab.is-active {
+                background: rgba(46,91,255,.10);
+                border-color: rgba(46,91,255,.22);
+                color: rgba(18,54,145,.95);
+            }
+
+        .pce-tab-right {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pce-iconbtn {
+            width: 44px;
+            height: 40px;
+            border-radius: 14px;
+            border: 1px solid rgba(10,15,30,.12);
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ---------------- Main page frame ---------------- */
+        .pce-page {
+            margin-top: 12px;
+            background: #fff;
+            border: 1px solid rgba(10,15,30,.10);
+            border-radius: 18px;
+            padding: 14px;
+            box-shadow: 0 10px 22px rgba(10,15,30,.06);
+        }
+
+        .pce-grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 14px;
+            align-items: start;
+        }
+
+        /* IMPORTANT: Razor-safe @@media */
+        @@media (max-width: 1180px) {
+            .pce-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pce-hero-actions {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+        }
+
+        @@media (max-width: 720px) {
+            .pce-hero-top {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .pce-hero-left {
+                align-items: flex-start;
+            }
+
+            .pce-hero-title {
+                white-space: normal;
+            }
+
+            .pce-tabs {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .pce-tab-right {
+                justify-content: flex-end;
+            }
+        }
+
+        /* ---------------- Run ribbon (minimal, low text) ---------------- */
+        .pce-ribbon {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 10px;
+            align-items: center;
+            padding: 10px;
+            border-radius: 16px;
+            border: 1px solid rgba(10,15,30,.08);
+            background: rgba(10,15,30,.02);
+        }
+
+        .pce-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(10,15,30,.10);
+            background: #fff;
+            font-size: 12px;
+            font-weight: 850;
+            color: rgba(10,15,30,.82);
+            white-space: nowrap;
+        }
+
+            .pce-pill b {
+                color: rgba(10,15,30,.92);
+                font-weight: 950;
+            }
+
+        .pce-copy {
+            width: 24px;
+            height: 24px;
+            border-radius: 10px;
+            border: 1px solid rgba(10,15,30,.10);
+            background: #fff;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .pce-copy:hover {
+                background: rgba(46,91,255,.08);
+                border-color: rgba(46,91,255,.22);
+            }
+
+        .pce-ribbon-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* ---------------- KPI (minimal) ---------------- */
+        .pce-kpis {
+            margin-top: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        @@media (max-width: 980px) {
+            .pce-kpis {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pce-kpi {
+            border: 1px solid rgba(10,15,30,.10);
+            border-radius: 16px;
+            padding: 12px;
+            background: #fff;
+        }
+
+            .pce-kpi .row {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .pce-kpi .t {
+                font-size: 12px;
+                font-weight: 950;
+                color: rgba(10,15,30,.88);
+            }
+
+            .pce-kpi .v {
+                margin-top: 6px;
+                font-size: 22px;
+                font-weight: 950;
+                color: rgba(10,15,30,.95);
+                line-height: 1.1;
+            }
+
+            .pce-kpi .s {
+                font-size: 12px;
+                color: rgba(10,15,30,.60);
+                font-weight: 800;
+            }
+
+        .pce-meter {
+            margin-top: 10px;
+            height: 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(10,15,30,.10);
+            background: rgba(10,15,30,.05);
+            overflow: hidden;
+        }
+
+            .pce-meter > span {
+                display: block;
+                height: 100%;
+                width: 0%;
+                background: linear-gradient(90deg, rgba(46,91,255,1), rgba(49,208,170,1));
+            }
+
+        /* ---------------- Charts (kept) ---------------- */
+        .pce-section {
+            margin-top: 14px;
+        }
+
+        .pce-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .pce-h2 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 950;
+            color: rgba(10,15,30,.92);
+        }
+
+        .pce-sub {
+            font-size: 12px;
+            color: rgba(10,15,30,.60);
+            font-weight: 800;
+        }
+
+        .pce-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        @@media (max-width: 980px) {
+            .pce-charts {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pce-chart {
+            border: 1px solid rgba(10,15,30,.10);
+            border-radius: 18px;
+            padding: 12px;
+            background: #fff;
+        }
+
+            .pce-chart .ct {
+                font-size: 13px;
+                font-weight: 950;
+                color: rgba(10,15,30,.92);
+                margin: 0;
+            }
+
+            .pce-chart .cs {
+                margin-top: 4px;
+                font-size: 12px;
+                color: rgba(10,15,30,.60);
+            }
+
+        .pce-svg {
+            margin-top: 10px;
+            width: 100%;
+            height: 130px;
+            border-radius: 14px;
+            border: 1px solid rgba(10,15,30,.08);
+            background: linear-gradient(180deg, rgba(10,15,30,.02), rgba(10,15,30,.01));
+        }
+
+        /* ---------------- Objects (kept) ---------------- */
+        .pce-objects {
+            border: 1px solid rgba(10,15,30,.10);
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .pce-objects-head {
+            padding: 12px 14px;
+            background: rgba(10,15,30,.02);
+            border-bottom: 1px solid rgba(10,15,30,.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .pce-seg {
+            display: inline-flex;
+            border: 1px solid rgba(10,15,30,.12);
+            background: #fff;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+            .pce-seg button {
+                border: 0;
+                background: transparent;
+                padding: 7px 10px;
+                font-size: 12px;
+                font-weight: 950;
+                color: rgba(10,15,30,.68);
+                cursor: pointer;
+            }
+
+                .pce-seg button.is-active {
+                    background: rgba(46,91,255,.10);
+                    color: rgba(18,54,145,.95);
+                }
+
+        .pce-obj-row {
+            padding: 12px 14px;
+            border-top: 1px solid rgba(10,15,30,.08);
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+
+        @@media (max-width: 980px) {
+            .pce-obj-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pce-obj-name {
+            font-size: 13px;
+            font-weight: 950;
+            color: rgba(10,15,30,.92);
+        }
+
+        .pce-obj-meta {
+            margin-top: 3px;
+            font-size: 12px;
+            color: rgba(10,15,30,.62);
+            font-weight: 800;
+        }
+
+        .pce-obj-mid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pce-pbar {
+            height: 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(10,15,30,.10);
+            background: rgba(10,15,30,.05);
+            overflow: hidden;
+        }
+
+            .pce-pbar > span {
+                display: block;
+                height: 100%;
+                width: 0%;
+                background: linear-gradient(90deg, rgba(46,91,255,1), rgba(49,208,170,1));
+            }
+
+        .pce-stats {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pce-stat {
+            font-size: 11px;
+            font-weight: 950;
+            color: rgba(10,15,30,.74);
+            background: rgba(10,15,30,.02);
+            border: 1px solid rgba(10,15,30,.10);
+            border-radius: 999px;
+            padding: 4px 8px;
+        }
+
+        .pce-obj-right {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* donut */
+        .pce-donut {
+            width: 44px;
+            height: 44px;
+            display: inline-block;
+        }
+
+            .pce-donut svg {
+                width: 44px;
+                height: 44px;
+                display: block;
+            }
+
+            .pce-donut .bg {
+                stroke: rgba(10,15,30,.10);
+            }
+
+            .pce-donut .fg {
+                stroke-linecap: round;
+            }
+
+            .pce-donut .txt {
+                font-size: 10px;
+                font-weight: 950;
+                fill: rgba(10,15,30,.86);
+            }
+
+        /* Detail-only block */
+        .pce-detail-only {
+            display: none;
+            margin-top: 8px;
+        }
+
+        .pce-detail-note {
+            font-size: 12px;
+            color: rgba(10,15,30,.62);
+            font-weight: 800;
+        }
+
+        /* ---------------- AI Advisor (kept) ---------------- */
+        .pce-side {
+            position: sticky;
+            top: 10px;
+        }
+
+        .pce-side-card {
+            background: #fff;
+            border: 1px solid rgba(10,15,30,.10);
+            border-radius: 18px;
+            padding: 12px;
+            box-shadow: 0 10px 22px rgba(10,15,30,.06);
+        }
+
+        .pce-side-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .pce-side-title {
+            font-size: 14px;
+            font-weight: 950;
+            color: rgba(10,15,30,.92);
+        }
+
+        .pce-close {
+            width: 34px;
+            height: 34px;
+            border-radius: 14px;
+            border: 1px solid rgba(10,15,30,.10);
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .pce-locked {
+            margin-top: 10px;
+            border: 1px solid rgba(10,15,30,.10);
+            background: rgba(10,15,30,.02);
+            border-radius: 14px;
+            padding: 10px;
+        }
+
+        .pce-mini {
+            font-size: 12px;
+            color: rgba(10,15,30,.60);
+            font-weight: 800;
+        }
+
+        .pce-ask {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .pce-input {
+            flex: 1;
+            height: 38px;
+            border-radius: 14px;
+            border: 1px solid rgba(10,15,30,.12);
+            padding: 0 10px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .pce-send {
+            width: 44px;
+            height: 38px;
+            border-radius: 14px;
+            border: 1px solid rgba(10,15,30,.12);
+            background: #0a0f1e;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 950;
+        }
+
+        .pce-suggest {
+            margin-top: 10px;
+            border-top: 1px solid rgba(10,15,30,.08);
+            padding-top: 10px;
+        }
+
+            .pce-suggest .h {
+                font-size: 11px;
+                font-weight: 950;
+                color: rgba(10,15,30,.72);
+                text-transform: uppercase;
+                letter-spacing: .4px;
+                margin-bottom: 8px;
+            }
+
+        .pce-q {
+            font-size: 12px;
+            border-radius: 999px;
+            padding: 6px 10px;
+            border: 1px solid rgba(10,15,30,.10);
+            background: rgba(10,15,30,.02);
+            cursor: pointer;
+            color: rgba(10,15,30,.78);
+            font-weight: 900;
+            margin: 0 8px 8px 0;
+        }
+
+            .pce-q:hover {
+                background: rgba(46,91,255,.08);
+                border-color: rgba(46,91,255,.20);
+            }
+
+        /* local toast */
+        #pceToast {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(10,15,30,.12);
+            background: #0a0f1e;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 900;
+            box-shadow: 0 14px 24px rgba(10,15,30,.22);
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: all 180ms ease;
+        }
+    </style>
+}
+
+<div class="verify-page">
+
+    <!-- =========================
+         PROJECT HEADER (with nav)
+    ========================== -->
+    <div class="project-hero">
+        <div class="hero-left">
+            <div class="hero-logo" aria-hidden="true">
+                @(string.IsNullOrWhiteSpace(Model.ClientName) ? "C" : Model.ClientName.Trim().Substring(0, 1).ToUpperInvariant())
             </div>
-            <div class="pce-meter"><span style="width:62%"></span></div>
-          </div>
-        </div>
 
-        <!-- Performance & Load Insights (KEEP) -->
-        <div class="pce-section">
-          <div class="pce-section-head">
-            <h2 class="pce-h2">Performance & Load Insights</h2>
-            <div class="pce-sub">Trends that build confidence before execution</div>
-          </div>
-
-          <div class="pce-charts">
-            <div class="pce-chart">
-              <p class="ct">Throughput Trend</p>
-              <div class="cs">Rows/sec (baseline vs plan)</div>
-              <svg class="pce-svg" viewBox="0 0 360 130" preserveAspectRatio="none" aria-label="Throughput chart">
-                <g stroke="rgba(10,15,30,.08)" stroke-width="1">
-                  <line x1="0" y1="110" x2="360" y2="110"></line>
-                  <line x1="0" y1="75" x2="360" y2="75"></line>
-                  <line x1="0" y1="40" x2="360" y2="40"></line>
-                </g>
-                <path d="M0,85 C45,78 90,82 135,76 C180,70 225,76 270,68 C315,63 340,65 360,60"
-                      fill="none" stroke="rgba(10,15,30,.18)" stroke-width="3" stroke-linecap="round"/>
-                <path d="M0,95 C45,90 90,92 135,86 C180,80 225,84 270,76 C315,70 340,72 360,66"
-                      fill="none" stroke="rgba(49,208,170,.95)" stroke-width="3" stroke-linecap="round"/>
-              </svg>
-            </div>
-
-            <div class="pce-chart">
-              <p class="ct">Failure Probability</p>
-              <div class="cs">Risk signal for this run</div>
-              <svg class="pce-svg" viewBox="0 0 360 130" aria-label="Failure probability gauge">
-                <defs>
-                  <linearGradient id="pceGrad" x1="0" x2="1">
-                    <stop offset="0%" stop-color="rgba(49,208,170,.95)"></stop>
-                    <stop offset="60%" stop-color="rgba(244,183,64,.95)"></stop>
-                    <stop offset="100%" stop-color="rgba(255,93,108,.95)"></stop>
-                  </linearGradient>
-                </defs>
-                <path d="M60,110 A120,120 0 0 1 300,110" fill="none" stroke="rgba(10,15,30,.10)" stroke-width="16" stroke-linecap="round"/>
-                <path d="M60,110 A120,120 0 0 1 234,34" fill="none" stroke="url(#pceGrad)" stroke-width="16" stroke-linecap="round"/>
-                <text x="180" y="78" text-anchor="middle" font-size="22" font-weight="900" fill="rgba(10,15,30,.88)">55%</text>
-                <text x="180" y="98" text-anchor="middle" font-size="12" font-weight="800" fill="rgba(10,15,30,.62)">Medium</text>
-              </svg>
-            </div>
-
-            <div class="pce-chart">
-              <p class="ct">Parallel Utilization</p>
-              <div class="cs">Concurrency used vs configured</div>
-              <svg class="pce-svg" viewBox="0 0 360 130" aria-label="Concurrency bars">
-                <g fill="rgba(10,15,30,.08)">
-                  <rect x="50" y="30" width="50" height="80" rx="10"></rect>
-                  <rect x="120" y="30" width="50" height="80" rx="10"></rect>
-                  <rect x="190" y="30" width="50" height="80" rx="10"></rect>
-                  <rect x="260" y="30" width="50" height="80" rx="10"></rect>
-                </g>
-                <g fill="rgba(46,91,255,.75)">
-                  <rect x="50" y="46" width="50" height="64" rx="10"></rect>
-                  <rect x="120" y="38" width="50" height="72" rx="10"></rect>
-                  <rect x="190" y="58" width="50" height="52" rx="10"></rect>
-                  <rect x="260" y="70" width="50" height="40" rx="10"></rect>
-                </g>
-                <text x="180" y="20" text-anchor="middle" font-size="12" font-weight="850" fill="rgba(10,15,30,.62)">Avg utilization: 78%</text>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Objects in Scope (KEEP) -->
-        <div class="pce-section">
-          <div class="pce-section-head">
-            <h2 class="pce-h2">Objects in Scope</h2>
-            <div class="pce-sub">Summary + Detail view (object-level readiness)</div>
-          </div>
-
-          <div class="pce-objects" id="pceObjects">
-            <div class="pce-objects-head">
-              <div style="font-weight:950;color:rgba(10,15,30,.92);">Object Dashboard</div>
-              <div class="pce-seg" role="tablist" aria-label="View toggle">
-                <button type="button" class="is-active" id="pceViewSummary" onclick="pceSetView('summary')">Summary</button>
-                <button type="button" id="pceViewDetail" onclick="pceSetView('detail')">Detailed</button>
-              </div>
-            </div>
-
-            @foreach (var o in objects)
-            {
-                var stroke = o.Tag == "OK" ? "rgba(49,208,170,.95)" : (o.Tag == "WARN" ? "rgba(244,183,64,.95)" : "rgba(255,93,108,.95)");
-                var tagClass = o.Tag == "OK" ? "ok" : (o.Tag == "WARN" ? "warn" : "warn"); // keep simple badge palette
-                <div class="pce-obj-row">
-                  <div>
-                    <div class="pce-obj-name">@o.Name</div>
-                    <div class="pce-obj-meta">@o.Mode • Last: @o.Last • Rows: @o.Rows.ToString("N0")</div>
-
-                    <div class="pce-detail-only">
-                      <div class="pce-detail-note">
-                        Notes: Object isolated on critical errors • Retries: up to 3 • Chunk size: 10,000
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="pce-obj-mid">
-                    <div class="pce-pbar" aria-label="Object health">
-                      <span style="width:@o.Health%"></span>
-                    </div>
-                    <div class="pce-stats">
-                      <span class="pce-stat">Rules: @o.Rules</span>
-                      <span class="pce-stat">Pass: @o.Passed</span>
-                      <span class="pce-stat">Fail: @o.Failed</span>
-                    </div>
-                  </div>
-
-                  <div class="pce-obj-right">
-                    @Html.Raw(PceDonutSvg(o.Health, stroke))
-                    <span class="pce-tag @tagClass">@o.Status</span>
-                  </div>
+            <div class="hero-text">
+                <div class="hero-topline">
+                    <a class="crumb-link" asp-controller="Projects" asp-action="Index">Projects</a>
+                    <span class="crumb-sep">/</span>
+                    <span class="crumb-current">@Model.Name</span>
                 </div>
-            }
-          </div>
+
+                <div class="hero-title-row">
+                    <h1 class="hero-title">@Model.Name</h1>
+                    <div class="hero-badges">
+                        <span class="pill pill-status">@Model.Status</span>
+                        <span class="pill pill-health">@Model.Health</span>
+                        <span class="pill pill-env">@Model.Environment</span>
+                    </div>
+                </div>
+
+                <div class="hero-meta">
+                    <span><strong>Client:</strong> @Model.ClientName</span>
+                    <span class="subdot">•</span>
+                    <span><strong>Source:</strong> @Model.SourcePlatform</span>
+                    <span class="subdot">•</span>
+                    <span><strong>Target:</strong> @Model.TargetPlatform</span>
+                    <span class="subdot">•</span>
+                    <span><strong>Owner:</strong> @Model.Owner</span>
+                </div>
+            </div>
         </div>
 
-      </div>
-
-      <!-- RIGHT SIDE — Executive Advisory (KEEP) -->
-      <div class="pce-side">
-        <div class="pce-side-card" id="pceAdvisor">
-          <div class="pce-side-head">
-            <div class="pce-side-title">Executive Advisory (AI-Powered)</div>
-            <button class="pce-close" type="button" title="Collapse" onclick="pceToggleAdvisor()">✕</button>
-          </div>
-
-          <div class="pce-mini">Read-only advisor locked to this run</div>
-
-          <div class="pce-locked">
-            <div class="pce-mini" style="font-weight:950;letter-spacing:.4px;text-transform:uppercase;">Locked to current run</div>
-            <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;">
-              <span class="pce-pill"><b>Run</b>: @runId</span>
-              <span class="pce-pill"><b>Batch</b>: @batchId</span>
-            </div>
-          </div>
-
-          <div style="margin-top:10px;border:1px solid rgba(10,15,30,.10);border-radius:16px;padding:10px;background:#fff;">
-            <div class="pce-mini" style="color:rgba(10,15,30,.78);">
-              Ask for: plan summary, risk drivers, object readiness, reconciliation guidance.
-              <b>Advisory only</b>.
-            </div>
-          </div>
-
-          <div class="pce-ask">
-            <input class="pce-input" id="pceAsk" placeholder="Ask about this run…" />
-            <button class="pce-send" type="button" title="Send" onclick="pceAsk()">➤</button>
-          </div>
-
-          <div class="pce-suggest">
-            <div class="h">Suggested questions</div>
-            <div>
-              <button class="pce-q" type="button" onclick="pceQuick('Explain execution plan')">Explain Execution Plan</button>
-              <button class="pce-q" type="button" onclick="pceQuick('Explain risk drivers')">Explain Risk Drivers</button>
-              <button class="pce-q" type="button" onclick="pceQuick('Which objects are at risk and why?')">Objects at Risk</button>
-              <button class="pce-q" type="button" onclick="pceQuick('Reconciliation summary')">Reconciliation Summary</button>
-              <button class="pce-q" type="button" onclick="pceQuick('Pre go-live checklist')">Go-Live Checklist</button>
-              <button class="pce-q" type="button" onclick="pceQuick('Executive summary in 5 bullets')">Executive Summary</button>
-            </div>
-          </div>
-
-          <div class="pce-mini" style="margin-top:10px; padding:10px; border:1px solid rgba(10,15,30,.10); border-radius:14px; background: rgba(10,15,30,.02);">
-            <b>Advisory Only:</b> Actions require manual approval and are logged for audit.
-          </div>
+        <div class="hero-right">
+            <button class="btn btn-secondary"><i data-lucide="file-down"></i> Evidence Pack</button>
+            <button class="btn btn-secondary"><i data-lucide="shield-check"></i> Run Verify</button>
+            <button class="btn btn-primary"><i data-lucide="badge-check"></i> Approve</button>
         </div>
-      </div>
-
     </div>
-  </div>
+
+    <!-- =========================
+         TABS NAV (same as others)
+    ========================== -->
+    <div class="details-tabs">
+        <a class="tab-item" asp-controller="Projects" asp-action="Details" asp-route-id="@projectId">Overview</a>
+        <a class="tab-item" asp-controller="Projects" asp-action="Fetch" asp-route-id="@projectId">Extract</a>
+        <a class="tab-item" asp-controller="Projects" asp-action="Verify" asp-route-id="@projectId">Transform</a>
+        <a class="tab-item is-active" asp-controller="Projects" asp-action="Process" asp-route-id="@projectId">Load</a>
+        <a class="tab-item" asp-controller="Projects" asp-action="Config" asp-route-id="@projectId">Config</a>
+        @* <a class="pce-tab @(activeTab=="Activity" ? "is-active" : "")" asp-controller="Projects" asp-action="Activity" asp-route-id="@projectId">Activity</a> *@
+
+        <div class="tabs-spacer"></div>
+        <div class="view-toggle">
+            <button class="vt-btn is-active" data-view="decision">Decision</button>
+            <button class="vt-btn" data-view="evidence">Evidence</button>
+        </div>
+    </div>
+
+    <!-- =========================
+         PROCESS PAGE (REDRAFT)
+    ========================== -->
+    <div class="pce-page">
+
+        <!-- Run context (minimal chips) -->
+        @* <div class="pce-ribbon" aria-label="Run context">
+            <span class="pce-pill">
+                <b>Run</b>: <span id="pceRun">@runId</span>
+                <button class="pce-copy" type="button" title="Copy Run ID" onclick="pceCopy('pceRun')">⧉</button>
+            </span>
+            <span class="pce-pill">
+                <b>Batch</b>: <span id="pceBatch">@batchId</span>
+                <button class="pce-copy" type="button" title="Copy Batch ID" onclick="pceCopy('pceBatch')">⧉</button>
+            </span>
+            <span class="pce-pill"><b>Mapping</b>: @mappingVersion</span>
+            <span class="pce-pill"><b>Ruleset</b>: @rulesetVersion</span>
+            <span class="pce-pill"><b>Target</b>: @targetSystem</span>
+            <span class="pce-pill"><b>Mode</b>: @execMode</span>
+            <span class="pce-pill"><b>Isolation</b>: @isolation</span>
+
+            <div class="pce-ribbon-actions">
+                <button class="pce-btn" type="button" onclick="pceToast('Pre-flight queued (UI only).')">Run Pre-Flight</button>
+                <button class="pce-btn primary" type="button" disabled>Execute (Locked)</button>
+            </div>
+        </div> *@
+
+        <div class="pce-grid" style="margin-top:12px;">
+
+            <!-- LEFT MAIN -->
+            <div>
+
+                <!-- Minimal KPI strip -->
+                <div class="pce-kpis" aria-label="Readiness KPIs">
+                    <div class="pce-kpi">
+                        <div class="row">
+                            <div>
+                                <div class="t">Data Readiness</div>
+                                <div class="v">@kpiDataReadiness<span style="font-size:13px;font-weight:950;color:rgba(10,15,30,.70);">%</span></div>
+                            </div>
+                            <div class="s">Verify gate</div>
+                        </div>
+                        <div class="pce-meter"><span style="width:@kpiDataReadiness%"></span></div>
+                    </div>
+
+                    <div class="pce-kpi">
+                        <div class="row">
+                            <div>
+                                <div class="t">Risk</div>
+                                <div class="v">@kpiRisk</div>
+                            </div>
+                            <div class="s">Run impact</div>
+                        </div>
+                        @{
+                            var riskPct = kpiRisk == "Low" ? 28 : (kpiRisk == "High" ? 85 : 55);
+                        }
+                        <div class="pce-meter"><span style="width:@riskPct%"></span></div>
+                    </div>
+
+                    <div class="pce-kpi">
+                        <div class="row">
+                            <div>
+                                <div class="t">Estimated Runtime</div>
+                                <div class="v">@kpiEtaMin–@kpiEtaMax<span style="font-size:13px;font-weight:950;color:rgba(10,15,30,.70);"> min</span></div>
+                            </div>
+                            <div class="s">Throughput ETA</div>
+                        </div>
+                        <div class="pce-meter"><span style="width:62%"></span></div>
+                    </div>
+                </div>
+
+                <!-- Performance & Load Insights (KEEP) -->
+                @* <div class="pce-section">
+                    <div class="pce-section-head">
+                        <h2 class="pce-h2">Performance & Load Insights</h2>
+                        <div class="pce-sub">Trends that build confidence before execution</div>
+                    </div>
+
+                    <div class="pce-charts">
+                        <div class="pce-chart">
+                            <p class="ct">Throughput Trend</p>
+                            <div class="cs">Rows/sec (baseline vs plan)</div>
+                            <svg class="pce-svg" viewBox="0 0 360 130" preserveAspectRatio="none" aria-label="Throughput chart">
+                                <g stroke="rgba(10,15,30,.08)" stroke-width="1">
+                                    <line x1="0" y1="110" x2="360" y2="110"></line>
+                                    <line x1="0" y1="75" x2="360" y2="75"></line>
+                                    <line x1="0" y1="40" x2="360" y2="40"></line>
+                                </g>
+                                <path d="M0,85 C45,78 90,82 135,76 C180,70 225,76 270,68 C315,63 340,65 360,60"
+                                      fill="none" stroke="rgba(10,15,30,.18)" stroke-width="3" stroke-linecap="round" />
+                                <path d="M0,95 C45,90 90,92 135,86 C180,80 225,84 270,76 C315,70 340,72 360,66"
+                                      fill="none" stroke="rgba(49,208,170,.95)" stroke-width="3" stroke-linecap="round" />
+                            </svg>
+                        </div>
+
+                        <div class="pce-chart">
+                            <p class="ct">Failure Probability</p>
+                            <div class="cs">Risk signal for this run</div>
+                            <svg class="pce-svg" viewBox="0 0 360 130" aria-label="Failure probability gauge">
+                                <defs>
+                                    <linearGradient id="pceGrad" x1="0" x2="1">
+                                        <stop offset="0%" stop-color="rgba(49,208,170,.95)"></stop>
+                                        <stop offset="60%" stop-color="rgba(244,183,64,.95)"></stop>
+                                        <stop offset="100%" stop-color="rgba(255,93,108,.95)"></stop>
+                                    </linearGradient>
+                                </defs>
+                                <path d="M60,110 A120,120 0 0 1 300,110" fill="none" stroke="rgba(10,15,30,.10)" stroke-width="16" stroke-linecap="round" />
+                                <path d="M60,110 A120,120 0 0 1 234,34" fill="none" stroke="url(#pceGrad)" stroke-width="16" stroke-linecap="round" />
+                                <text x="180" y="78" text-anchor="middle" font-size="22" font-weight="900" fill="rgba(10,15,30,.88)">55%</text>
+                                <text x="180" y="98" text-anchor="middle" font-size="12" font-weight="800" fill="rgba(10,15,30,.62)">Medium</text>
+                            </svg>
+                        </div>
+
+                        <div class="pce-chart">
+                            <p class="ct">Parallel Utilization</p>
+                            <div class="cs">Concurrency used vs configured</div>
+                            <svg class="pce-svg" viewBox="0 0 360 130" aria-label="Concurrency bars">
+                                <g fill="rgba(10,15,30,.08)">
+                                    <rect x="50" y="30" width="50" height="80" rx="10"></rect>
+                                    <rect x="120" y="30" width="50" height="80" rx="10"></rect>
+                                    <rect x="190" y="30" width="50" height="80" rx="10"></rect>
+                                    <rect x="260" y="30" width="50" height="80" rx="10"></rect>
+                                </g>
+                                <g fill="rgba(46,91,255,.75)">
+                                    <rect x="50" y="46" width="50" height="64" rx="10"></rect>
+                                    <rect x="120" y="38" width="50" height="72" rx="10"></rect>
+                                    <rect x="190" y="58" width="50" height="52" rx="10"></rect>
+                                    <rect x="260" y="70" width="50" height="40" rx="10"></rect>
+                                </g>
+                                <text x="180" y="20" text-anchor="middle" font-size="12" font-weight="850" fill="rgba(10,15,30,.62)">Avg utilization: 78%</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+ *@
+                <!-- Objects in Scope (KEEP) -->
+                <div class="pce-section">
+                    <div class="pce-section-head">
+                        <h2 class="pce-h2">Objects in Scope</h2>
+                        <div class="pce-sub">Summary + Detail view (object-level readiness)</div>
+                    </div>
+
+                    <div class="pce-objects" id="pceObjects">
+                        <div class="pce-objects-head">
+                            <div style="font-weight:950;color:rgba(10,15,30,.92);">Object Dashboard</div>
+                            <div class="pce-seg" role="tablist" aria-label="View toggle">
+                                <button type="button" class="is-active" id="pceViewSummary" onclick="pceSetView('summary')">Summary</button>
+                                <button type="button" id="pceViewDetail" onclick="pceSetView('detail')">Detailed</button>
+                            </div>
+                        </div>
+
+                        @foreach (var o in objects)
+                        {
+                            var stroke = o.Tag == "OK" ? "rgba(49,208,170,.95)" : (o.Tag == "WARN" ? "rgba(244,183,64,.95)" : "rgba(255,93,108,.95)");
+                            var tagClass = o.Tag == "OK" ? "ok" : (o.Tag == "WARN" ? "warn" : "warn"); // keep simple badge palette
+                                                                                                       <div class="pce-obj-row">
+                                                                                                           <div>
+                                                                                                               <div class="pce-obj-name">@o.Name</div>
+                                                                                                               <div class="pce-obj-meta">@o.Mode • Last: @o.Last • Rows: @o.Rows.ToString("N0")</div>
+
+                                    <div class="pce-detail-only">
+                                        <div class="pce-detail-note">
+                                            Notes: Object isolated on critical errors • Retries: up to 3 • Chunk size: 10,000
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pce-obj-mid">
+                                    <div class="pce-pbar" aria-label="Object health">
+                                        <span style="width:@o.Health%"></span>
+                                    </div>
+                                    <div class="pce-stats">
+                                        <span class="pce-stat">Rules: @o.Rules</span>
+                                        <span class="pce-stat">Pass: @o.Passed</span>
+                                        <span class="pce-stat">Fail: @o.Failed</span>
+                                    </div>
+                                </div>
+
+                                <div class="pce-obj-right">
+                                    <span class="pce-tag @tagClass">@o.Status</span>
+                                    @Html.Raw(PceDonutSvg(o.Health, stroke))
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT SIDE — Executive Advisory (KEEP) -->
+            @* <div class="pce-side">
+                <div class="pce-side-card" id="pceAdvisor">
+                    <div class="pce-side-head">
+                        <div class="pce-side-title">Executive Advisory (AI-Powered)</div>
+                        <button class="pce-close" type="button" title="Collapse" onclick="pceToggleAdvisor()">✕</button>
+                    </div>
+
+                    <div class="pce-mini">Read-only advisor locked to this run</div>
+
+                    <div class="pce-locked">
+                        <div class="pce-mini" style="font-weight:950;letter-spacing:.4px;text-transform:uppercase;">Locked to current run</div>
+                        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;">
+                            <span class="pce-pill"><b>Run</b>: @runId</span>
+                            <span class="pce-pill"><b>Batch</b>: @batchId</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:10px;border:1px solid rgba(10,15,30,.10);border-radius:16px;padding:10px;background:#fff;">
+                        <div class="pce-mini" style="color:rgba(10,15,30,.78);">
+                            Ask for: plan summary, risk drivers, object readiness, reconciliation guidance.
+                            <b>Advisory only</b>.
+                        </div>
+                    </div>
+
+                    <div class="pce-ask">
+                        <input class="pce-input" id="pceAsk" placeholder="Ask about this run…" />
+                        <button class="pce-send" type="button" title="Send" onclick="pceAsk()">➤</button>
+                    </div>
+
+                    <div class="pce-suggest">
+                        <div class="h">Suggested questions</div>
+                        <div>
+                            <button class="pce-q" type="button" onclick="pceQuick('Explain execution plan')">Explain Execution Plan</button>
+                            <button class="pce-q" type="button" onclick="pceQuick('Explain risk drivers')">Explain Risk Drivers</button>
+                            <button class="pce-q" type="button" onclick="pceQuick('Which objects are at risk and why?')">Objects at Risk</button>
+                            <button class="pce-q" type="button" onclick="pceQuick('Reconciliation summary')">Reconciliation Summary</button>
+                            <button class="pce-q" type="button" onclick="pceQuick('Pre go-live checklist')">Go-Live Checklist</button>
+                            <button class="pce-q" type="button" onclick="pceQuick('Executive summary in 5 bullets')">Executive Summary</button>
+                        </div>
+                    </div>
+
+                    <div class="pce-mini" style="margin-top:10px; padding:10px; border:1px solid rgba(10,15,30,.10); border-radius:14px; background: rgba(10,15,30,.02);">
+                        <b>Advisory Only:</b> Actions require manual approval and are logged for audit.
+                    </div>
+                </div>
+            </div> *@
+
+        </div>
+    </div>
 </div>
 
 @functions {
@@ -991,95 +1132,99 @@
     }
 }
 
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/verify.css" />
+}
+
 @section Scripts {
-<script>
-/* Page-only JS */
-(function(){
-  // animate meters + progress bars
-  document.querySelectorAll(".pce-meter > span, .pce-pbar > span").forEach(el => {
-    const w = el.style.width || "0%";
-    el.style.width = "0%";
-    setTimeout(() => { el.style.transition = "width 900ms ease"; el.style.width = w; }, 60);
-  });
-})();
+    <script>
+        /* Page-only JS */
+        (function() {
+            // animate meters + progress bars
+            document.querySelectorAll(".pce-meter > span, .pce-pbar > span").forEach(el => {
+                const w = el.style.width || "0%";
+                el.style.width = "0%";
+                setTimeout(() => { el.style.transition = "width 900ms ease"; el.style.width = w; }, 60);
+            });
+        })();
 
-function pceCopy(id){
-  const el = document.getElementById(id);
-  if(!el) return;
-  const txt = el.textContent.trim();
-  (navigator.clipboard?.writeText(txt) || Promise.reject())
-    .then(() => pceToast("Copied: " + txt))
-    .catch(() => pceToast("Copy not available"));
-}
+        function pceCopy(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const txt = el.textContent.trim();
+            (navigator.clipboard?.writeText(txt) || Promise.reject())
+                .then(() => pceToast("Copied: " + txt))
+                .catch(() => pceToast("Copy not available"));
+        }
 
-function pceToast(msg){
-  let t = document.getElementById("pceToast");
-  if(!t){
-    t = document.createElement("div");
-    t.id = "pceToast";
-    document.body.appendChild(t);
-  }
-  t.textContent = msg;
-  t.style.opacity = "0";
-  t.style.transform = "translateY(8px)";
-  requestAnimationFrame(() => {
-    t.style.opacity = "1";
-    t.style.transform = "translateY(0)";
-  });
-  clearTimeout(window.__pceToastTimer);
-  window.__pceToastTimer = setTimeout(() => {
-    t.style.opacity = "0";
-    t.style.transform = "translateY(8px)";
-  }, 1600);
-}
+        function pceToast(msg) {
+            let t = document.getElementById("pceToast");
+            if (!t) {
+                t = document.createElement("div");
+                t.id = "pceToast";
+                document.body.appendChild(t);
+            }
+            t.textContent = msg;
+            t.style.opacity = "0";
+            t.style.transform = "translateY(8px)";
+            requestAnimationFrame(() => {
+                t.style.opacity = "1";
+                t.style.transform = "translateY(0)";
+            });
+            clearTimeout(window.__pceToastTimer);
+            window.__pceToastTimer = setTimeout(() => {
+                t.style.opacity = "0";
+                t.style.transform = "translateY(8px)";
+            }, 1600);
+        }
 
-function pceSetView(mode){
-  const sum = document.getElementById("pceViewSummary");
-  const det = document.getElementById("pceViewDetail");
-  const detailEls = document.querySelectorAll(".pce-detail-only");
+        function pceSetView(mode) {
+            const sum = document.getElementById("pceViewSummary");
+            const det = document.getElementById("pceViewDetail");
+            const detailEls = document.querySelectorAll(".pce-detail-only");
 
-  if(mode === "detail"){
-    sum.classList.remove("is-active");
-    det.classList.add("is-active");
-    detailEls.forEach(x => x.style.display = "block");
-    pceToast("Detailed view enabled");
-  } else {
-    det.classList.remove("is-active");
-    sum.classList.add("is-active");
-    detailEls.forEach(x => x.style.display = "none");
-    pceToast("Summary view enabled");
-  }
-}
+            if (mode === "detail") {
+                sum.classList.remove("is-active");
+                det.classList.add("is-active");
+                detailEls.forEach(x => x.style.display = "block");
+                pceToast("Detailed view enabled");
+            } else {
+                det.classList.remove("is-active");
+                sum.classList.add("is-active");
+                detailEls.forEach(x => x.style.display = "none");
+                pceToast("Summary view enabled");
+            }
+        }
 
-function pceToggleAdvisor(){
-  const el = document.getElementById("pceAdvisor");
-  if(!el) return;
-  const hidden = el.getAttribute("data-collapsed") === "1";
-  if(hidden){
-    el.style.display = "";
-    el.setAttribute("data-collapsed","0");
-    pceToast("Advisor opened");
-  } else {
-    el.style.display = "none";
-    el.setAttribute("data-collapsed","1");
-    pceToast("Advisor collapsed");
-  }
-}
+        function pceToggleAdvisor() {
+            const el = document.getElementById("pceAdvisor");
+            if (!el) return;
+            const hidden = el.getAttribute("data-collapsed") === "1";
+            if (hidden) {
+                el.style.display = "";
+                el.setAttribute("data-collapsed", "0");
+                pceToast("Advisor opened");
+            } else {
+                el.style.display = "none";
+                el.setAttribute("data-collapsed", "1");
+                pceToast("Advisor collapsed");
+            }
+        }
 
-function pceQuick(q){
-  const input = document.getElementById("pceAsk");
-  if(!input) return;
-  input.value = q;
-  pceAsk();
-}
+        function pceQuick(q) {
+            const input = document.getElementById("pceAsk");
+            if (!input) return;
+            input.value = q;
+            pceAsk();
+        }
 
-function pceAsk(){
-  const input = document.getElementById("pceAsk");
-  if(!input) return;
-  const q = input.value.trim();
-  if(!q) return;
-  pceToast("Advisor (UI): " + q);
-  input.value = "";
-}
-</script>
+        function pceAsk() {
+            const input = document.getElementById("pceAsk");
+            if (!input) return;
+            const q = input.value.trim();
+            if (!q) return;
+            pceToast("Advisor (UI): " + q);
+            input.value = "";
+        }
+    </script>
 }

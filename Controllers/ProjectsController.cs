@@ -82,7 +82,7 @@ namespace DataSync.Web.Controllers
             var vm = BuildProjectDetailsVm(id);
             if (vm == null) return NotFound();
 
-            ViewData["ActiveTab"] = "process";
+            ViewData["ActiveTab"] = "Process";
 
             // IMPORTANT: render Verify.cshtml, not Details.cshtml
             return View(vm); // will load Views/Projects/Verify.cshtml
