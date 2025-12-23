@@ -1,654 +1,696 @@
-/* =========================================================
-   Verify Page CSS (Scoped)
-   IMPORTANT: This file must NOT override global app styles.
-   Everything is scoped under .verify-page.
-========================================================= */
-
-.verify-page {
-  --v-border: rgba(15, 23, 42, 0.10);
-  --v-border-soft: rgba(15, 23, 42, 0.08);
-  --v-bg-soft: rgba(15, 23, 42, 0.03);
-  --v-text: rgba(15, 23, 42, 0.92);
-  --v-muted: rgba(15, 23, 42, 0.68);
-  --v-muted2: rgba(15, 23, 42, 0.55);
-
-  --v-good: rgba(34, 197, 94, 1);
-  --v-warn: rgba(245, 158, 11, 1);
-  --v-bad: rgba(239, 68, 68, 1);
-  --v-accent: rgba(37, 99, 235, 1);
-
-  color: var(--v-text);
-}
-
-/* =========================================================
-   Verify Page Header (title row under tabs)
-========================================================= */
-
-.verify-page .verify-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  margin: 10px 0 14px;
-}
-
-.verify-page .verify-title {
-  margin: 0;
-  font-size: 34px;
-  font-weight: 900;
-  letter-spacing: -0.6px;
+/* Verify Page - High Specificity Styles */
+body .verify-page { 
+    max-width: 100%; 
+    padding: 0;
+}
+
+/* View toggle */
+body .verify-view-decision { display: none !important; }
+body .verify-view-evidence { display: none !important; }
+body.verify-view-decision .verify-view-decision { display: block !important; }
+body.verify-view-evidence .verify-view-evidence { display: block !important; }
+
+/* Run Context Strip */
+body .verify-page .verify-run-context {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,.08);
+    background: rgba(255,255,255,.75);
+    margin: 0 0 14px;
+}
+
+body .verify-page .run-ctx-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+body .verify-page .run-ctx-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    opacity: 0.6;
+}
+
+body .verify-page .run-ctx-value {
+    font-size: 13px;
+    font-weight: 700;
+    opacity: 0.9;
+}
+
+/* Verify Header */
+body .verify-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(0,0,0,.08);
+    background: rgba(255,255,255,.78);
+    margin: 0 0 14px;
+}
+
+body .verify-title {
+    font-size: 22px;
+    font-weight: 850;
+    letter-spacing: -.4px;
+    margin: 0 0 6px;
+}
+
+body .verify-subtitle {
+    font-size: 14px;
+    opacity: .85;
+    margin-bottom: 10px;
 }
 
-.verify-page .verify-subtitle {
-  margin-top: 6px;
-  opacity: 0.78;
-  font-weight: 650;
-}
+body .verify-runmeta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 12px;
+}
 
-.verify-page .verify-runmeta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
+body .verify-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-.verify-page .verify-controls {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
+/* Decision Metrics */
+body .verify-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 16px;
 }
 
-.verify-page .mini.neutral {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--v-border);
-  background: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--v-muted);
-}
-
-/* =========================================================
-   Grid layout (uses your existing .details-grid)
-   If your Verify page uses .details-grid already, this stays aligned.
-========================================================= */
-
-/* Main metrics grid */
-.verify-page .verify-metrics {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+body .vcard {
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 16px;
+    padding: 16px;
+    background: rgba(255,255,255,.85);
 }
-
-/* Each metric card (do NOT use .card or .panel to avoid override) */
-.verify-page .vcard {
-  border-radius: 14px;
-  border: 1px solid var(--v-border-soft);
-  background: var(--v-bg-soft);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-height: 210px;
+
+body .vcard-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
 }
 
-.verify-page .vcard-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+body .vcard-label {
+    font-weight: 800;
+    font-size: 14px;
 }
 
-.verify-page .vcard-label {
-  font-size: 12px;
-  font-weight: 850;
-  color: var(--v-muted);
+body .vcard-foot {
+    margin-top: 12px;
+    font-size: 13px;
+    opacity: .85;
+    text-align: center;
 }
 
-.verify-page .vcard-foot {
-  margin-top: auto;
-  font-size: 12px;
-  color: var(--v-muted2);
-  font-weight: 700;
+body .donut {
+    --p: 0;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    position: relative;
+    border-radius: 50%;
+    background: conic-gradient(#2563eb calc(var(--p) * 1%), rgba(0,0,0,.06) 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* KPI split inside card */
-.verify-page .vcard-split {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+body .donut-inner {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.verify-page .mini-kpi {
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: rgba(255, 255, 255, 0.75);
-  border-radius: 12px;
-  padding: 10px;
-  text-align: center;
+body .donut-num {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1;
 }
 
-.verify-page .mini-num {
-  font-weight: 950;
-  letter-spacing: -0.3px;
-  font-size: 18px;
+body .donut-cap {
+    font-size: 12px;
+    opacity: .7;
+    margin-top: 2px;
 }
 
-.verify-page .mini-lbl {
-  margin-top: 2px;
-  font-size: 12px;
-  color: var(--v-muted);
-  font-weight: 750;
+body .vcard-split {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
 }
 
-.verify-page .mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+body .mini-kpi {
+    text-align: center;
+    padding: 12px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,.06);
+    background: rgba(0,0,0,.02);
 }
 
-/* =========================================================
-   Donut (Confidence score)
-========================================================= */
+body .mini-num {
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1;
+}
 
-.verify-page .donut {
-  width: 120px;
-  height: 120px;
-  border-radius: 999px;
-  margin: 0 auto;
-  background: conic-gradient(var(--v-accent) calc(var(--p) * 1%), rgba(15, 23, 42, 0.10) 0);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+body .mini-lbl {
+    font-size: 11px;
+    opacity: .75;
+    margin-top: 4px;
 }
 
-.verify-page .donut::after {
-  content: "";
-  position: absolute;
-  inset: 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(15, 23, 42, 0.06);
+body .evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 16px;
 }
 
-.verify-page .donut-inner {
-  position: relative;
-  z-index: 1;
-  text-align: center;
+body .ev-tile {
+    text-align: center;
+    padding: 14px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,.06);
+    background: rgba(0,0,0,.02);
 }
 
-.verify-page .donut-num {
-  font-size: 28px;
-  font-weight: 950;
-  letter-spacing: -0.6px;
+body .ev-num {
+    font-size: 18px;
+    font-weight: 900;
 }
 
-.verify-page .donut-cap {
-  font-size: 12px;
-  color: var(--v-muted);
-  font-weight: 800;
+body .ev-lbl {
+    font-size: 11px;
+    opacity: .75;
+    margin-top: 4px;
 }
 
-/* =========================================================
-   Evidence tiles
-========================================================= */
+/* Object Table */
+body .verify-page .verify-object-table {
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255,255,255,.85);
+    margin-top: 12px;
+}
 
-.verify-page .evidence-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+body .verify-page .verify-obj-row {
+    display: grid;
+    grid-template-columns: 1.5fr repeat(3, 0.8fr) 1fr 0.7fr 0.8fr 1fr;
+    gap: 12px;
+    padding: 12px 14px;
+    align-items: center;
+    border-top: 1px solid rgba(0,0,0,.06);
+    font-size: 13px;
 }
 
-.verify-page .ev-tile {
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: rgba(255, 255, 255, 0.75);
-  padding: 10px;
+body .verify-page .verify-obj-row:first-child {
+    border-top: 0;
 }
 
-.verify-page .ev-num {
-  font-weight: 950;
-  letter-spacing: -0.3px;
+body .verify-page .verify-obj-head {
+    background: rgba(0,0,0,.03);
+    font-size: 12px;
+    font-weight: 900;
+    opacity: 0.8;
 }
 
-.verify-page .ev-lbl {
-  margin-top: 2px;
-  font-size: 12px;
-  color: var(--v-muted);
-  font-weight: 750;
+body .verify-page .verify-obj-name {
+    font-weight: 700;
 }
 
-/* =========================================================
-   Sparkline trend (SVG)
-========================================================= */
+body .verify-page .verify-coverage {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-.verify-page .spark-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+body .verify-page .verify-coverage-bar {
+    flex: 1;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(0,0,0,.06);
+    overflow: hidden;
 }
 
-.verify-page .spark-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+body .verify-page .verify-coverage-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: rgba(16,185,129,.9);
 }
 
-.verify-page .spark-title {
-  font-weight: 850;
+body .verify-page .verify-coverage-bar-warn > span {
+    background: rgba(245,158,11,.95);
 }
 
-.verify-page .spark-metric {
-  font-weight: 950;
-  color: var(--v-muted);
+body .verify-page .verify-coverage-text {
+    font-size: 12px;
+    font-weight: 700;
+    min-width: 38px;
 }
 
-.verify-page .sparkline {
-  width: 100%;
-  height: 64px;
+/* Blockers Grid */
+body .verify-page .verify-blockers-grid {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 16px;
+    margin-top: 12px;
 }
 
-.verify-page .sparkline path {
-  fill: none;
-  stroke: var(--v-accent);
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+body .verify-page .verify-blocker-card {
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 14px;
+    padding: 24px 16px;
+    background: rgba(239, 68, 68, .08);
+    text-align: center;
 }
 
-.verify-page .sparkline path.bg {
-  stroke: rgba(15, 23, 42, 0.12);
-  stroke-width: 3;
+body .verify-page .verify-blocker-num {
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1;
+    color: rgba(185, 28, 28, 1);
 }
 
-.verify-page .spark-foot {
-  font-size: 12px;
-  color: var(--v-muted2);
+body .verify-page .verify-blocker-label {
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 8px;
 }
 
-/* =========================================================
-   Risk concentration bars
-========================================================= */
+body .verify-page .verify-blocker-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
 
-.verify-page .risk-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+body .verify-page .verify-blocker-section {
+    border: 1px solid rgba(0,0,0,.06);
+    border-radius: 12px;
+    padding: 12px;
+    background: rgba(0,0,0,.02);
 }
 
-.verify-page .rb-row {
-  display: grid;
-  grid-template-columns: 220px 1fr 140px;
-  gap: 12px;
-  align-items: center;
-  padding: 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: var(--v-bg-soft);
+body .verify-page .verify-blocker-subtitle {
+    font-size: 12px;
+    font-weight: 800;
+    opacity: 0.7;
+    margin-bottom: 8px;
 }
 
-.verify-page .rb-name {
-  font-weight: 900;
+body .verify-page .verify-blocker-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
-.verify-page .rb-meta {
-  font-size: 12px;
-  color: var(--v-muted);
-  font-weight: 700;
-  margin-top: 2px;
+body .verify-page .verify-blocker-impact {
+    font-size: 16px;
+    font-weight: 900;
 }
 
-.verify-page .rb-bar {
-  height: 12px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.10);
-  overflow: hidden;
+/* Validation Table */
+body .verify-page .verify-validation-table {
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255,255,255,.85);
+    margin-top: 12px;
 }
 
-.verify-page .rb-bar span {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--v-accent);
+body .verify-page .verify-val-row {
+    display: grid;
+    grid-template-columns: 1.8fr repeat(3, 0.7fr) 1fr 1fr;
+    gap: 12px;
+    padding: 12px 14px;
+    align-items: center;
+    border-top: 1px solid rgba(0,0,0,.06);
+    font-size: 13px;
 }
 
-.verify-page .rb-right {
-  text-align: right;
+body .verify-page .verify-val-row:first-child {
+    border-top: 0;
 }
 
-.verify-page .rb-aff {
-  font-size: 12px;
-  color: var(--v-muted);
-  font-weight: 800;
-  margin-top: 4px;
+body .verify-page .verify-val-head {
+    background: rgba(0,0,0,.03);
+    font-size: 12px;
+    font-weight: 900;
+    opacity: 0.8;
 }
 
-/* =========================================================
-   Object verification progress table
-========================================================= */
+body .verify-page .verify-val-category {
+    font-weight: 700;
+}
 
-.verify-page .objtable {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+body .verify-page .verify-val-good {
+    color: rgba(5, 150, 105, 1);
+    font-weight: 700;
 }
 
-.verify-page .objthead,
-.verify-page .objtrow {
-  display: grid;
-  grid-template-columns: 240px 1fr 1fr 1fr 120px 120px;
-  gap: 12px;
-  align-items: center;
+body .verify-page .verify-val-bad {
+    color: rgba(185, 28, 28, 1);
+    font-weight: 700;
 }
 
-.verify-page .objthead {
-  font-size: 12px;
-  font-weight: 850;
-  color: var(--v-muted);
-  padding: 0 2px;
+/* Severity Pills */
+body .verify-page .pill-severity-critical {
+    background: rgba(239, 68, 68, .12) !important;
+    border: 1px solid rgba(239, 68, 68, .25) !important;
+    color: rgba(185, 28, 28, 1) !important;
 }
 
-.verify-page .objtrow {
-  padding: 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: var(--v-bg-soft);
+body .verify-page .pill-severity-high {
+    background: rgba(245, 158, 11, .12) !important;
+    border: 1px solid rgba(245, 158, 11, .25) !important;
+    color: rgba(180, 83, 9, 1) !important;
 }
 
-.verify-page .objtitle {
-  font-weight: 900;
+body .verify-page .pill-severity-medium {
+    background: rgba(59, 130, 246, .12) !important;
+    border: 1px solid rgba(59, 130, 246, .25) !important;
+    color: rgba(29, 78, 216, 1) !important;
 }
 
-.verify-page .objsub {
-  font-size: 12px;
-  color: var(--v-muted);
-  font-weight: 700;
-  margin-top: 2px;
+body .verify-page .pill-severity-low {
+    background: rgba(107, 114, 128, .12) !important;
+    border: 1px solid rgba(107, 114, 128, .25) !important;
+    color: rgba(55, 65, 81, 1) !important;
 }
 
-/* Progress bars */
-.verify-page .pbar {
-  height: 10px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.12);
-  overflow: hidden;
+/* ADF Grid */
+body .verify-page .verify-adf-grid {
+    display: grid;
+    grid-template-columns: 200px 1fr 200px;
+    gap: 16px;
+    margin-top: 12px;
 }
 
-.verify-page .pbar span {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--v-accent);
+body .verify-page .verify-adf-status {
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 14px;
+    padding: 16px;
+    background: rgba(16, 185, 129, .08);
+    display: flex;
+    gap: 12px;
+    align-items: center;
 }
 
-.verify-page .pbar.good span { background: var(--v-good); }
-.verify-page .pbar.warn span { background: var(--v-warn); }
-.verify-page .pbar.bad span  { background: var(--v-bad); }
+body .verify-page .verify-adf-status-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, .15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-/* Mini button (Verify only) */
-.verify-page .mini-btn {
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  background: rgba(255, 255, 255, 0.85);
-  padding: 8px 10px;
-  border-radius: 10px;
-  font-weight: 800;
-  font-size: 12px;
-  cursor: pointer;
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
+body .verify-page .verify-adf-status-icon svg {
+    width: 22px;
+    height: 22px;
+    color: rgba(5, 150, 105, 1);
 }
 
-.verify-page .mini-btn[disabled] {
-  opacity: 0.55;
-  cursor: not-allowed;
+body .verify-page .verify-adf-status-label {
+    font-size: 12px;
+    opacity: 0.7;
+    font-weight: 700;
 }
 
-/* =========================================================
-   Exceptions table
-========================================================= */
+body .verify-page .verify-adf-status-value {
+    font-size: 16px;
+    font-weight: 900;
+}
 
-.verify-page .ex-filters {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+body .verify-page .verify-adf-detail {
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 14px;
+    padding: 16px;
+    background: rgba(255,255,255,.85);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.verify-page .chip {
-  display: inline-flex;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  background: rgba(255, 255, 255, 0.75);
-  font-weight: 850;
-  font-size: 12px;
-  opacity: 0.85;
+body .verify-page .verify-adf-kv {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
 }
 
-.verify-page .chip.is-active {
-  background: rgba(37, 99, 235, 0.10);
-  color: rgba(37, 99, 235, 1);
-  border-color: rgba(37, 99, 235, 0.20);
-  opacity: 1;
+body .verify-page .verify-adf-k {
+    opacity: 0.7;
+    font-weight: 700;
 }
 
-.verify-page .extable { display: flex; flex-direction: column; gap: 8px; }
+body .verify-page .verify-adf-v {
+    font-weight: 700;
+}
 
-.verify-page .exthead,
-.verify-page .extrow {
-  display: grid;
-  grid-template-columns: 110px 120px 1fr 90px 170px 120px 120px;
-  gap: 12px;
-  align-items: center;
+body .verify-page .verify-adf-activities {
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 14px;
+    padding: 12px;
+    background: rgba(255,255,255,.85);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.verify-page .exthead {
-  font-size: 12px;
-  font-weight: 850;
-  color: var(--v-muted);
-  padding: 0 2px;
+body .verify-page .verify-adf-activity-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(0,0,0,.02);
 }
 
-.verify-page .extrow {
-  padding: 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: var(--v-bg-soft);
+body .verify-page .verify-adf-activity-num {
+    font-size: 18px;
+    font-weight: 900;
 }
 
-/* Severity pills (Verify-only) */
-.verify-page .sev {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 900;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  background: rgba(255, 255, 255, 0.75);
+body .verify-page .verify-adf-activity-label {
+    font-size: 12px;
+    opacity: 0.75;
 }
 
-.verify-page .sev-bad {
-  border-color: rgba(239, 68, 68, 0.25);
-  background: rgba(239, 68, 68, 0.10);
-  color: rgba(185, 28, 28, 1);
+body .verify-page .verify-adf-activity-success {
+    background: rgba(16, 185, 129, .08);
 }
-.verify-page .sev-warn {
-  border-color: rgba(245, 158, 11, 0.30);
-  background: rgba(245, 158, 11, 0.12);
-  color: rgba(180, 83, 9, 1);
+
+body .verify-page .verify-adf-activity-success .verify-adf-activity-num {
+    color: rgba(5, 150, 105, 1);
 }
-.verify-page .sev-ok {
-  border-color: rgba(34, 197, 94, 0.25);
-  background: rgba(34, 197, 94, 0.12);
-  color: rgba(21, 128, 61, 1);
+
+body .verify-page .verify-adf-activity-fail {
+    background: rgba(239, 68, 68, .08);
 }
 
-/* =========================================================
-   Copilot UI
-========================================================= */
+body .verify-page .verify-adf-activity-fail .verify-adf-activity-num {
+    color: rgba(185, 28, 28, 1);
+}
 
-.verify-page .copilot {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 12px;
-  align-items: stretch;
+/* Evidence Table */
+body .verify-page .verify-evidence-table {
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255,255,255,.85);
+    margin-top: 12px;
 }
 
-.verify-page .suggested {
-  border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: var(--v-bg-soft);
-  padding: 12px;
+body .verify-page .verify-evidence-row {
+    display: grid;
+    grid-template-columns: 2fr 0.6fr 1fr 2fr 1fr 0.8fr;
+    gap: 12px;
+    padding: 12px 14px;
+    align-items: center;
+    border-top: 1px solid rgba(0,0,0,.06);
+    font-size: 13px;
 }
 
-.verify-page .suggested-title {
-  font-weight: 900;
-  margin-bottom: 10px;
+body .verify-page .verify-evidence-row:first-child {
+    border-top: 0;
 }
 
-.verify-page .sug {
-  width: 100%;
-  text-align: left;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 12px;
-  padding: 10px;
-  font-weight: 850;
-  font-size: 12px;
-  margin-bottom: 8px;
-  cursor: pointer;
+body .verify-page .verify-evidence-head {
+    background: rgba(0,0,0,.03);
+    font-size: 12px;
+    font-weight: 900;
+    opacity: 0.8;
 }
 
-.verify-page .copilot-chat {
-  border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: var(--v-bg-soft);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-height: 320px;
+body .verify-page .verify-evidence-name {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.verify-page .msg {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+body .verify-page .verify-evidence-name svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.6;
 }
 
-.verify-page .msg-user { align-items: flex-end; }
-.verify-page .msg-ai   { align-items: flex-start; }
+body .verify-page .verify-evidence-path {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    opacity: 0.75;
+}
 
-.verify-page .bubble {
-  max-width: 92%;
-  padding: 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.10);
-  background: rgba(255, 255, 255, 0.85);
-  font-weight: 650;
+body .verify-page .verify-evidence-hash {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    opacity: 0.75;
 }
 
-.verify-page .msg-user .bubble {
-  background: rgba(37, 99, 235, 0.10);
-  border-color: rgba(37, 99, 235, 0.20);
+body .verify-page .pill-type {
+    background: rgba(107, 114, 128, .12) !important;
+    border: 1px solid rgba(107, 114, 128, .25) !important;
+    color: rgba(55, 65, 81, 1) !important;
+    font-weight: 700;
 }
 
-.verify-page .msg-meta {
-  font-size: 12px;
-  color: var(--v-muted2);
-  font-weight: 700;
+/* AI Insights */
+body .verify-page .verify-ai-insights {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
-.verify-page .chat-input {
-  margin-top: auto;
-  display: flex;
-  gap: 10px;
-  align-items: center;
+body .verify-page .verify-ai-insight-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,.06);
+    background: rgba(37, 99, 235, .04);
 }
 
-.verify-page .chatbox {
-  flex: 1;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  background: rgba(255, 255, 255, 0.90);
-  border-radius: 12px;
-  padding: 12px 12px;
-  outline: none;
-  font-weight: 650;
+body .verify-page .verify-ai-insight-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(37, 99, 235, .12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-.verify-page .chat-foot {
-  font-size: 12px;
-  color: var(--v-muted2);
+body .verify-page .verify-ai-insight-icon svg {
+    width: 16px;
+    height: 16px;
+    color: rgba(37, 99, 235, 1);
 }
 
-/* =========================================================
-   Right rail helpers (AI callout, bullets)
-========================================================= */
+body .verify-page .verify-ai-insight-text {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.5;
+}
 
-.verify-page .ai-bullets {
-  margin: 0;
-  padding-left: 18px;
-  font-weight: 750;
-  color: rgba(15, 23, 42, 0.90);
+body .verify-page .verify-ai-confidence {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, .12);
+    color: rgba(37, 99, 235, 1);
+    white-space: nowrap;
 }
 
-.verify-page .ai-bullets li { margin: 8px 0; }
+body .verify-page .verify-ai-questions {
+    margin-top: 8px;
+}
 
-.verify-page .ai-callout {
-  margin-top: 12px;
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  padding: 10px;
-  border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  background: rgba(255, 255, 255, 0.70);
+body .verify-page .verify-ai-questions-label {
+    font-size: 12px;
+    font-weight: 800;
+    opacity: 0.7;
+    margin-bottom: 8px;
 }
 
-.verify-page .ai-callout-title { font-weight: 900; }
-.verify-page .ai-callout-sub {
-  font-size: 12px;
-  color: var(--v-muted);
-  font-weight: 700;
-  margin-top: 2px;
+body .verify-page .verify-ai-question-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.verify-page .rec-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+body .verify-page .verify-ai-chip {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,.08);
+    background: rgba(255,255,255,.9);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
 }
 
-/* =========================================================
-   Responsive
-========================================================= */
+body .verify-page .verify-ai-chip:hover {
+    background: rgba(37, 99, 235, .08);
+    border-color: rgba(37, 99, 235, .25);
+}
 
+/* Responsive */
 @media (max-width: 1100px) {
-  .verify-page .verify-metrics { grid-template-columns: repeat(2, 1fr); }
-  .verify-page .copilot { grid-template-columns: 1fr; }
-  .verify-page .objthead { display: none; }
-  .verify-page .objtrow { grid-template-columns: 1fr; gap: 10px; }
-  .verify-page .exthead { display: none; }
-  .verify-page .extrow  { grid-template-columns: 1fr; }
+    body .verify-metrics {
+        grid-template-columns: 1fr;
+    }
+    body .verify-page .verify-obj-row {
+        grid-template-columns: 1fr 1fr;
+        row-gap: 8px;
+    }
+    body .verify-page .verify-obj-head {
+        display: none;
+    }
+    body .verify-page .verify-blockers-grid {
+        grid-template-columns: 1fr;
+    }
+    body .verify-page .verify-val-row {
+        grid-template-columns: 1fr 1fr;
+        row-gap: 8px;
+    }
+    body .verify-page .verify-val-head {
+        display: none;
+    }
+    body .verify-page .verify-adf-grid {
+        grid-template-columns: 1fr;
+    }
+    body .verify-page .verify-evidence-row {
+        grid-template-columns: 1fr 1fr;
+        row-gap: 8px;
+    }
+    body .verify-page .verify-evidence-head {
+        display: none;
+    }
 }
-
-@media (max-width: 900px) {
-  .verify-page .rb-row {
-    grid-template-columns: 1fr;
-  }
-  .verify-page .rb-right { text-align: left; }
-}
-
-@media (max-width: 640px) {
-  .verify-page .verify-head { flex-direction: column; }
-  .verify-page .verify-metrics { grid-template-columns: 1fr; }
-}
-
-/* Small utility */
-.verify-page .w-100 { width: 100%; }

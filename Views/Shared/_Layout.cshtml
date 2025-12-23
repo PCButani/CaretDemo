@@ -14,6 +14,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Keep both to avoid “section defined but not rendered” errors -->
+    @RenderSection("Styles", required: false)
     @RenderSection("PageStyles", required: false)
 </head>
 
@@ -40,8 +43,7 @@
     <script src="~/js/sidebar.js" asp-append-version="true"></script>
 
     <script>
-        // Render icons once after page load
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
     </script>
 
     @RenderSection("Scripts", required: false)

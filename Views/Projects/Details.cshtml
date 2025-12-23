@@ -83,7 +83,7 @@
     </a>
 
     <a class="tab-item @(activeTab=="Process" ? "is-active" : "")"
-       href="#" onclick="return false;">Process</a>
+       asp-controller="Projects" asp-action="Process" asp-route-id="@Model.Id">Process</a>
 
     <a class="tab-item @(activeTab=="Config" ? "is-active" : "")"
        href="#" onclick="return false;">Config</a>

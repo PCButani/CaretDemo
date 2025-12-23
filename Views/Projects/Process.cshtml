@@ -1,0 +1,1276 @@
+@model DataSync.Web.Models.ViewModels.ProjectDetailsVm
+@{
+    ViewData["Title"] = "Project Process";
+    var activeTab = (ViewData["ActiveTab"] as string) ?? "Process";
+
+    // Mock data for prototype
+    var runId = "RUN-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
+    var batchId = "BATCH-10934";
+    var adfPipeline = "pl_dmt_process_load";
+    var storedProc = "sp_dmt_process_pack";
+}
+
+<div class="process-page">
+
+    <!-- PROJECT HERO -->
+    <div class="project-hero">
+        <div class="hero-left">
+            <div class="hero-logo" aria-hidden="true">
+                @(string.IsNullOrWhiteSpace(Model.ClientName) ? "C" : Model.ClientName.Trim().Substring(0, 1).ToUpperInvariant())
+            </div>
+
+            <div class="hero-text">
+                <div class="hero-topline">
+                    <a class="crumb-link" asp-controller="Projects" asp-action="Index">Projects</a>
+                    <span class="crumb-sep">/</span>
+                    <span class="crumb-current">@Model.Name</span>
+                </div>
+
+                <div class="hero-title-row">
+                    <h1 class="hero-title">@Model.Name</h1>
+                    <div class="hero-badges">
+                        <span class="pill pill-status">@Model.Status</span>
+                        <span class="pill pill-health">@Model.Health</span>
+                        <span class="pill pill-env">@Model.Environment</span>
+                    </div>
+                </div>
+
+                <div class="hero-meta">
+                    <span><strong>Client:</strong> @Model.ClientName</span>
+                    <span class="subdot">•</span>
+                    <span><strong>Source:</strong> @Model.SourcePlatform</span>
+                    <span class="subdot">•</span>
+                    <span><strong>Target:</strong> @Model.TargetPlatform</span>
+                    <span class="subdot">•</span>
+                    <span><strong>Owner:</strong> @Model.Owner</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-right">
+            <button class="btn btn-secondary" id="btnExport"><i data-lucide="download"></i> Export Plan</button>
+            <button class="btn btn-primary" id="btnStartProcess"><i data-lucide="play-circle"></i> Start Process</button>
+        </div>
+    </div>
+
+    <!-- TABS BAR -->
+    <div class="details-tabs">
+        <a class="tab-item" asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Id">Overview</a>
+        <a class="tab-item" asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
+        <a class="tab-item" asp-controller="Projects" asp-action="Verify" asp-route-id="@Model.Id">Verify</a>
+        <a class="tab-item is-active" asp-controller="Projects" asp-action="Process" asp-route-id="@Model.Id">Process</a>
+        <a class="tab-item" href="#">Config</a>
+        <a class="tab-item" href="#">Activity</a>
+
+        <div class="tabs-spacer"></div>
+
+        <button class="tab-icon-btn" type="button" title="AI Assistant" id="toggleAI">
+            <i data-lucide="sparkles"></i>
+        </button>
+    </div>
+
+    <!-- PROCESS HEADER -->
+    <div class="process-head">
+        <div>
+            <h2 class="process-title">Process</h2>
+            <div class="process-subtitle">
+                Final data load into SQL target systems - irreversible operation
+            </div>
+            <div class="process-runmeta" id="runMetaInfo">
+                <span class="mini neutral"><strong>Status:</strong> Ready to execute</span>
+                <span class="mini neutral"><strong>Run ID:</strong> @runId</span>
+                <span class="mini neutral"><strong>Batch:</strong> @batchId</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="details-grid">
+
+        <!-- LEFT COLUMN -->
+        <section class="details-main">
+
+            <!-- 1️⃣ EXECUTION ORCHESTRATION (Planning View) -->
+            <div class="panel planning-view">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Execution Orchestration</div>
+                        <div class="panel-sub">What will execute when you press Start Process</div>
+                    </div>
+                    <span class="pill pill-neutral">Pre-flight</span>
+                </div>
+
+                <div class="exec-cards">
+                    <div class="exec-card">
+                        <div class="exec-icon"><i data-lucide="workflow"></i></div>
+                        <div class="exec-content">
+                            <div class="exec-label">ADF Pipeline</div>
+                            <div class="exec-value">@adfPipeline</div>
+                            <div class="exec-sub">Sequential execution, timeout 2h</div>
+                        </div>
+                    </div>
+
+                    <div class="exec-card">
+                        <div class="exec-icon"><i data-lucide="database"></i></div>
+                        <div class="exec-content">
+                            <div class="exec-label">SQL Stored Procedure</div>
+                            <div class="exec-value">@storedProc</div>
+                            <div class="exec-sub">Target: DMT_Master_Prod</div>
+                        </div>
+                    </div>
+
+                    <div class="exec-card">
+                        <div class="exec-icon"><i data-lucide="layers"></i></div>
+                        <div class="exec-content">
+                            <div class="exec-label">Execution Mode</div>
+                            <div class="exec-value">Chunked Parallel</div>
+                            <div class="exec-sub">Batch size: 10,000 rows</div>
+                        </div>
+                    </div>
+
+                    <div class="exec-card">
+                        <div class="exec-icon"><i data-lucide="refresh-ccw"></i></div>
+                        <div class="exec-content">
+                            <div class="exec-label">Retry Policy</div>
+                            <div class="exec-value">3 attempts</div>
+                            <div class="exec-sub">Exponential backoff</div>
+                        </div>
+                    </div>
+
+                    <div class="exec-card">
+                        <div class="exec-icon"><i data-lucide="file-text"></i></div>
+                        <div class="exec-content">
+                            <div class="exec-label">Logging</div>
+                            <div class="exec-value">ADF + SQL Audit</div>
+                            <div class="exec-sub">Immutable audit trail</div>
+                        </div>
+                    </div>
+
+                    <div class="exec-card">
+                        <div class="exec-icon"><i data-lucide="shield-check"></i></div>
+                        <div class="exec-content">
+                            <div class="exec-label">Objects to Process</div>
+                            <div class="exec-value">12 objects</div>
+                            <div class="exec-sub">~128K rows estimated</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exec-warning">
+                    <i data-lucide="alert-triangle"></i>
+                    <div>
+                        <strong>Important:</strong> This operation will modify production data and cannot be undone. 
+                        Ensure Verify gate is clear before proceeding.
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2️⃣ PROGRESS & MONITORING (Monitoring View - hidden initially) -->
+            <div class="panel monitoring-view" style="display:none;">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Progress & Monitoring</div>
+                        <div class="panel-sub">Real-time execution status</div>
+                    </div>
+                    <span class="pill pill-running" id="overallStatus">Running</span>
+                </div>
+
+                <!-- Overall Progress -->
+                <div class="progress-summary">
+                    <div class="prog-stat">
+                        <div class="prog-num" id="rowsProcessed">0</div>
+                        <div class="prog-label">Rows Processed</div>
+                    </div>
+                    <div class="prog-stat">
+                        <div class="prog-num" id="objectsComplete">0/12</div>
+                        <div class="prog-label">Objects Complete</div>
+                    </div>
+                    <div class="prog-stat">
+                        <div class="prog-num" id="throughput">0</div>
+                        <div class="prog-label">Rows/sec</div>
+                    </div>
+                    <div class="prog-stat">
+                        <div class="prog-num" id="elapsed">00:00</div>
+                        <div class="prog-label">Elapsed Time</div>
+                    </div>
+                </div>
+
+                <!-- Per-Object Progress -->
+                <div class="objects-progress">
+                    <div class="obj-prog-item">
+                        <div class="obj-prog-top">
+                            <span class="obj-name">Contacts</span>
+                            <span class="obj-status status-running">Running</span>
+                        </div>
+                        <div class="pbar good"><span style="width: 67%"></span></div>
+                        <div class="obj-prog-foot">
+                            <span>30,421 / 45,210 rows</span>
+                            <span>Staged → Transformed → Loading</span>
+                        </div>
+                    </div>
+
+                    <div class="obj-prog-item">
+                        <div class="obj-prog-top">
+                            <span class="obj-name">Invoices</span>
+                            <span class="obj-status status-complete">Complete</span>
+                        </div>
+                        <div class="pbar good"><span style="width: 100%"></span></div>
+                        <div class="obj-prog-foot">
+                            <span>61,880 / 61,880 rows</span>
+                            <span>✓ Loaded successfully</span>
+                        </div>
+                    </div>
+
+                    <div class="obj-prog-item">
+                        <div class="obj-prog-top">
+                            <span class="obj-name">Matters</span>
+                            <span class="obj-status status-queued">Queued</span>
+                        </div>
+                        <div class="pbar neutral"><span style="width: 0%"></span></div>
+                        <div class="obj-prog-foot">
+                            <span>0 / 8,420 rows</span>
+                            <span>Waiting...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="monitoring-foot">
+                    <span class="mini neutral">ADF Run ID: adf-run-20241223-091045</span>
+                    <button class="btn btn-secondary btn-sm">View ADF Logs</button>
+                </div>
+            </div>
+
+            <!-- 3️⃣ EXCEPTIONS & REMEDIATION (Shows when failures occur) -->
+            <div class="panel exceptions-view" style="display:none;">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Exceptions & Remediation</div>
+                        <div class="panel-sub">Failures and recovery actions</div>
+                    </div>
+                    <span class="pill pill-warn">2 Failures</span>
+                </div>
+
+                <div class="exception-cards">
+                    <div class="exc-card">
+                        <div class="exc-header">
+                            <div class="exc-icon bad"><i data-lucide="x-circle"></i></div>
+                            <div>
+                                <div class="exc-title">Uniqueness Constraint Violation</div>
+                                <div class="exc-meta">Contacts table • Data Quality Issue</div>
+                            </div>
+                            <span class="exc-impact">127 rows</span>
+                        </div>
+                        <div class="exc-reason">
+                            Duplicate Email values detected. Primary key constraint failed on insert.
+                        </div>
+                        <div class="exc-actions">
+                            <button class="btn btn-secondary btn-sm">Export Failed Rows</button>
+                            <button class="btn btn-secondary btn-sm">Return to Verify</button>
+                            <button class="btn btn-primary btn-sm">Retry</button>
+                        </div>
+                    </div>
+
+                    <div class="exc-card">
+                        <div class="exc-header">
+                            <div class="exc-icon warn"><i data-lucide="alert-circle"></i></div>
+                            <div>
+                                <div class="exc-title">Timeout Exceeded</div>
+                                <div class="exc-meta">Time Entries table • System Issue</div>
+                            </div>
+                            <span class="exc-impact">0 rows</span>
+                        </div>
+                        <div class="exc-reason">
+                            SQL execution exceeded 120s timeout. Consider increasing batch size or timeout limit.
+                        </div>
+                        <div class="exc-actions">
+                            <button class="btn btn-secondary btn-sm">View Logs</button>
+                            <button class="btn btn-primary btn-sm">Retry with Extended Timeout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5️⃣ COMPLETION OUTPUT (Shows after successful run) -->
+            <div class="panel completion-view" style="display:none;">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Completion Summary</div>
+                        <div class="panel-sub">Final load results and reconciliation</div>
+                    </div>
+                    <span class="pill pill-ok">Complete</span>
+                </div>
+
+                <div class="completion-hero">
+                    <div class="completion-icon"><i data-lucide="badge-check"></i></div>
+                    <div>
+                        <div class="completion-title">Migration Load Complete</div>
+                        <div class="completion-sub">All objects processed successfully</div>
+                    </div>
+                </div>
+
+                <div class="completion-stats">
+                    <div class="comp-stat">
+                        <div class="comp-num good">128,450</div>
+                        <div class="comp-label">Rows Inserted</div>
+                    </div>
+                    <div class="comp-stat">
+                        <div class="comp-num neutral">0</div>
+                        <div class="comp-label">Rows Updated</div>
+                    </div>
+                    <div class="comp-stat">
+                        <div class="comp-num bad">0</div>
+                        <div class="comp-label">Rows Failed</div>
+                    </div>
+                    <div class="comp-stat">
+                        <div class="comp-num good">100%</div>
+                        <div class="comp-label">Reconciliation</div>
+                    </div>
+                </div>
+
+                <div class="completion-artifacts">
+                    <div class="artifact-item">
+                        <i data-lucide="file-check"></i>
+                        <span>Final_Load_Report_@(runId).pdf</span>
+                        <button class="btn btn-secondary btn-sm">Download</button>
+                    </div>
+                    <div class="artifact-item">
+                        <i data-lucide="file-spreadsheet"></i>
+                        <span>Reconciliation_Summary_@(runId).xlsx</span>
+                        <button class="btn btn-secondary btn-sm">Download</button>
+                    </div>
+                </div>
+
+                <div class="golive-indicator good">
+                    <i data-lucide="rocket"></i>
+                    <strong>Go-Live Ready:</strong> All criteria met. System ready for production handover.
+                </div>
+            </div>
+
+            <!-- 4️⃣ AUDIT & TRACEABILITY -->
+            <div class="panel audit-view" style="display:none;">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Audit & Traceability</div>
+                        <div class="panel-sub">Compliance and governance record</div>
+                    </div>
+                </div>
+
+                <div class="audit-grid">
+                    <div class="audit-row">
+                        <div class="audit-key">Run ID</div>
+                        <div class="audit-val">@runId</div>
+                    </div>
+                    <div class="audit-row">
+                        <div class="audit-key">Batch ID</div>
+                        <div class="audit-val">@batchId</div>
+                    </div>
+                    <div class="audit-row">
+                        <div class="audit-key">Triggered By</div>
+                        <div class="audit-val">@Model.Owner (Manual)</div>
+                    </div>
+                    <div class="audit-row">
+                        <div class="audit-key">Timestamp</div>
+                        <div class="audit-val">@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss UTC")</div>
+                    </div>
+                    <div class="audit-row">
+                        <div class="audit-key">Input Dataset</div>
+                        <div class="audit-val">stg_@(Model.SourcePlatform.ToLower())_verified_snapshot_v12</div>
+                    </div>
+                    <div class="audit-row">
+                        <div class="audit-key">Mapping Version</div>
+                        <div class="audit-val">v2.4.1 (approved 2024-12-20)</div>
+                    </div>
+                    <div class="audit-row">
+                        <div class="audit-key">Ruleset Version</div>
+                        <div class="audit-val">rules_@(Model.SourcePlatform.ToLower())_v3.2</div>
+                    </div>
+                    <div class="audit-row">
+                        <div class="audit-key">Target System</div>
+                        <div class="audit-val">DMT_Master_Prod (SQL Server)</div>
+                    </div>
+                </div>
+
+                <div class="audit-seal">
+                    <i data-lucide="shield"></i>
+                    This audit record is immutable and tamper-proof. Stored in dmt_audit_log table.
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN -->
+        <aside class="details-side">
+
+            <!-- 6️⃣ AI CO-PILOT PANEL -->
+            <div class="panel ai-panel" id="aiCoPilot">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">AI Co-Pilot</div>
+                        <div class="panel-sub">Azure AI Foundry Assistant</div>
+                    </div>
+                    <button class="ai-close" id="closeAI"><i data-lucide="x"></i></button>
+                </div>
+
+                <div class="ai-chat">
+                    <div class="ai-msg ai-assistant">
+                        <div class="ai-avatar"><i data-lucide="sparkles"></i></div>
+                        <div class="ai-bubble">
+                            I'm ready to help you with the Process step. You can ask me:
+                            <ul>
+                                <li>Explain execution plan</li>
+                                <li>Why did object X fail?</li>
+                                <li>Generate reconciliation summary</li>
+                                <li>What should I do next?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ai-input-area">
+                    <input type="text" placeholder="Ask me anything..." id="aiInput" />
+                    <button class="ai-send"><i data-lucide="send"></i></button>
+                </div>
+
+                <div class="ai-quick-actions">
+                    <button class="ai-quick-btn">Explain Plan</button>
+                    <button class="ai-quick-btn">Risk Summary</button>
+                    <button class="ai-quick-btn">Next Steps</button>
+                </div>
+            </div>
+
+            <!-- Schedule & Actions -->
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Run Control</div>
+                        <div class="panel-sub">Execution management</div>
+                    </div>
+                </div>
+
+                <div class="kv">
+                    <div class="kv-row">
+                        <div class="kv-k">Mode</div>
+                        <div class="kv-v">Manual</div>
+                    </div>
+                    <div class="kv-row">
+                        <div class="kv-k">Environment</div>
+                        <div class="kv-v">@Model.Environment</div>
+                    </div>
+                    <div class="kv-row">
+                        <div class="kv-k">Rollback</div>
+                        <div class="kv-v">Not available</div>
+                    </div>
+                </div>
+
+                <div class="side-actions monitoring-controls" style="display:none;">
+                    <button class="btn btn-secondary w-100" id="btnPause">
+                        <i data-lucide="pause"></i> Pause
+                    </button>
+                    <button class="btn btn-danger w-100" id="btnCancel">
+                        <i data-lucide="stop-circle"></i> Cancel Run
+                    </button>
+                </div>
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+@section PageStyles {
+<style>
+/* Process Page Styles */
+.process-page { }
+
+.process-head {
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.process-title {
+    font-size: 22px;
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: -0.4px;
+}
+
+.process-subtitle {
+    font-size: 13px;
+    opacity: 0.75;
+    margin-top: 4px;
+}
+
+.process-runmeta {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+/* Execution Cards */
+.exec-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+@@media (max-width: 1100px) {
+    .exec-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+.exec-card {
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(255,255,255,0.85);
+    display: flex;
+    gap: 12px;
+}
+
+.exec-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(37,99,235,0.10);
+    border: 1px solid rgba(37,99,235,0.20);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.exec-icon svg {
+    width: 20px;
+    height: 20px;
+    color: rgba(37,99,235,1);
+}
+
+.exec-content { flex: 1; min-width: 0; }
+
+.exec-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 800;
+    opacity: 0.65;
+    letter-spacing: 0.5px;
+}
+
+.exec-value {
+    font-size: 15px;
+    font-weight: 900;
+    margin-top: 4px;
+    letter-spacing: -0.2px;
+}
+
+.exec-sub {
+    font-size: 12px;
+    opacity: 0.75;
+    margin-top: 4px;
+}
+
+.exec-warning {
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.25);
+    font-size: 13px;
+}
+
+.exec-warning svg {
+    width: 20px;
+    height: 20px;
+    color: rgba(180,83,9,1);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* Progress Summary */
+.progress-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+@@media (max-width: 1100px) {
+    .progress-summary { grid-template-columns: repeat(2, 1fr); }
+}
+
+.prog-stat {
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(255,255,255,0.9);
+    text-align: center;
+}
+
+.prog-num {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: rgba(37,99,235,1);
+}
+
+.prog-label {
+    font-size: 12px;
+    opacity: 0.75;
+    margin-top: 4px;
+    font-weight: 700;
+}
+
+/* Object Progress Items */
+.objects-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.obj-prog-item {
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(255,255,255,0.9);
+}
+
+.obj-prog-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.obj-name {
+    font-weight: 900;
+    font-size: 14px;
+}
+
+.obj-status {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.status-running {
+    background: rgba(37,99,235,0.12);
+    color: rgba(37,99,235,1);
+    border: 1px solid rgba(37,99,235,0.25);
+}
+
+.status-complete {
+    background: rgba(16,185,129,0.12);
+    color: rgba(5,150,105,1);
+    border: 1px solid rgba(16,185,129,0.25);
+}
+
+.status-queued {
+    background: rgba(0,0,0,0.04);
+    color: rgba(0,0,0,0.65);
+    border: 1px solid rgba(0,0,0,0.10);
+}
+
+.pbar {
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.06);
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.pbar > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: rgba(37,99,235,0.9);
+    transition: width 0.3s ease;
+}
+
+.pbar.good > span { background: rgba(16,185,129,0.9); }
+.pbar.neutral > span { background: rgba(107,114,128,0.5); }
+
+.obj-prog-foot {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    opacity: 0.75;
+}
+
+.monitoring-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+
+/* Exception Cards */
+.exception-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.exc-card {
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(255,255,255,0.9);
+}
+
+.exc-header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.exc-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.exc-icon.bad {
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.25);
+}
+
+.exc-icon.bad svg {
+    width: 18px;
+    height: 18px;
+    color: rgba(220,38,38,1);
+}
+
+.exc-icon.warn {
+    background: rgba(245,158,11,0.12);
+    border: 1px solid rgba(245,158,11,0.25);
+}
+
+.exc-icon.warn svg {
+    width: 18px;
+    height: 18px;
+    color: rgba(180,83,9,1);
+}
+
+.exc-header > div { flex: 1; min-width: 0; }
+
+.exc-title {
+    font-weight: 900;
+    font-size: 14px;
+}
+
+.exc-meta {
+    font-size: 12px;
+    opacity: 0.75;
+    margin-top: 2px;
+}
+
+.exc-impact {
+    font-weight: 900;
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+.exc-reason {
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 10px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.03);
+    margin-bottom: 12px;
+}
+
+.exc-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Completion View */
+.completion-hero {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 16px;
+    border-radius: 14px;
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.25);
+    margin-bottom: 16px;
+}
+
+.completion-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(16,185,129,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.completion-icon svg {
+    width: 28px;
+    height: 28px;
+    color: rgba(5,150,105,1);
+}
+
+.completion-title {
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.3px;
+}
+
+.completion-sub {
+    font-size: 13px;
+    opacity: 0.8;
+    margin-top: 2px;
+}
+
+.completion-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+@@media (max-width: 1100px) {
+    .completion-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+.comp-stat {
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(255,255,255,0.9);
+    text-align: center;
+}
+
+.comp-num {
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+}
+
+.comp-num.good { color: rgba(5,150,105,1); }
+.comp-num.bad { color: rgba(220,38,38,1); }
+.comp-num.neutral { color: rgba(107,114,128,1); }
+
+.comp-label {
+    font-size: 12px;
+    opacity: 0.75;
+    margin-top: 4px;
+    font-weight: 700;
+}
+
+.completion-artifacts {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.artifact-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.9);
+}
+
+.artifact-item svg {
+    width: 20px;
+    height: 20px;
+    opacity: 0.7;
+}
+
+.artifact-item > span {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.golive-indicator {
+    padding: 14px;
+    border-radius: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 13px;
+}
+
+.golive-indicator.good {
+    background: rgba(16,185,129,0.12);
+    border: 1px solid rgba(16,185,129,0.25);
+    color: rgba(5,150,105,1);
+}
+
+.golive-indicator svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Audit Grid */
+.audit-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.08);
+    margin-bottom: 12px;
+}
+
+.audit-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.95);
+    gap: 12px;
+}
+
+.audit-key {
+    font-weight: 800;
+    font-size: 12px;
+    opacity: 0.7;
+    min-width: 140px;
+}
+
+.audit-val {
+    font-weight: 600;
+    font-size: 13px;
+    text-align: right;
+    word-break: break-word;
+}
+
+.audit-seal {
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(37,99,235,0.08);
+    border: 1px solid rgba(37,99,235,0.20);
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.audit-seal svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* AI Co-Pilot Panel */
+.ai-panel {
+    background: linear-gradient(135deg, rgba(139,92,246,0.05), rgba(59,130,246,0.05));
+}
+
+.ai-close {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.10);
+    background: rgba(255,255,255,0.9);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-close svg {
+    width: 16px;
+    height: 16px;
+}
+
+.ai-chat {
+    margin-bottom: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.ai-msg {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.ai-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(139,92,246,1), rgba(59,130,246,1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ai-avatar svg {
+    width: 18px;
+    height: 18px;
+    color: white;
+}
+
+.ai-bubble {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(0,0,0,0.08);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.ai-bubble ul {
+    margin: 8px 0 0 0;
+    padding-left: 20px;
+}
+
+.ai-bubble li {
+    margin-top: 4px;
+}
+
+.ai-input-area {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.ai-input-area input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.ai-send {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(139,92,246,1), rgba(59,130,246,1));
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-send svg {
+    width: 18px;
+    height: 18px;
+    color: white;
+}
+
+.ai-quick-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.ai-quick-btn {
+    padding: 6px 12px;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.9);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.ai-quick-btn:hover {
+    background: rgba(139,92,246,0.10);
+    border-color: rgba(139,92,246,0.30);
+}
+
+/* Pills */
+.pill-running {
+    background: rgba(37,99,235,0.12);
+    color: rgba(37,99,235,1);
+    border: 1px solid rgba(37,99,235,0.25);
+}
+
+.pill-neutral {
+    background: rgba(107,114,128,0.12);
+    color: rgba(55,65,81,1);
+    border: 1px solid rgba(107,114,128,0.25);
+}
+
+.btn-danger {
+    background: rgba(239,68,68,1);
+    color: white;
+    border: 1px solid rgba(220,38,38,1);
+}
+
+.btn-danger:hover {
+    background: rgba(220,38,38,1);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+</style>
+}
+
+@section Scripts {
+<script>
+if (window.lucide) lucide.createIcons();
+
+// Simulate Process Execution
+let isRunning = false;
+let simulationInterval = null;
+
+document.getElementById('btnStartProcess').addEventListener('click', function() {
+    if (isRunning) return;
+    
+    // Hide planning view, show monitoring view
+    document.querySelector('.planning-view').style.display = 'none';
+    document.querySelector('.monitoring-view').style.display = 'block';
+    document.querySelector('.monitoring-controls').style.display = 'flex';
+    document.querySelector('.exceptions-view').style.display = 'none';
+    document.querySelector('.completion-view').style.display = 'none';
+    document.querySelector('.audit-view').style.display = 'none';
+    
+    // Change button
+    this.innerHTML = '<i data-lucide="loader"></i> Processing...';
+    this.disabled = true;
+    if (window.lucide) lucide.createIcons();
+    
+    // Update status
+    document.getElementById('runMetaInfo').innerHTML = 
+        '<span class="mini pill-running"><strong>Status:</strong> Running</span>' +
+        '<span class="mini neutral"><strong>Run ID:</strong> ' + document.querySelector('.process-runmeta .mini:nth-child(2)').textContent.split(':')[1] + '</span>' +
+        '<span class="mini neutral"><strong>Started:</strong> Just now</span>';
+    
+    isRunning = true;
+    simulateProgress();
+});
+
+function simulateProgress() {
+    let elapsed = 0;
+    let rowsProcessed = 0;
+    let maxRows = 128450;
+    
+    simulationInterval = setInterval(() => {
+        elapsed++;
+        rowsProcessed = Math.min(rowsProcessed + Math.random() * 8000, maxRows);
+        
+        // Update metrics
+        document.getElementById('rowsProcessed').textContent = Math.floor(rowsProcessed).toLocaleString();
+        document.getElementById('throughput').textContent = Math.floor(rowsProcessed / elapsed).toLocaleString();
+        document.getElementById('elapsed').textContent = 
+            Math.floor(elapsed / 60).toString().padStart(2, '0') + ':' + 
+            (elapsed % 60).toString().padStart(2, '0');
+        
+        // Update object progress
+        if (rowsProcessed > 45210) {
+            document.getElementById('objectsComplete').textContent = '1/12';
+        }
+        if (rowsProcessed > 90000) {
+            document.getElementById('objectsComplete').textContent = '2/12';
+        }
+        
+        // Complete after ~15 seconds
+        if (elapsed >= 15) {
+            clearInterval(simulationInterval);
+            showCompletion();
+        }
+    }, 1000);
+}
+
+function showCompletion() {
+    // Update status
+    document.getElementById('overallStatus').textContent = 'Complete';
+    document.getElementById('overallStatus').className = 'pill pill-ok';
+    document.getElementById('objectsComplete').textContent = '12/12';
+    document.getElementById('rowsProcessed').textContent = '128,450';
+    
+    // Show completion and audit views
+    setTimeout(() => {
+        document.querySelector('.monitoring-view').style.display = 'none';
+        document.querySelector('.completion-view').style.display = 'block';
+        document.querySelector('.audit-view').style.display = 'block';
+        document.querySelector('.monitoring-controls').style.display = 'none';
+        
+        // Reset button
+        const btn = document.getElementById('btnStartProcess');
+        btn.innerHTML = '<i data-lucide="check-circle"></i> Process Complete';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+        if (window.lucide) lucide.createIcons();
+        
+        // Update run meta
+        document.getElementById('runMetaInfo').innerHTML = 
+            '<span class="mini pill-ok"><strong>Status:</strong> Complete</span>' +
+            '<span class="mini neutral"><strong>Run ID:</strong> ' + document.querySelector('.audit-val').textContent + '</span>' +
+            '<span class="mini neutral"><strong>Duration:</strong> 2m 14s</span>';
+    }, 500);
+    
+    isRunning = false;
+}
+
+// AI Panel Toggle
+document.getElementById('toggleAI')?.addEventListener('click', function() {
+    const panel = document.getElementById('aiCoPilot');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'block';
+});
+
+document.getElementById('closeAI')?.addEventListener('click', function() {
+    document.getElementById('aiCoPilot').style.display = 'none';
+});
+
+// AI Quick Actions (mock)
+document.querySelectorAll('.ai-quick-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const chat = document.querySelector('.ai-chat');
+        const userMsg = document.createElement('div');
+        userMsg.className = 'ai-msg';
+        userMsg.innerHTML = `
+            <div class="ai-avatar" style="background: rgba(107,114,128,0.2);">
+                <i data-lucide="user"></i>
+            </div>
+            <div class="ai-bubble">${this.textContent}</div>
+        `;
+        chat.appendChild(userMsg);
+        
+        setTimeout(() => {
+            const aiMsg = document.createElement('div');
+            aiMsg.className = 'ai-msg ai-assistant';
+            aiMsg.innerHTML = `
+                <div class="ai-avatar"><i data-lucide="sparkles"></i></div>
+                <div class="ai-bubble">
+                    ${getAIResponse(this.textContent)}
+                </div>
+            `;
+            chat.appendChild(aiMsg);
+            chat.scrollTop = chat.scrollHeight;
+            if (window.lucide) lucide.createIcons();
+        }, 800);
+        
+        if (window.lucide) lucide.createIcons();
+    });
+});
+
+function getAIResponse(question) {
+    const responses = {
+        'Explain Plan': 'The execution plan will run ADF pipeline <strong>pl_dmt_process_load</strong> which orchestrates 12 objects in chunked parallel mode. Each object goes through Staged → Transformed → Loaded lifecycle. Expected duration: ~2-3 minutes.',
+        'Risk Summary': 'Current risk level is <strong>LOW</strong>. All Verify checks passed. The only minor concern is the Contacts table has 127 duplicate emails which were quarantined during Verify.',
+        'Next Steps': 'You can safely proceed with Process. After completion, review the reconciliation report and download the audit artifacts for client handover.'
+    };
+    return responses[question] || 'I can help with that. Please be more specific about what you need.';
+}
+</script>
+}

@@ -1,10 +1,10 @@
 @model DataSync.Web.Models.ViewModels.ProjectDetailsVm
+
 @{
     ViewData["Title"] = "Project Verify";
     var activeTab = (ViewData["ActiveTab"] as string) ?? "Verify";
 
-    // --- Mock numbers (until wired to SQL/ADF) ---
-    var confidenceScore = 78;               // example: computed from validation weights
+    var confidenceScore = 78;
     var confidenceTarget = 85;
     var blockers = Model.RulesFailed > 0 ? 2 : 0;
     var warnings = 5;
@@ -15,602 +15,593 @@
     var evidenceObjectsCovered = 12;
     var evidenceObjectsTotal = 12;
 
-    // ADF + SQL/SP labels (UI only for now)
     var adfPipelineName = "ADF-Verify-Run";
     var spPackName = "sp_dmt_verify_pack";
 }
 
-<!-- =========================
-   PROJECT HERO (Same as Details/Fetch)
-========================== -->
-<div class="project-hero">
-    <div class="hero-left">
-        <div class="hero-logo" aria-hidden="true">
-            @(string.IsNullOrWhiteSpace(Model.ClientName)
-                ? "C"
-                : Model.ClientName.Trim().Substring(0, 1).ToUpperInvariant())
-        </div>
+<div class="verify-page">
 
-        <div class="hero-text">
-            <div class="hero-topline">
-                <a class="crumb-link" asp-controller="Projects" asp-action="Index">Projects</a>
-                <span class="crumb-sep">/</span>
-                <span class="crumb-current">@Model.Name</span>
+    <div class="project-hero">
+        <div class="hero-left">
+            <div class="hero-logo" aria-hidden="true">
+                @(string.IsNullOrWhiteSpace(Model.ClientName) ? "C" : Model.ClientName.Trim().Substring(0, 1).ToUpperInvariant())
             </div>
 
-            <div class="hero-title-row">
-                <h1 class="hero-title">@Model.Name</h1>
+            <div class="hero-text">
+                <div class="hero-topline">
+                    <a class="crumb-link" asp-controller="Projects" asp-action="Index">Projects</a>
+                    <span class="crumb-sep">/</span>
+                    <span class="crumb-current">@Model.Name</span>
+                </div>
 
-                <div class="hero-badges">
-                    <span class="pill pill-status">@Model.Status</span>
-                    <span class="pill pill-health">@Model.Health</span>
-                    <span class="pill pill-env">@Model.Environment</span>
+                <div class="hero-title-row">
+                    <h1 class="hero-title">@Model.Name</h1>
+                    <div class="hero-badges">
+                        <span class="pill pill-status">@Model.Status</span>
+                        <span class="pill pill-health">@Model.Health</span>
+                        <span class="pill pill-env">@Model.Environment</span>
+                    </div>
+                </div>
+
+                <div class="hero-meta">
+                    <span><strong>Client:</strong> @Model.ClientName</span>
+                    <span class="subdot">•</span>
+                    <span><strong>Source:</strong> @Model.SourcePlatform</span>
+                    <span class="subdot">•</span>
+                    <span><strong>Target:</strong> @Model.TargetPlatform</span>
+                    <span class="subdot">•</span>
+                    <span><strong>Owner:</strong> @Model.Owner</span>
                 </div>
             </div>
+        </div>
 
-            <div class="hero-meta">
-                <span><strong>Client:</strong> @Model.ClientName</span>
-                <span class="subdot">•</span>
-                <span><strong>Source:</strong> @Model.SourcePlatform</span>
-                <span class="subdot">•</span>
-                <span><strong>Target:</strong> @Model.TargetPlatform</span>
-                <span class="subdot">•</span>
-                <span><strong>Owner:</strong> @Model.Owner</span>
-            </div>
+        <div class="hero-right">
+            <button class="btn btn-secondary"><i data-lucide="file-down"></i> Evidence Pack</button>
+            <button class="btn btn-secondary"><i data-lucide="shield-check"></i> Run Verify</button>
+            <button class="btn btn-primary"><i data-lucide="badge-check"></i> Approve</button>
         </div>
     </div>
 
-    <div class="hero-right">
-        <button class="btn btn-secondary" type="button" title="Export evidence pack">
-            <i data-lucide="file-down"></i>
-            Evidence Pack
-        </button>
+    <div class="details-tabs">
+        <a class="tab-item" asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Id">Overview</a>
+        <a class="tab-item" asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
+         <a class="tab-item is-active" asp-controller="Projects" asp-action="Verify" asp-route-id="@Model.Id">Verify</a>
+        <a class="tab-item" asp-controller="Projects" asp-action="Process" asp-route-id="@Model.Id">Process</a>
+        <a class="tab-item" href="#">Config</a>
+        <a class="tab-item" href="#">Activity</a>
+        <div class="tabs-spacer"></div>
+        <div class="view-toggle">
+            <button class="vt-btn is-active" data-view="decision">Decision</button>
+            <button class="vt-btn" data-view="evidence">Evidence</button>
+        </div>
+    </div>
 
-        <button class="btn btn-secondary" type="button" title="Run verification">
-            <i data-lucide="shield-check"></i>
-            Run Verify
-        </button>
+    <div class="verify-run-context">
+        <div class="run-ctx-item">
+            <span class="run-ctx-label">Run ID</span>
+            <span class="run-ctx-value">VFY-20241223-001</span>
+        </div>
+        <div class="run-ctx-item">
+            <span class="run-ctx-label">Environment</span>
+            <span class="pill pill-env">UAT</span>
+        </div>
+        <div class="run-ctx-item">
+            <span class="run-ctx-label">Dataset</span>
+            <span class="run-ctx-value">v2024.12.23-a8f3c9</span>
+        </div>
+        <div class="run-ctx-item">
+            <span class="run-ctx-label">Last Run</span>
+            <span class="run-ctx-value">@Model.LastRunText</span>
+        </div>
+        <div class="run-ctx-item">
+            <span class="run-ctx-label">ADF Pipeline</span>
+            <span class="run-ctx-value">@adfPipelineName / run-abc123</span>
+        </div>
+        <div class="run-ctx-item">
+            <span class="run-ctx-label">SQL Pack</span>
+            <span class="run-ctx-value">@spPackName v2.1.0</span>
+        </div>
+    </div>
 
-        <button class="btn btn-primary" type="button" title="Approve migration (governed)">
-            <i data-lucide="badge-check"></i>
-            Approve
-        </button>
+    <div class="verify-head">
+        <div>
+            <h2 class="verify-title">Verify</h2>
+            <div class="verify-subtitle">Migration confidence gate — trust, risk, blockers, and evidence</div>
+            <div class="verify-runmeta">
+                <span class="mini neutral"><strong>ADF:</strong> @adfPipelineName</span>
+                <span class="mini neutral"><strong>SQL:</strong> @spPackName</span>
+                <span class="mini neutral"><strong>Last run:</strong> @Model.LastRunText</span>
+            </div>
+        </div>
+        <div class="verify-controls">
+            <button class="btn btn-secondary"><i data-lucide="download"></i> Export</button>
+            <button class="btn btn-secondary"><i data-lucide="sliders-horizontal"></i> Filters</button>
+        </div>
+    </div>
+
+    <div class="details-grid">
+        <section class="details-main">
+
+            <div class="verify-view-decision">
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <div class="panel-title">Decision View</div>
+                            <div class="panel-sub">Confidence, blockers, evidence coverage</div>
+                        </div>
+                    </div>
+
+                    <div class="verify-metrics">
+                        <div class="vcard">
+                            <div class="vcard-top">
+                                <div class="vcard-label">Migration Confidence</div>
+                                <span class="pill @(confidenceScore >= confidenceTarget ? "pill-ok" : "pill-warn")">
+                                    @(confidenceScore >= confidenceTarget ? "GO" : "CAUTION")
+                                </span>
+                            </div>
+                            <div class="donut" style="--p:@confidenceScore">
+                                <div class="donut-inner">
+                                    <div class="donut-num">@confidenceScore</div>
+                                    <div class="donut-cap">Score</div>
+                                </div>
+                            </div>
+                            <div class="vcard-foot">Target <strong>@confidenceTarget+</strong></div>
+                        </div>
+
+                        <div class="vcard">
+                            <div class="vcard-top">
+                                <div class="vcard-label">Gate Status</div>
+                                <span class="pill @(blockers > 0 ? "pill-bad" : "pill-ok")">
+                                    @(blockers > 0 ? "BLOCKED" : "CLEAR")
+                                </span>
+                            </div>
+                            <div class="vcard-split">
+                                <div class="mini-kpi">
+                                    <div class="mini-num">@blockers</div>
+                                    <div class="mini-lbl">Blockers</div>
+                                </div>
+                                <div class="mini-kpi">
+                                    <div class="mini-num">@warnings</div>
+                                    <div class="mini-lbl">Warnings</div>
+                                </div>
+                                <div class="mini-kpi">
+                                    <div class="mini-num">@passed</div>
+                                    <div class="mini-lbl">Passed</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="vcard">
+                            <div class="vcard-top">
+                                <div class="vcard-label">Evidence</div>
+                                <span class="pill pill-ok">COMPLETE</span>
+                            </div>
+                            <div class="evidence-grid">
+                                <div class="ev-tile">
+                                    <div class="ev-num">@evidenceValidationsRun/@evidenceValidationsTotal</div>
+                                    <div class="ev-lbl">Validations</div>
+                                </div>
+                                <div class="ev-tile">
+                                    <div class="ev-num">@evidenceObjectsCovered/@evidenceObjectsTotal</div>
+                                    <div class="ev-lbl">Objects</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <div class="panel-title">Object Verification Progress</div>
+                            <div class="panel-sub">Extract → Transform → Validate pipeline status</div>
+                        </div>
+                        <button class="btn btn-secondary" type="button"><i data-lucide="download"></i> Export</button>
+                    </div>
+
+                    <div class="verify-object-table">
+                        <div class="verify-obj-row verify-obj-head">
+                            <div>Object</div><div>Extract</div><div>Transform</div><div>Validate</div><div>Coverage</div><div>Exceptions</div><div>Rows</div><div>Last Verified</div>
+                        </div>
+                        <div class="verify-obj-row">
+                            <div class="verify-obj-name">Contacts</div>
+                            <div><span class="pill pill-ok">OK</span></div>
+                            <div><span class="pill pill-ok">OK</span></div>
+                            <div><span class="pill pill-ok">OK</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 92%"></span></div>
+                                <span class="verify-coverage-text">92%</span>
+                            </div>
+                            <div>0</div><div>45,210</div><div>Today 09:10</div>
+                        </div>
+                        <div class="verify-obj-row">
+                            <div class="verify-obj-name">Invoices</div>
+                            <div><span class="pill pill-ok">OK</span></div>
+                            <div><span class="pill pill-ok">OK</span></div>
+                            <div><span class="pill pill-warn">WARN</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 88%"></span></div>
+                                <span class="verify-coverage-text">88%</span>
+                            </div>
+                            <div>3</div><div>61,880</div><div>Today 09:10</div>
+                        </div>
+                        <div class="verify-obj-row">
+                            <div class="verify-obj-name">Matters</div>
+                            <div><span class="pill pill-ok">OK</span></div>
+                            <div><span class="pill pill-fail">FAIL</span></div>
+                            <div><span class="pill pill-notrun">NOT RUN</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar verify-coverage-bar-warn"><span style="width: 38%"></span></div>
+                                <span class="verify-coverage-text">38%</span>
+                            </div>
+                            <div>18</div><div>0</div><div>—</div>
+                        </div>
+                        <div class="verify-obj-row">
+                            <div class="verify-obj-name">Time Entries</div>
+                            <div><span class="pill pill-ok">OK</span></div>
+                            <div><span class="pill pill-ok">OK</span></div>
+                            <div><span class="pill pill-ok">OK</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 94%"></span></div>
+                                <span class="verify-coverage-text">94%</span>
+                            </div>
+                            <div>1</div><div>12,340</div><div>Today 09:10</div>
+                        </div>
+                        <div class="verify-obj-row">
+                            <div class="verify-obj-name">Payments</div>
+                            <div><span class="pill pill-ok">OK</span></div>
+                            <div><span class="pill pill-ok">OK</span></div>
+                            <div><span class="pill pill-ok">OK</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
+                                <span class="verify-coverage-text">100%</span>
+                            </div>
+                            <div>0</div><div>4,560</div><div>Today 09:10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <div class="panel-title">Blockers & Failed Rules</div>
+                            <div class="panel-sub">Critical issues requiring governance review</div>
+                        </div>
+                        <button class="btn btn-secondary" type="button"><i data-lucide="external-link"></i> View Evidence</button>
+                    </div>
+
+                    <div class="verify-blockers-grid">
+                        <div class="verify-blocker-card">
+                            <div class="verify-blocker-num">2</div>
+                            <div class="verify-blocker-label">Critical Blockers</div>
+                        </div>
+                        <div class="verify-blocker-detail">
+                            <div class="verify-blocker-section">
+                                <div class="verify-blocker-subtitle">Top Failing Categories</div>
+                                <div class="verify-blocker-chips">
+                                    <span class="pill pill-fail">Uniqueness</span>
+                                    <span class="pill pill-fail">Referential Integrity</span>
+                                    <span class="pill pill-warn">Schema Drift</span>
+                                </div>
+                            </div>
+                            <div class="verify-blocker-section">
+                                <div class="verify-blocker-subtitle">Top Affected Objects</div>
+                                <div class="verify-blocker-chips">
+                                    <span class="pill pill-neutral">Matters</span>
+                                    <span class="pill pill-neutral">Invoices</span>
+                                    <span class="pill pill-neutral">Time Entries</span>
+                                </div>
+                            </div>
+                            <div class="verify-blocker-section">
+                                <div class="verify-blocker-subtitle">Exception Rows Impacted</div>
+                                <div class="verify-blocker-impact">18 rows</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <div class="panel-title">SQL Validation Breakdown</div>
+                            <div class="panel-sub">Validation rules executed by category</div>
+                        </div>
+                    </div>
+
+                    <div class="verify-validation-table">
+                        <div class="verify-val-row verify-val-head">
+                            <div>Category</div><div>Executed</div><div>Passed</div><div>Failed</div><div>Severity</div><div>Coverage</div>
+                        </div>
+                        <div class="verify-val-row">
+                            <div class="verify-val-category">Uniqueness</div>
+                            <div>18</div>
+                            <div class="verify-val-good">15</div>
+                            <div class="verify-val-bad">3</div>
+                            <div><span class="pill pill-severity-critical">Critical</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 83%"></span></div>
+                                <span class="verify-coverage-text">83%</span>
+                            </div>
+                        </div>
+                        <div class="verify-val-row">
+                            <div class="verify-val-category">Referential Integrity</div>
+                            <div>12</div>
+                            <div class="verify-val-good">10</div>
+                            <div class="verify-val-bad">2</div>
+                            <div><span class="pill pill-severity-high">High</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 83%"></span></div>
+                                <span class="verify-coverage-text">83%</span>
+                            </div>
+                        </div>
+                        <div class="verify-val-row">
+                            <div class="verify-val-category">Data Type</div>
+                            <div>24</div>
+                            <div class="verify-val-good">22</div>
+                            <div class="verify-val-bad">2</div>
+                            <div><span class="pill pill-severity-high">High</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 92%"></span></div>
+                                <span class="verify-coverage-text">92%</span>
+                            </div>
+                        </div>
+                        <div class="verify-val-row">
+                            <div class="verify-val-category">Nullability</div>
+                            <div>16</div>
+                            <div class="verify-val-good">16</div>
+                            <div class="verify-val-good">0</div>
+                            <div><span class="pill pill-severity-medium">Medium</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
+                                <span class="verify-coverage-text">100%</span>
+                            </div>
+                        </div>
+                        <div class="verify-val-row">
+                            <div class="verify-val-category">Schema Drift</div>
+                            <div>8</div>
+                            <div class="verify-val-good">8</div>
+                            <div class="verify-val-good">0</div>
+                            <div><span class="pill pill-severity-medium">Medium</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
+                                <span class="verify-coverage-text">100%</span>
+                            </div>
+                        </div>
+                        <div class="verify-val-row">
+                            <div class="verify-val-category">Business Rules</div>
+                            <div>14</div>
+                            <div class="verify-val-good">14</div>
+                            <div class="verify-val-good">0</div>
+                            <div><span class="pill pill-severity-low">Low</span></div>
+                            <div class="verify-coverage">
+                                <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
+                                <span class="verify-coverage-text">100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="verify-view-evidence">
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <div class="panel-title">ADF Verification Execution</div>
+                            <div class="panel-sub">Azure Data Factory pipeline run evidence</div>
+                        </div>
+                        <button class="btn btn-secondary" type="button"><i data-lucide="external-link"></i> View in ADF</button>
+                    </div>
+
+                    <div class="verify-adf-grid">
+                        <div class="verify-adf-status">
+                            <div class="verify-adf-status-icon"><i data-lucide="check-circle"></i></div>
+                            <div>
+                                <div class="verify-adf-status-label">Pipeline Status</div>
+                                <div class="verify-adf-status-value">Succeeded</div>
+                            </div>
+                        </div>
+                        <div class="verify-adf-detail">
+                            <div class="verify-adf-kv">
+                                <span class="verify-adf-k">Start Time</span>
+                                <span class="verify-adf-v">Today, 09:08:14</span>
+                            </div>
+                            <div class="verify-adf-kv">
+                                <span class="verify-adf-k">End Time</span>
+                                <span class="verify-adf-v">Today, 09:10:28</span>
+                            </div>
+                            <div class="verify-adf-kv">
+                                <span class="verify-adf-k">Duration</span>
+                                <span class="verify-adf-v">2m 14s</span>
+                            </div>
+                            <div class="verify-adf-kv">
+                                <span class="verify-adf-k">Trigger Type</span>
+                                <span class="verify-adf-v">Manual</span>
+                            </div>
+                        </div>
+                        <div class="verify-adf-activities">
+                            <div class="verify-adf-activity-item">
+                                <div class="verify-adf-activity-num">12</div>
+                                <div class="verify-adf-activity-label">Executed</div>
+                            </div>
+                            <div class="verify-adf-activity-item verify-adf-activity-success">
+                                <div class="verify-adf-activity-num">10</div>
+                                <div class="verify-adf-activity-label">Succeeded</div>
+                            </div>
+                            <div class="verify-adf-activity-item verify-adf-activity-fail">
+                                <div class="verify-adf-activity-num">2</div>
+                                <div class="verify-adf-activity-label">Failed</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <div class="panel-title">Evidence Pack & Audit Traceability</div>
+                            <div class="panel-sub">Verification artifacts and audit trail inventory</div>
+                        </div>
+                        <button class="btn btn-primary" type="button"><i data-lucide="download"></i> Download Pack</button>
+                    </div>
+
+                    <div class="verify-evidence-table">
+                        <div class="verify-evidence-row verify-evidence-head">
+                            <div>Evidence Item</div><div>Type</div><div>Generated</div><div>Storage Path</div><div>Checksum</div><div>Status</div>
+                        </div>
+                        <div class="verify-evidence-row">
+                            <div class="verify-evidence-name">
+                                <i data-lucide="file-text"></i>
+                                verification_summary_20241223.pdf
+                            </div>
+                            <div><span class="pill pill-type">PDF</span></div>
+                            <div>Today, 09:10</div>
+                            <div class="verify-evidence-path">/evidence/verify/2024-12-23/summary.pdf</div>
+                            <div class="verify-evidence-hash">a8f3c9d2...</div>
+                            <div><span class="pill pill-ok">Available</span></div>
+                        </div>
+                        <div class="verify-evidence-row">
+                            <div class="verify-evidence-name">
+                                <i data-lucide="file-spreadsheet"></i>
+                                validation_results_detailed.csv
+                            </div>
+                            <div><span class="pill pill-type">CSV</span></div>
+                            <div>Today, 09:10</div>
+                            <div class="verify-evidence-path">/evidence/verify/2024-12-23/results.csv</div>
+                            <div class="verify-evidence-hash">7b2e1f4a...</div>
+                            <div><span class="pill pill-ok">Available</span></div>
+                        </div>
+                        <div class="verify-evidence-row">
+                            <div class="verify-evidence-name">
+                                <i data-lucide="database"></i>
+                                exception_rows_full.parquet
+                            </div>
+                            <div><span class="pill pill-type">PARQUET</span></div>
+                            <div>Today, 09:10</div>
+                            <div class="verify-evidence-path">/evidence/verify/2024-12-23/exceptions.parquet</div>
+                            <div class="verify-evidence-hash">3d9c7e8b...</div>
+                            <div><span class="pill pill-ok">Available</span></div>
+                        </div>
+                        <div class="verify-evidence-row">
+                            <div class="verify-evidence-name">
+                                <i data-lucide="code"></i>
+                                adf_pipeline_execution_log.json
+                            </div>
+                            <div><span class="pill pill-type">JSON</span></div>
+                            <div>Today, 09:10</div>
+                            <div class="verify-evidence-path">/evidence/verify/2024-12-23/adf_log.json</div>
+                            <div class="verify-evidence-hash">5f1a2d6c...</div>
+                            <div><span class="pill pill-ok">Available</span></div>
+                        </div>
+                        <div class="verify-evidence-row">
+                            <div class="verify-evidence-name">
+                                <i data-lucide="shield-check"></i>
+                                governance_attestation.pdf
+                            </div>
+                            <div><span class="pill pill-type">PDF</span></div>
+                            <div>Pending</div>
+                            <div class="verify-evidence-path">—</div>
+                            <div class="verify-evidence-hash">—</div>
+                            <div><span class="pill pill-warn">Locked</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <aside class="details-side">
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">AI Insights</div>
+                        <div class="panel-sub">Azure AI Foundry (assistive only)</div>
+                    </div>
+                </div>
+
+                <div class="verify-ai-insights">
+                    <div class="verify-ai-insight-item">
+                        <div class="verify-ai-insight-icon"><i data-lucide="lightbulb"></i></div>
+                        <div class="verify-ai-insight-text">
+                            <strong>83%</strong> of failures stem from 2 validation patterns: Uniqueness and Referential Integrity
+                        </div>
+                        <span class="verify-ai-confidence">High</span>
+                    </div>
+                    <div class="verify-ai-insight-item">
+                        <div class="verify-ai-insight-icon"><i data-lucide="trending-up"></i></div>
+                        <div class="verify-ai-insight-text">
+                            Highest risk object: <strong>Contacts → Accounts</strong> mapping shows repeated constraint violations
+                        </div>
+                        <span class="verify-ai-confidence">High</span>
+                    </div>
+                    <div class="verify-ai-insight-item">
+                        <div class="verify-ai-insight-icon"><i data-lucide="alert-circle"></i></div>
+                        <div class="verify-ai-insight-text">
+                            Matters table transform step requires manual review due to schema drift detection
+                        </div>
+                        <span class="verify-ai-confidence">Medium</span>
+                    </div>
+                </div>
+
+                <div class="verify-ai-questions">
+                    <div class="verify-ai-questions-label">Suggested Questions</div>
+                    <div class="verify-ai-question-chips">
+                        <button class="verify-ai-chip" type="button">Why did Matters fail?</button>
+                        <button class="verify-ai-chip" type="button">Show uniqueness patterns</button>
+                        <button class="verify-ai-chip" type="button">Compare to last run</button>
+                        <button class="verify-ai-chip" type="button">What's blocking approval?</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Decision & Audit</div>
+                        <div class="panel-sub">Governed sign-off</div>
+                    </div>
+                </div>
+
+                <div class="kv">
+                    <div class="kv-row">
+                        <div class="kv-k">Gate</div>
+                        <div class="kv-v">
+                            <span class="pill @(blockers>0 ? "pill-bad" : "pill-ok")">
+                                @(blockers>0 ? "Blocked" : "Clear")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary w-100" style="margin-top:12px;">Approve Migration</button>
+            </div>
+        </aside>
     </div>
 </div>
 
-<!-- =========================
-   TABS BAR (Same as other tabs)
-========================== -->
-<div class="details-tabs">
-    <a class="tab-item @(activeTab=="Overview" ? "is-active" : "")"
-       asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Id">Overview</a>
-
-    <a class="tab-item @(activeTab=="Fetch" ? "is-active" : "")"
-       asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
-
-    <a class="tab-item @(activeTab=="Verify" ? "is-active" : "")"
-       asp-controller="Projects" asp-action="Verify" asp-route-id="@Model.Id">Verify</a>
-
-    <a class="tab-item" href="#" onclick="return false;">Process</a>
-    <a class="tab-item" href="#" onclick="return false;">Config</a>
-    <a class="tab-item" href="#" onclick="return false;">Activity</a>
-
-    <div class="tabs-spacer"></div>
-
-    <div class="view-toggle" role="tablist" aria-label="Verify view toggle">
-        <button class="vt-btn is-active" type="button" data-view="summary">Decision</button>
-        <button class="vt-btn" type="button" data-view="details">Evidence</button>
-    </div>
-
-    <button class="tab-icon-btn" type="button" title="Notes">
-        <i data-lucide="file-text"></i>
-    </button>
-    <button class="tab-icon-btn" type="button" title="More">
-        <i data-lucide="more-horizontal"></i>
-    </button>
-</div>
-
-<!-- =========================
-   VERIFY HEADER (page section title)
-========================== -->
-<div class="verify-head">
-    <div>
-        <h2 class="verify-title">Verify</h2>
-        <div class="verify-subtitle">Migration confidence gate — trust, risk, blockers, and evidence before approval</div>
-
-        <div class="verify-runmeta">
-            <span class="mini neutral"><strong>ADF:</strong> @adfPipelineName</span>
-            <span class="mini neutral"><strong>SQL Pack:</strong> @spPackName</span>
-            <span class="mini neutral"><strong>Last run:</strong> @Model.LastRunText</span>
-            <span class="mini neutral"><strong>Next:</strong> @Model.NextRunText</span>
-        </div>
-    </div>
-
-    <div class="verify-controls">
-        <button class="btn btn-secondary" type="button">
-            <i data-lucide="download"></i>
-            Export Summary
-        </button>
-        <button class="btn btn-secondary" type="button">
-            <i data-lucide="sliders-horizontal"></i>
-            Filters
-        </button>
-    </div>
-</div>
-
-<div class="details-grid">
-    <!-- =========================
-       LEFT (Main)
-    ========================== -->
-    <section class="details-main">
-
-        <!-- =========================
-           DECISION VIEW (cards + charts)
-        ========================== -->
-        <div class="panel">
-            <div class="panel-head">
-                <div>
-                    <div class="panel-title">Decision View</div>
-                    <div class="panel-sub">Confidence score, blockers, risk concentration, and evidence coverage</div>
-                </div>
-            </div>
-
-            <div class="verify-metrics">
-                <!-- Confidence donut -->
-                <div class="vcard">
-                    <div class="vcard-top">
-                        <div class="vcard-label">Migration Confidence</div>
-                        <span class="pill @(confidenceScore >= confidenceTarget ? "pill-ok" : "pill-warn")">
-                            @(confidenceScore >= confidenceTarget ? "GO" : "CAUTION")
-                        </span>
-                    </div>
-
-                    <div class="donut" style="--p:@confidenceScore">
-                        <div class="donut-inner">
-                            <div class="donut-num">@confidenceScore</div>
-                            <div class="donut-cap">Score</div>
-                        </div>
-                    </div>
-
-                    <div class="vcard-foot">
-                        Target: <strong>@confidenceTarget+</strong> for GO • Top driver: <strong>Referential integrity</strong>
-                    </div>
-                </div>
-
-                <!-- Blockers/Warn/Passed -->
-                <div class="vcard">
-                    <div class="vcard-top">
-                        <div class="vcard-label">Gate Status</div>
-                        <span class="pill @(blockers > 0 ? "pill-bad" : "pill-ok")">
-                            @(blockers > 0 ? "BLOCKED" : "CLEAR")
-                        </span>
-                    </div>
-
-                    <div class="vcard-split">
-                        <div class="mini-kpi">
-                            <div class="mini-num">@blockers</div>
-                            <div class="mini-lbl">Blockers</div>
-                        </div>
-                        <div class="mini-kpi">
-                            <div class="mini-num">@warnings</div>
-                            <div class="mini-lbl">Warnings</div>
-                        </div>
-                        <div class="mini-kpi">
-                            <div class="mini-num">@passed</div>
-                            <div class="mini-lbl">Passed</div>
-                        </div>
-                    </div>
-
-                    <div class="vcard-foot muted">
-                        Rule failures map to SQL validation pack + ADF verify pipeline output.
-                    </div>
-                </div>
-
-                <!-- Evidence coverage -->
-                <div class="vcard">
-                    <div class="vcard-top">
-                        <div class="vcard-label">Evidence Completeness</div>
-                        <span class="pill pill-ok">COMPLETE</span>
-                    </div>
-
-                    <div class="evidence-grid">
-                        <div class="ev-tile">
-                            <div class="ev-num">@evidenceValidationsRun/@evidenceValidationsTotal</div>
-                            <div class="ev-lbl">Validations executed</div>
-                        </div>
-                        <div class="ev-tile">
-                            <div class="ev-num">@evidenceObjectsCovered/@evidenceObjectsTotal</div>
-                            <div class="ev-lbl">Objects covered</div>
-                        </div>
-                        <div class="ev-tile">
-                            <div class="ev-num">Yes</div>
-                            <div class="ev-lbl">Baseline compare</div>
-                        </div>
-                        <div class="ev-tile">
-                            <div class="ev-num">Ready</div>
-                            <div class="ev-lbl">Evidence pack</div>
-                        </div>
-                    </div>
-
-                    <div class="vcard-foot muted">
-                        Evidence pack should include: run summary, exceptions, and object-level coverage.
-                    </div>
-                </div>
-
-                <!-- Trend sparkline -->
-                <div class="vcard">
-                    <div class="vcard-top">
-                        <div class="vcard-label">Verify Trend</div>
-                        <span class="pill pill-neutral">LAST 7 RUNS</span>
-                    </div>
-
-                    <div class="spark-wrap">
-                        <div class="spark-head">
-                            <div class="spark-title">Confidence trend</div>
-                            <div class="spark-metric">+3</div>
-                        </div>
-
-                        <svg class="sparkline" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true">
-                            <path class="bg" d="M0,42 L50,44 L100,40 L150,34 L200,30 L250,26 L300,24"></path>
-                            <path d="M0,42 L50,44 L100,40 L150,34 L200,30 L250,26 L300,24"></path>
-                        </svg>
-
-                        <div class="spark-foot muted">Latest: 78 • Prior: 75 • Target: 85</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- =========================
-           RISK CONCENTRATION (bar chart)
-        ========================== -->
-        <div class="panel">
-            <div class="panel-head">
-                <div>
-                    <div class="panel-title">Risk Concentration by Object</div>
-                    <div class="panel-sub">Where the risk is clustering (business-impact view)</div>
-                </div>
-                <button class="btn btn-secondary" type="button" disabled>
-                    View full breakdown
-                </button>
-            </div>
-
-            <div class="risk-bars">
-                <div class="rb-row">
-                    <div class="rb-left">
-                        <div class="rb-name">Contacts</div>
-                        <div class="rb-meta">Duplicates + orphan relationships</div>
-                    </div>
-                    <div class="rb-mid">
-                        <div class="rb-bar"><span style="width: 86%"></span></div>
-                    </div>
-                    <div class="rb-right">
-                        <span class="pill pill-bad">HIGH</span>
-                        <div class="rb-aff">3.1% affected</div>
-                    </div>
-                </div>
-
-                <div class="rb-row">
-                    <div class="rb-left">
-                        <div class="rb-name">Matters</div>
-                        <div class="rb-meta">Missing mandatory fields</div>
-                    </div>
-                    <div class="rb-mid">
-                        <div class="rb-bar"><span style="width: 54%"></span></div>
-                    </div>
-                    <div class="rb-right">
-                        <span class="pill pill-warn">MED</span>
-                        <div class="rb-aff">1.4% affected</div>
-                    </div>
-                </div>
-
-                <div class="rb-row">
-                    <div class="rb-left">
-                        <div class="rb-name">Invoices</div>
-                        <div class="rb-meta">Tolerance / rounding</div>
-                    </div>
-                    <div class="rb-mid">
-                        <div class="rb-bar"><span style="width: 18%"></span></div>
-                    </div>
-                    <div class="rb-right">
-                        <span class="pill pill-ok">LOW</span>
-                        <div class="rb-aff">0.1% affected</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="muted" style="font-size:12px;margin-top:8px;">
-                Tip: risk weights can be computed from severity × row-impact × object criticality (stored in SQL config).
-            </div>
-        </div>
-
-        <!-- =========================
-           OBJECT PROGRESS (extraction→transform→validate)
-        ========================== -->
-        <div class="panel">
-            <div class="panel-head">
-                <div>
-                    <div class="panel-title">Object Verification Progress</div>
-                    <div class="panel-sub">Progress across ADF ingestion + SQL transformations + rule validation packs</div>
-                </div>
-                <button class="link-btn" type="button">View evidence logs</button>
-            </div>
-
-            <div class="objtable">
-                <div class="objthead">
-                    <div>Object</div>
-                    <div>ADF Ingest</div>
-                    <div>SQL Transform</div>
-                    <div>Rule Validation</div>
-                    <div>Status</div>
-                    <div>Evidence</div>
-                </div>
-
-                <div class="objtrow">
-                    <div class="objname">
-                        <div class="objtitle">Contacts</div>
-                        <div class="objsub">Rows: 45,210 • Last: @Model.LastRunText</div>
-                    </div>
-                    <div><div class="pbar good"><span style="width: 100%"></span></div></div>
-                    <div><div class="pbar good"><span style="width: 98%"></span></div></div>
-                    <div><div class="pbar bad"><span style="width: 72%"></span></div></div>
-                    <div><span class="pill pill-bad">FAILED</span></div>
-                    <div><button class="mini-btn" type="button"><i data-lucide="file-text"></i> View</button></div>
-                </div>
-
-                <div class="objtrow">
-                    <div class="objname">
-                        <div class="objtitle">Matters</div>
-                        <div class="objsub">Rows: 12,980 • Last: @Model.LastRunText</div>
-                    </div>
-                    <div><div class="pbar good"><span style="width: 100%"></span></div></div>
-                    <div><div class="pbar good"><span style="width: 100%"></span></div></div>
-                    <div><div class="pbar warn"><span style="width: 88%"></span></div></div>
-                    <div><span class="pill pill-warn">WARNING</span></div>
-                    <div><button class="mini-btn" type="button"><i data-lucide="file-text"></i> View</button></div>
-                </div>
-
-                <div class="objtrow">
-                    <div class="objname">
-                        <div class="objtitle">Invoices</div>
-                        <div class="objsub">Rows: 8,114 • Last: @Model.LastRunText</div>
-                    </div>
-                    <div><div class="pbar good"><span style="width: 100%"></span></div></div>
-                    <div><div class="pbar good"><span style="width: 100%"></span></div></div>
-                    <div><div class="pbar good"><span style="width: 100%"></span></div></div>
-                    <div><span class="pill pill-ok">PASS</span></div>
-                    <div><button class="mini-btn" type="button"><i data-lucide="file-text"></i> View</button></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- =========================
-           EXCEPTIONS (table)
-        ========================== -->
-        <div class="panel">
-            <div class="panel-head">
-                <div>
-                    <div class="panel-title">Exceptions</div>
-                    <div class="panel-sub">Prioritized issues from SQL validation packs + ADF output datasets</div>
-                </div>
-
-                <div class="ex-filters">
-                    <span class="chip is-active">All</span>
-                    <span class="chip">Blockers</span>
-                    <span class="chip">Warnings</span>
-                    <span class="chip">Passed</span>
-                </div>
-            </div>
-
-            <div class="extable">
-                <div class="exthead">
-                    <div>Severity</div>
-                    <div>Object</div>
-                    <div>Issue</div>
-                    <div>Count</div>
-                    <div>Source</div>
-                    <div>Last Seen</div>
-                    <div></div>
-                </div>
-
-                <div class="extrow">
-                    <div><span class="sev sev-bad">BLOCKER</span></div>
-                    <div class="mono">Contacts</div>
-                    <div>Orphan relationship: Contacts → Accounts (FK missing)</div>
-                    <div class="mono">1,412</div>
-                    <div class="mono">SQL:@spPackName</div>
-                    <div class="mono">@Model.LastRunText</div>
-                    <div><button class="mini-btn" type="button">View details</button></div>
-                </div>
-
-                <div class="extrow">
-                    <div><span class="sev sev-bad">BLOCKER</span></div>
-                    <div class="mono">Contacts</div>
-                    <div>Duplicate key: Email + ClientId</div>
-                    <div class="mono">882</div>
-                    <div class="mono">ADF:@adfPipelineName</div>
-                    <div class="mono">@Model.LastRunText</div>
-                    <div><button class="mini-btn" type="button">View details</button></div>
-                </div>
-
-                <div class="extrow">
-                    <div><span class="sev sev-warn">WARNING</span></div>
-                    <div class="mono">Matters</div>
-                    <div>Mandatory field missing: MatterType</div>
-                    <div class="mono">126</div>
-                    <div class="mono">SQL:@spPackName</div>
-                    <div class="mono">@Model.LastRunText</div>
-                    <div><button class="mini-btn" type="button">View details</button></div>
-                </div>
-
-                <div class="extrow">
-                    <div><span class="sev sev-ok">PASS</span></div>
-                    <div class="mono">Invoices</div>
-                    <div>Row count match (source vs staging)</div>
-                    <div class="mono">OK</div>
-                    <div class="mono">ADF:@adfPipelineName</div>
-                    <div class="mono">@Model.LastRunText</div>
-                    <div><button class="mini-btn" type="button" disabled>View</button></div>
-                </div>
-            </div>
-
-            <div class="muted" style="font-size:12px;margin-top:10px;">
-                “View details” should open a drill-down page (later) showing sample rows, SQL query hints, and remediation actions.
-            </div>
-        </div>
-
-        <!-- =========================
-           COPILOT (static UI mock)
-        ========================== -->
-        <div class="panel">
-            <div class="panel-head">
-                <div>
-                    <div class="panel-title">Verify Copilot</div>
-                    <div class="panel-sub">Ask questions about failures, duplicates, referential issues, and evidence reporting</div>
-                </div>
-                <span class="pill pill-neutral">Azure AI Foundry</span>
-            </div>
-
-            <div class="copilot">
-                <div class="copilot-left">
-                    <div class="suggested">
-                        <div class="suggested-title">Suggested prompts</div>
-                        <button class="sug" type="button">Why is Contacts failing?</button>
-                        <button class="sug" type="button">Show top duplicates (Email + ClientId)</button>
-                        <button class="sug" type="button">Explain referential issues Contacts → Accounts</button>
-                        <button class="sug" type="button">Generate evidence report for sign-off</button>
-                    </div>
-                </div>
-
-                <div class="copilot-chat" role="region" aria-label="Copilot chat transcript">
-                    <div class="msg msg-user">
-                        <div class="bubble">
-                            Why is this migration blocked?
-                        </div>
-                        <div class="msg-meta">You • just now</div>
-                    </div>
-
-                    <div class="msg msg-ai">
-                        <div class="bubble">
-                            The gate is blocked due to <strong>2 blockers</strong>:
-                            <ul style="margin:8px 0 0 18px;">
-                                <li>Orphan relationships in <strong>Contacts → Accounts</strong> (1,412 rows)</li>
-                                <li>Duplicate keys in <strong>Contacts</strong> (882 rows)</li>
-                            </ul>
-                            Recommended next step: run the “Fix blocker” workflow, then re-run Verify.
-                        </div>
-                        <div class="msg-meta">Copilot • summary based on latest verify run</div>
-                    </div>
-
-                    <div class="chat-input">
-                        <input class="chatbox" placeholder="Ask Copilot… e.g., “show sample orphan rows” (mock UI)" />
-                        <button class="btn btn-primary" type="button">
-                            <i data-lucide="send"></i>
-                            Send
-                        </button>
-                    </div>
-
-                    <div class="chat-foot muted">
-                        Copilot explains patterns; authoritative pass/fail comes from ADF + SQL validations.
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </section>
-
-    <!-- =========================
-       RIGHT (AI + Actions + Decision/Audit)
-    ========================== -->
-    <aside class="details-side">
-
-        <div class="panel">
-            <div class="panel-head">
-                <div>
-                    <div class="panel-title">AI Insights</div>
-                    <div class="panel-sub">Patterns & root-cause summaries (Azure AI Foundry)</div>
-                </div>
-            </div>
-
-            <ul class="ai-bullets">
-                <li><strong>83%</strong> of failures cluster into <strong>2 recurring patterns</strong>.</li>
-                <li>Highest risk is driven by broken relationships in <strong>Contacts → Accounts</strong>.</li>
-                <li>No new failure categories since the previous run.</li>
-            </ul>
-
-            <div class="ai-callout">
-                <i data-lucide="sparkles"></i>
-                <div>
-                    <div class="ai-callout-title">What Copilot can do next</div>
-                    <div class="ai-callout-sub">Explain, summarize, and draft evidence. It won’t override validations.</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="panel">
-            <div class="panel-head">
-                <div>
-                    <div class="panel-title">Recommended Next Actions</div>
-                    <div class="panel-sub">Guided actions based on severity</div>
-                </div>
-            </div>
-
-            <div class="rec-actions">
-                <button class="btn btn-secondary w-100" type="button">
-                    <i data-lucide="wrench"></i>
-                    Fix blocker: Referential integrity
-                </button>
-                <button class="btn btn-secondary w-100" type="button">
-                    <i data-lucide="repeat-2"></i>
-                    Re-run Verify (ADF + SQL)
-                </button>
-                <button class="btn btn-secondary w-100" type="button">
-                    <i data-lucide="file-down"></i>
-                    Generate Evidence Pack
-                </button>
-            </div>
-        </div>
-
-        <div class="panel">
-            <div class="panel-head">
-                <div>
-                    <div class="panel-title">Decision & Audit</div>
-                    <div class="panel-sub">Governed sign-off (UI placeholders)</div>
-                </div>
-            </div>
-
-            <div class="kv">
-                <div class="kv-row"><div class="kv-k">Gate</div><div class="kv-v"><span class="pill @(blockers>0 ? "pill-bad" : "pill-ok")">@(blockers>0 ? "Blocked" : "Clear")</span></div></div>
-                <div class="kv-row"><div class="kv-k">Approved By</div><div class="kv-v">—</div></div>
-                <div class="kv-row"><div class="kv-k">Approved On</div><div class="kv-v">—</div></div>
-                <div class="kv-row"><div class="kv-k">Evidence Pack</div><div class="kv-v">Not generated</div></div>
-                <div class="kv-row"><div class="kv-k">Run Ref</div><div class="kv-v mono">ADF:@adfPipelineName</div></div>
-            </div>
-
-            <div class="side-actions" style="margin-top:12px;">
-                <button class="btn btn-primary w-100" type="button" disabled="@(blockers>0)">
-                    <i data-lucide="badge-check"></i>
-                    Approve Migration
-                </button>
-                <button class="btn btn-secondary w-100" type="button">
-                    <i data-lucide="clipboard-signature"></i>
-                    Add Sign-off Note
-                </button>
-            </div>
-
-            <div class="muted" style="font-size:12px;margin-top:10px;">
-                Approval should write an audit record in SQL (who/when/what run) and lock the evidence snapshot.
-            </div>
-        </div>
-
-    </aside>
-</div>
 @section PageStyles {
-    <link rel="stylesheet" href="~/css/verify.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/verify.css" />
 }
+
 @section Scripts {
-    <script>
-        if (window.lucide) lucide.createIcons();
-    </script>
+<script>
+    if (window.lucide) lucide.createIcons();
+
+    (function() {
+        const KEY = "dmt_verify_view";
+        const buttons = document.querySelectorAll(".view-toggle .vt-btn");
+        if (!buttons.length) return;
+
+        function apply(view) {
+            document.body.classList.toggle("verify-view-decision", view === "decision");
+            document.body.classList.toggle("verify-view-evidence", view === "evidence");
+            buttons.forEach(b => b.classList.toggle("is-active", b.dataset.view === view));
+            localStorage.setItem(KEY, view);
+        }
+
+        const saved = localStorage.getItem(KEY);
+        apply(saved === "evidence" ? "evidence" : "decision");
+
+        buttons.forEach(btn => btn.addEventListener("click", () => apply(btn.dataset.view)));
+    })();
+</script>
 }
-</div>
