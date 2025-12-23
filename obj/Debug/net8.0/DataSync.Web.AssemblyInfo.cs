@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DataSync.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5ae9ed08774547054c774dff9517d8c4e92b587d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed0dbf0a43a5c6954947e3bf5ec701f4eba232f5")]
 [assembly: System.Reflection.AssemblyProductAttribute("DataSync.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DataSync.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
