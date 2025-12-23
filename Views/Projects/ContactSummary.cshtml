@@ -1,0 +1,791 @@
+@model DataSync.Web.Models.ViewModels.ProjectDetailsVm
+@{
+    ViewData["Title"] = "Project Fetch";
+    var activeTab = (ViewData["ActiveTab"] as string) ?? "Fetch";
+}
+
+<!-- =========================
+   PROJECT HERO (Same as Details)
+========================== -->
+<div class="project-hero">
+    <div class="hero-left">
+        <div class="hero-logo" aria-hidden="true">
+            @(string.IsNullOrWhiteSpace(Model.ClientName)
+                ? "C"
+                : Model.ClientName.Trim().Substring(0, 1).ToUpperInvariant())
+        </div>
+
+        <div class="hero-text">
+            <div class="hero-topline">
+                <a class="crumb-link" asp-controller="Projects" asp-action="Index">Projects</a>
+                <span class="crumb-sep">/</span>
+                <span class="crumb-current">@Model.Name</span>
+            </div>
+
+            <div class="hero-title-row">
+                <h1 class="hero-title">@Model.Name</h1>
+
+                <div class="hero-badges">
+                    <span class="pill pill-status">@Model.Status</span>
+                    <span class="pill pill-health">@Model.Health</span>
+                    <span class="pill pill-env">@Model.Environment</span>
+                </div>
+            </div>
+
+            <div class="hero-meta">
+                <span><strong>Client:</strong> @Model.ClientName</span>
+                <span class="subdot">•</span>
+                <span><strong>Source:</strong> @Model.SourcePlatform</span>
+                <span class="subdot">•</span>
+                <span><strong>Target:</strong> @Model.TargetPlatform</span>
+                <span class="subdot">•</span>
+                <span><strong>Owner:</strong> @Model.Owner</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-right">
+        <button class="btn btn-secondary" type="button">
+            <i data-lucide="download"></i>
+            Export
+        </button>
+
+        <button class="btn btn-secondary" type="button">
+            <i data-lucide="settings"></i>
+            Settings
+        </button>
+
+        <button class="btn btn-primary" type="button">
+            <i data-lucide="play"></i>
+            Run Now
+        </button>
+    </div>
+</div>
+
+<!-- =========================
+   TABS BAR + VIEW TOGGLE
+========================== -->
+<div class="details-tabs">
+    <a class="tab-item @(activeTab=="Overview" ? "is-active" : "")"
+       asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Id">Overview</a>
+
+    <a class="tab-item @(activeTab=="Fetch" ? "is-active" : "")"
+       asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
+
+    <a class="tab-item @(activeTab=="Verify" ? "is-active" : "")"
+       asp-controller="Projects"
+       asp-action="Verify"
+       asp-route-id="@Model.Id">Verify</a>
+    <a class="tab-item" href="#" onclick="return false;">Process</a>
+    <a class="tab-item" href="#" onclick="return false;">Config</a>
+    <a class="tab-item" href="#" onclick="return false;">Activity</a>
+
+    <div class="tabs-spacer"></div>
+
+    
+</div>
+
+
+<!-- =========================
+   DETAILS VIEW (Improved UI: cards + visuals)
+   NOTE: No KPIs, no object list, no donut/trend
+========================== -->
+<div class="fetch-details-only">
+    <div class="details-grid">
+        <section class="details-main">
+
+
+            <!-- 5) Run History (table + bar chart header) -->
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Contact Rules</div>
+                        <div class="panel-sub">Recent runs and outcomes</div>
+                    </div>
+                </div>
+               @*  <table class="runs-table" style="width:100%">
+                    <thead class="runs-head" style="line-height:30px">
+                        <tr>
+                            <th>Rule</th>
+                            <th>Rows</th>
+                            <th>Rejects</th>
+                            <th>Comment</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge bg-success">Missing Contact</span></td>
+                            <td>128,450</td>
+                            <td>0</td>
+                            <td>Today 09:10</td>
+                            <td><span class="badge bg-success">Success</span></td>
+                            <td></td>
+                        </tr>
+                        <tr >
+                            <td><span class="badge bg-warning">Duplicate Contact</span></td>
+                            <td>121,004</td>
+                            <td>18</td>
+                            <td>Yesterday 01:00</td>
+                            <td><span class="badge bg-warning">Warning</span></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-success">Incorrect Contact</span></td>
+                            <td>119,880</td>
+                            <td>0</td>
+                            <td>2 days ago 01:00</td>
+                            <td><span class="badge bg-success">Success</span></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+ *@
+                <div class="runs-table">
+                    <div class="runs-row runs-head">
+                        <div>Rule</div>
+                        <div>Rows</div>
+                        <div>Rejects</div>
+                        <div>Comment</div>
+                        <div>Status</div>
+                        
+                        <div>Action</div>
+                    </div>
+
+                    <div class="runs-row">
+                        <div><span class="pill">Missing Contact</span></div>
+                        <div>128,450</div>
+                        <div>0</div>
+                        <div>Either Send a new file</div>
+                        <div><span class="pill pill-ok">Success</span></div>
+                        
+                       
+                        <div></div>
+                    </div>
+
+                    <div class="runs-row">
+                        <div><span class="pill">Duplicate Contact</span></div>
+                        <div>121,004</div>
+                        <div>18</div>
+                        <div>We can merge it though the AI</div>
+                        <div><span class="pill pill-warn">Warning</span></div>
+                        
+                        
+                        <div></div>
+                    </div>
+
+                    <div class="runs-row">
+                        <div><span class="pill">Incorrect Contact</span></div>
+                        <div>119,880</div>
+                        <div>0</div>
+                        <div>We can get a list of records which are not correct</div>
+                        <div><span class="pill pill-ok">Success</span></div>
+                        
+                        
+                        <div></div>
+                    </div>
+                </div>
+
+            </div>
+
+
+        </section>
+
+        <aside class="details-side">
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Schedule</div>
+                        <div class="panel-sub">Read-only</div>
+                    </div>
+                </div>
+
+                <div class="kv">
+                    <div class="chat-container">
+                        <div class="chat-window" id="chat-window">
+                            <!-- Messages will appear here -->
+                        </div>
+
+                        <div class="input-group">
+                            <input type="text" id="user-input" class="form-control" placeholder="Type a message..." aria-label="User message" aria-describedby="send-button">
+                            <div class="input-group-append">
+                                <button class="btn" id="send-button" onclick="sendMessage()">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kv-row"><div class="kv-k">Next Run</div><div class="kv-v">@Model.NextRunText</div></div>
+                    <div class="kv-row"><div class="kv-k">Frequency</div><div class="kv-v">Daily</div></div>
+                    <div class="kv-row"><div class="kv-k">Timezone</div><div class="kv-v">UTC</div></div>
+                </div>
+            </div>
+
+           
+        </aside>
+    </div>
+</div>
+
+@section PageStyles {
+    <style>
+        /* =========================
+                           Toggle: Summary vs Details
+                        ========================== */
+        .fetch-summary-only {
+            display: block;
+        }
+
+        .fetch-details-only {
+            display: block;
+        }
+
+        body.fetch-view-summary .fetch-summary-only {
+            display: block;
+        }
+
+        body.fetch-view-summary .fetch-details-only {
+            display: none;
+        }
+
+        body:not(.fetch-view-summary) .fetch-summary-only {
+            display: none;
+        }
+
+        body:not(.fetch-view-summary) .fetch-details-only {
+            display: block;
+        }
+
+        /* Toggle UI */
+        .view-toggle {
+            display: flex;
+            gap: 6px;
+            padding: 4px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,.12);
+            background: rgba(255,255,255,.6);
+        }
+
+        .vt-btn {
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            opacity: .65;
+        }
+
+            .vt-btn.is-active {
+                background: rgba(37,99,235,.12);
+                color: #2563eb;
+                opacity: 1;
+            }
+
+        /* Pills (local helpers) */
+        .pill-ok {
+            background: rgba(16, 185, 129, .12);
+            border: 1px solid rgba(16, 185, 129, .25);
+            color: rgba(5, 150, 105, 1);
+        }
+
+        .pill-warn {
+            background: rgba(245, 158, 11, .12);
+            border: 1px solid rgba(245, 158, 11, .25);
+            color: rgba(180, 83, 9, 1);
+        }
+
+        .pill {
+            font-size:11px;
+        }
+        /* =========================
+                           DETAILS UI (Scoped)
+                        ========================== */
+        .fetch-details-only .panel-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* Diagnostics row */
+        .fetchd-diag-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        @@media (max-width: 1100px) {
+            .fetchd-diag-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .fetchd-diag-card {
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            padding: 12px;
+            background: rgba(255,255,255,.8);
+        }
+
+        .fetchd-diag-top {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .fetchd-diag-ico {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(37,99,235,.08);
+        }
+
+            .fetchd-diag-ico svg {
+                width: 18px;
+                height: 18px;
+            }
+
+        .fetchd-diag-label {
+            font-size: 12px;
+            opacity: .7;
+            font-weight: 700;
+        }
+
+        .fetchd-diag-value {
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .fetchd-diag-foot {
+            margin-top: 8px;
+            font-size: 12px;
+            opacity: .75;
+        }
+
+        /* Card grid */
+        .fetchd-card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        @@media (max-width: 1100px) {
+            .fetchd-card-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .fetchd-card {
+            position: relative;
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            padding: 12px 12px 12px 44px;
+            background: rgba(255,255,255,.85);
+            min-height: 74px;
+        }
+
+        .fetchd-card-ico {
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            width: 26px;
+            height: 26px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(0,0,0,.04);
+        }
+
+            .fetchd-card-ico svg {
+                width: 16px;
+                height: 16px;
+                opacity: .85;
+            }
+
+        .fetchd-card-label {
+            font-size: 12px;
+            opacity: .7;
+            font-weight: 800;
+        }
+
+        .fetchd-card-value {
+            margin-top: 2px;
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .fetchd-card-sub {
+            margin-top: 4px;
+            font-size: 12px;
+            opacity: .75;
+        }
+
+        .fetchd-mini-tag {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.8);
+            font-weight: 800;
+        }
+
+            .fetchd-mini-tag.good {
+                background: rgba(16,185,129,.12);
+                border-color: rgba(16,185,129,.25);
+                color: rgba(5,150,105,1);
+            }
+
+        .fetchd-mini-spark {
+            margin-top: 8px;
+        }
+
+            .fetchd-mini-spark svg {
+                width: 100%;
+                height: 28px;
+            }
+
+            .fetchd-mini-spark path {
+                fill: none;
+                stroke: rgba(37,99,235,.9);
+                stroke-width: 2.2;
+            }
+
+        /* Note row under cards */
+        .fetchd-note {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(37,99,235,.06);
+            font-size: 12px;
+            opacity: .9;
+        }
+
+            .fetchd-note svg {
+                width: 16px;
+                height: 16px;
+            }
+
+        /* Split (cards + mini flow) */
+        .fetchd-split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 12px;
+        }
+
+        @@media (max-width: 1100px) {
+            .fetchd-split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .fetchd-mini-flow {
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            padding: 12px;
+            background: rgba(255,255,255,.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .fetchd-flow-step {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .fetchd-flow-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(37,99,235,.9);
+            box-shadow: 0 0 0 6px rgba(37,99,235,.12);
+        }
+
+        .fetchd-flow-line {
+            height: 24px;
+            margin-left: 5px;
+            border-left: 2px dashed rgba(0,0,0,.12);
+        }
+
+        .fetchd-flow-title {
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .fetchd-flow-sub {
+            font-size: 12px;
+            opacity: .75;
+        }
+
+        /* Safeguards grid */
+        .fetchd-sg-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        @@media (max-width: 1100px) {
+            .fetchd-sg-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .fetchd-sg {
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            padding: 12px;
+            background: rgba(255,255,255,.85);
+        }
+
+        .fetchd-sg-top {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+            .fetchd-sg-top svg {
+                width: 18px;
+                height: 18px;
+                margin-top: 2px;
+            }
+
+        .fetchd-sg-title {
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .fetchd-sg-sub {
+            font-size: 12px;
+            opacity: .75;
+            margin-top: 2px;
+        }
+
+        /* Mini bars */
+        .fetchd-mini-bar {
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(0,0,0,.06);
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+            .fetchd-mini-bar > span {
+                display: block;
+                height: 100%;
+                border-radius: 999px;
+                background: rgba(37,99,235,.9);
+            }
+
+            .fetchd-mini-bar.good > span {
+                background: rgba(16,185,129,.9);
+            }
+
+            .fetchd-mini-bar.warn > span {
+                background: rgba(245,158,11,.95);
+            }
+
+        /* Run chart header */
+        .fetchd-runchart {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 12px;
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            background: rgba(255,255,255,.85);
+            margin-bottom: 10px;
+        }
+
+        .fetchd-runchart-title {
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .fetchd-runchart-sub {
+            font-size: 12px;
+            opacity: .75;
+        }
+
+        .fetchd-bars {
+            width: 220px;
+            height: 40px;
+        }
+
+            .fetchd-bars rect {
+                fill: rgba(37,99,235,.85);
+                opacity: .9;
+                rx: 4;
+            }
+
+        /* Runs table (force card-like grid even if site.css misses it) */
+        .runs-table {
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            overflow: hidden;
+            background: rgba(255,255,255,.85);
+            font-size:14px;
+        }
+
+        .runs-row {
+            display: grid;
+            grid-template-columns: 1fr 0.3fr 0.2fr 1.6fr 0.5fr 0.2fr;
+            gap: 10px;
+            padding: 10px 12px;
+            align-items: center;
+            border-top: 1px solid rgba(0,0,0,.06);
+        }
+
+            .runs-row:first-child {
+                border-top: 0;
+            }
+
+        .runs-head {
+            background: rgba(0,0,0,.03);
+            font-size: 12px;
+            font-weight: 900;
+            opacity: .8;
+        }
+
+        @@media (max-width: 1100px) {
+            .runs-row {
+                grid-template-columns: 1fr 1fr;
+                row-gap: 6px;
+            }
+
+            .runs-head {
+                display: none;
+            }
+        }
+
+        /* Governance grid */
+        .fetchd-gov-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        @@media (max-width: 1100px) {
+            .fetchd-gov-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .fetchd-gov {
+            border: 1px solid rgba(0,0,0,.08);
+            border-radius: 14px;
+            padding: 12px;
+            background: rgba(255,255,255,.85);
+        }
+
+        .fetchd-gov-wide {
+            grid-column: span 2;
+        }
+
+        .fetchd-gov-k {
+            font-size: 12px;
+            opacity: .7;
+            font-weight: 800;
+        }
+
+        .fetchd-gov-v {
+            margin-top: 4px;
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .chat-container {
+            max-width: 500px;
+            margin: 50px auto;
+        }
+
+        .chat-window {
+            height: 400px;
+            overflow-y: scroll;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .ai-message {
+            justify-content: flex-start;
+        }
+
+        .message-text {
+            max-width: 70%;
+            padding: 10px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .user-message .message-text {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .ai-message .message-text {
+            background-color: #e9ecef;
+            color: black;
+        }
+
+        .input-group {
+            margin-top: 10px;
+        }
+
+        .input-group-append button {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .input-group input {
+            border-radius: 20px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        if (window.lucide) lucide.createIcons();
+
+        (function () {
+            const KEY = "dmt_fetch_view";
+            const buttons = document.querySelectorAll(".view-toggle .vt-btn");
+            if (!buttons.length) return;
+
+            function apply(view) {
+                document.body.classList.toggle("fetch-view-summary", view === "summary");
+                buttons.forEach(b => b.classList.toggle("is-active", b.dataset.view === view));
+                localStorage.setItem(KEY, view);
+            }
+
+            const saved = localStorage.getItem(KEY);
+            apply(saved === "details" ? "details" : "summary");
+
+            buttons.forEach(btn => btn.addEventListener("click", () => apply(btn.dataset.view)));
+        })();
+    </script>
+}

@@ -97,6 +97,16 @@ namespace DataSync.Web.Controllers
     // IMPORTANT: render Verify.cshtml, not Details.cshtml
     return View(vm); // will load Views/Projects/Verify.cshtml
         }
+        public IActionResult ContactSummary(int id)
+        {
+            var vm = BuildProjectDetailsVm(id);
+            if (vm == null) return NotFound();
+
+            ViewData["ActiveTab"] = "Fetch";
+
+            // IMPORTANT: render Verify.cshtml, not Details.cshtml
+            return View(vm); // will load Views/Projects/Verify.cshtml
+        }
         // --------------------------------------------
         // TEMP: mock builder (later replace with DB/ADF)
         // --------------------------------------------
