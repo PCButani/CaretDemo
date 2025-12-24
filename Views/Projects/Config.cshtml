@@ -51,7 +51,7 @@
     };
 
     string ObjectConfigUrl(string objectKey) =>
-        Url.Action("ObjectConfig", "Projects", new { id = Model.Id, objectKey = objectKey }) ?? "#";
+        Url.Action("Entityconfig", "Projects", new { id = Model.Id}) ?? "#";
 
     // Advisory rollups (mock)
     var needsConfigCount = objects.Count(o => o.Status == "NeedsConfig");
@@ -113,24 +113,20 @@
          PRIMARY TABS (active navigation)
     ========================================== -->
     <div class="proj-tabs">
-        <a class="ptab @(activeTab=="Overview" ? "is-active" : "")"
+        <a class="tab-item @(activeTab=="Overview" ? "is-active" : "")"
            asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Id">Overview</a>
 
-        <a class="ptab @(activeTab=="Fetch" ? "is-active" : "")"
-           asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
+        <a class="tab-item @(activeTab=="Fetch" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Extract</a>
 
-        <a class="ptab @(activeTab=="Verify" ? "is-active" : "")"
-           asp-controller="Projects" asp-action="Verify" asp-route-id="@Model.Id">Verify</a>
+        <a class="tab-item @(activeTab=="Verify" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Verify" asp-route-id="@Model.Id">Transform</a>
 
-        <a class="ptab @(activeTab=="Process" ? "is-active" : "")"
-           asp-controller="Projects" asp-action="Process" asp-route-id="@Model.Id">Process</a>
+        <a class="tab-item @(activeTab=="Process" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Process" asp-route-id="@Model.Id">Load</a>
 
-        <a class="ptab @(activeTab=="Config" ? "is-active" : "")"
+        <a class="tab-item @(activeTab=="Config" ? "is-active" : "")"
            asp-controller="Projects" asp-action="Config" asp-route-id="@Model.Id">Config</a>
-
-        <a class="ptab @(activeTab=="Activity" ? "is-active" : "")"
-           asp-controller="Projects" asp-action="Activity" asp-route-id="@Model.Id">Activity</a>
-
         <div class="ptab-spacer"></div>
 
         <button class="icon-btn" type="button" title="Notes / Docs" id="btnDocs">

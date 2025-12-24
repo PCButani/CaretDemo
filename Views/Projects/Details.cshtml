@@ -73,16 +73,16 @@
        asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Id">Overview</a>
 
     <a class="tab-item @(activeTab=="Fetch" ? "is-active" : "")"
-       asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Fetch</a>
+       asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Extract</a>
 
     <a class="tab-item @(activeTab=="Verify" ? "is-active" : "")"
-       asp-controller="Projects" asp-action="Verify" asp-route-id="@Model.Id">Verify</a>
+       asp-controller="Projects" asp-action="Verify" asp-route-id="@Model.Id">Transform</a>
 
     <a class="tab-item @(activeTab=="Process" ? "is-active" : "")"
-       asp-controller="Projects" asp-action="Process" asp-route-id="@Model.Id">Process</a>
+       asp-controller="Projects" asp-action="Process" asp-route-id="@Model.Id">Load</a>
 
     <a class="tab-item @(activeTab=="Config" ? "is-active" : "")"
-       href="#" onclick="return false;">Config</a>
+       asp-controller="Projects" asp-action="Config" asp-route-id="@Model.Id">Config</a>
 
     @* <a class="tab-item @(activeTab=="Activity" ? "is-active" : "")"
        href="#" onclick="return false;">Activity</a> *@

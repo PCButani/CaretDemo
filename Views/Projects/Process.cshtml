@@ -856,12 +856,20 @@
          TABS NAV (same as others)
     ========================== -->
     <div class="details-tabs">
-        <a class="tab-item" asp-controller="Projects" asp-action="Details" asp-route-id="@projectId">Overview</a>
-        <a class="tab-item" asp-controller="Projects" asp-action="Fetch" asp-route-id="@projectId">Extract</a>
-        <a class="tab-item" asp-controller="Projects" asp-action="Verify" asp-route-id="@projectId">Transform</a>
-        <a class="tab-item is-active" asp-controller="Projects" asp-action="Process" asp-route-id="@projectId">Load</a>
-        <a class="tab-item" asp-controller="Projects" asp-action="Config" asp-route-id="@projectId">Config</a>
-        @* <a class="pce-tab @(activeTab=="Activity" ? "is-active" : "")" asp-controller="Projects" asp-action="Activity" asp-route-id="@projectId">Activity</a> *@
+        <a class="tab-item @(activeTab=="Overview" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Id">Overview</a>
+
+        <a class="tab-item @(activeTab=="Fetch" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Fetch" asp-route-id="@Model.Id">Extract</a>
+
+        <a class="tab-item @(activeTab=="Verify" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Verify" asp-route-id="@Model.Id">Transform</a>
+
+        <a class="tab-item @(activeTab=="Process" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Process" asp-route-id="@Model.Id">Load</a>
+
+        <a class="tab-item @(activeTab=="Config" ? "is-active" : "")"
+           asp-controller="Projects" asp-action="Config" asp-route-id="@Model.Id">Config</a>
 
         <div class="tabs-spacer"></div>
         <div class="view-toggle">
