@@ -1,0 +1,1021 @@
+@* Views/Projects/EntityConfig.cshtml *@
+@model DataSync.Web.Models.ViewModels.ProjectDetailsVm
+
+@{
+    ViewData["Title"] = "Entity Config";
+    // Keep tabs active + consistent with other pages
+    ViewData["ActiveTab"] = "Config";
+    var activeTab = (ViewData["ActiveTab"] as string) ?? "Config";
+
+    // Entity / object key (try ViewData, route, query – safe fallbacks)
+    var entity =
+        (ViewData["ObjectKey"] as string)
+        ?? (ViewContext.RouteData.Values["objectKey"]?.ToString())
+        ?? (Context.Request.Query["objectKey"].ToString());
+
+    if (string.IsNullOrWhiteSpace(entity)) entity = "Contacts";
+
+    // =========================
+    // MOCK: Project header (same as Config page)
+    // =========================
+    var projectStatus = "ACTIVE";
+    var projectHealth = "GOOD";
+    var projectStage = "UAT";
+
+    var client = string.IsNullOrWhiteSpace(Model.ClientName) ? "ZolaSuite" : Model.ClientName;
+    var sourceSystem = "ZolaSuite";
+    var targetSystem = "DMT Master";
+    var ownerName = "Sarah Chen";
+
+    // Entity meta (mock)
+    var scope = "Full";
+    var lastRun = "Today 09:10";
+    var rows = "42,180";
+    var entityStatus = "NeedsConfig"; // Ready | NeedsConfig | InProgress | Blocked
+
+    // Template meta (mock)
+    var templateName = "AbacusLaw → Target CRM Vendor Template";
+    var templateVersion = "v3.2";
+
+    // =========================
+    // MOCK: Options like your screenshot
+    // =========================
+    var optRemoveDupNotInMatter = "No"; // Yes/No
+    var optMigrateContactNotes = "Combine all contact notes to one and add to target notes";
+    var optPrimaryClientType = "Client";
+
+    // Defaults (mock)
+    var defaultAssignedTo = "Unassigned";
+    var defaultCountry = "United Kingdom";
+    var defaultCurrency = "GBP";
+    var defaultPhoneType = "Mobile";
+    var defaultEmailType = "Work";
+    var defaultContactStatus = "Active";
+
+    // Right-side summary (mock)
+    var policiesCount = 4;
+    var defaultsCount = 6;
+    var rulesCount = 14;
+
+    var nextStep = "Set required defaults for Primary Email Type and Contact Status.";
+    var risk = "Duplicate policy is not set for Contacts outside matters.";
+    var confidence = "Medium";
+
+    string ConfigUrl() => Url.Action("Config", "Projects", new { id = Model.Id }) ?? "#";
+    string DetailsUrl() => Url.Action("Details", "Projects", new { id = Model.Id }) ?? "#";
+    string FetchUrl() => Url.Action("Fetch", "Projects", new { id = Model.Id }) ?? "#";
+    string VerifyUrl() => Url.Action("Verify", "Projects", new { id = Model.Id }) ?? "#";
+    string ProcessUrl() => Url.Action("Process", "Projects", new { id = Model.Id }) ?? "#";
+    string ActivityUrl() => Url.Action("Activity", "Projects", new { id = Model.Id }) ?? "#";
+}
+
+<div class="ec-shell">
+
+    <!-- =========================================
+         PROJECT HEADER (same style as Config page)
+    ========================================== -->
+    <div class="proj-hero">
+        <div class="ph-left">
+            <div class="ph-avatar" aria-hidden="true">
+                @(string.IsNullOrWhiteSpace(client) ? "P" : client.Trim().Substring(0,1).ToUpperInvariant())
+            </div>
+
+            <div class="ph-text">
+                <div class="ph-crumbs">
+                    <a class="ph-crumb-link" asp-controller="Projects" asp-action="Index">Projects</a>
+                    <span class="ph-crumb-sep">/</span>
+                    <a class="ph-crumb-link" href="@ConfigUrl()">Config</a>
+                    <span class="ph-crumb-sep">/</span>
+                    <span class="ph-crumb-current">@entity</span>
+                </div>
+
+                <div class="ph-title-row">
+                    <h1 class="ph-title">@Model.Name</h1>
+                    <span class="tag tag-neutral">@projectStatus</span>
+                    <span class="tag tag-good">@projectHealth</span>
+                    <span class="tag tag-stage">@projectStage</span>
+                </div>
+
+                <div class="ph-meta">
+                    <span class="meta-item"><span class="meta-k">Client:</span> <span class="meta-v">@client</span></span>
+                    <span class="meta-dot">•</span>
+                    <span class="meta-item"><span class="meta-k">Source:</span> <span class="meta-v">@sourceSystem</span></span>
+                    <span class="meta-dot">•</span>
+                    <span class="meta-item"><span class="meta-k">Target:</span> <span class="meta-v">@targetSystem</span></span>
+                    <span class="meta-dot">•</span>
+                    <span class="meta-item"><span class="meta-k">Owner:</span> <span class="meta-v">@ownerName</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ph-right">
+            <button class="btn btn-ghost" type="button" id="btnBackToConfig">
+                <i data-lucide="arrow-left"></i> Back to Config
+            </button>
+            <button class="btn btn-ghost" type="button" id="btnExport">
+                <i data-lucide="download"></i> Export
+            </button>
+            <button class="btn btn-primary" type="button" id="btnSaveAll">
+                <i data-lucide="save"></i> Save
+            </button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         PRIMARY TABS (active navigation)
+    ========================================== -->
+    <div class="proj-tabs">
+        <a class="ptab @(activeTab=="Overview" ? "is-active" : "")" href="@DetailsUrl()">Overview</a>
+        <a class="ptab @(activeTab=="Fetch" ? "is-active" : "")" href="@FetchUrl()">Fetch</a>
+        <a class="ptab @(activeTab=="Verify" ? "is-active" : "")" href="@VerifyUrl()">Verify</a>
+        <a class="ptab @(activeTab=="Process" ? "is-active" : "")" href="@ProcessUrl()">Process</a>
+        <a class="ptab @(activeTab=="Config" ? "is-active" : "")" href="@ConfigUrl()">Config</a>
+        <a class="ptab @(activeTab=="Activity" ? "is-active" : "")" href="@ActivityUrl()">Activity</a>
+
+        <div class="ptab-spacer"></div>
+
+        <button class="icon-btn" type="button" title="Help" id="btnHelp">
+            <i data-lucide="help-circle"></i>
+        </button>
+        <button class="icon-btn" type="button" title="More" id="btnMore">
+            <i data-lucide="more-horizontal"></i>
+        </button>
+    </div>
+
+    <!-- =========================================
+         ENTITY HEADER CARD (like your Contacts card)
+    ========================================== -->
+    <div class="entity-hero">
+        <div class="eh-left">
+            <div class="eh-ico" aria-hidden="true">
+                <i data-lucide="users"></i>
+            </div>
+            <div class="eh-title">
+                <div class="eh-name">@entity</div>
+                <div class="eh-meta">@scope • Last: @lastRun • Rows: @rows</div>
+            </div>
+        </div>
+
+        <div class="eh-right">
+            @{
+                var statusClass = entityStatus switch
+                {
+                    "Ready" => "pill-ok",
+                    "NeedsConfig" => "pill-warn",
+                    "Blocked" => "pill-bad",
+                    "InProgress" => "pill-info",
+                    _ => "pill-neutral"
+                };
+            }
+            <span class="pill @statusClass">@entityStatus.ToUpperInvariant()</span>
+
+            <div class="eh-mini">
+                <div class="mini">
+                    <div class="mini-k">Policies</div>
+                    <div class="mini-v">@policiesCount</div>
+                </div>
+                <div class="mini">
+                    <div class="mini-k">Defaults</div>
+                    <div class="mini-v">@defaultsCount</div>
+                </div>
+                <div class="mini">
+                    <div class="mini-k">Rules</div>
+                    <div class="mini-v">@rulesCount</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================
+         PAGE GRID
+    ========================================== -->
+    <div class="ec-grid">
+
+        <!-- LEFT -->
+        <div class="ec-main">
+
+            <!-- Configuration Questions (like screenshot) -->
+            <section class="card">
+                <div class="card-head">
+                    <div class="ch-left">
+                        <div class="ch-ico"><i data-lucide="sliders-horizontal"></i></div>
+                        <div>
+                            <div class="ch-title">@entity configuration</div>
+                            <div class="ch-sub">Set policies and decisions that affect how this object migrates.</div>
+                        </div>
+                    </div>
+
+                    <div class="ch-actions">
+                        <span class="pill pill-soft">Template: @templateVersion</span>
+                        <button class="btn btn-ghost" type="button" id="btnViewTemplate">
+                            <i data-lucide="eye"></i> View template
+                        </button>
+                    </div>
+                </div>
+
+                <div class="q-grid">
+
+                    <div class="q">
+                        <div class="q-label">
+                            Do you want to remove duplicate contacts that are not associated with a matter?
+                        </div>
+                        <div class="q-control">
+                            <select class="inp" id="dupNotInMatter">
+                                <option >No</option>
+                                <option >Yes</option>
+                            </select>
+                        </div>
+                        <div class="q-help">
+                            Keep “No” if you prefer conservative dedupe. Choose “Yes” only when the target expects strict uniqueness.
+                        </div>
+                    </div>
+
+                    <div class="q">
+                        <div class="q-label">How do you wish to migrate contact notes?</div>
+                        <div class="q-control">
+                            <select class="inp" id="notesStrategy">
+                                <option selected>@optMigrateContactNotes</option>
+                                <option>Keep as separate note entries (one per source note)</option>
+                                <option>Combine notes by date bucket (daily) and migrate</option>
+                                <option>Skip notes (not recommended)</option>
+                            </select>
+                        </div>
+                        <div class="q-help">
+                            This impacts readability in target and can affect volume/performance. Defaults can be overridden per sub-type.
+                        </div>
+                    </div>
+
+                    <div class="q">
+                        <div class="q-label">What contact type designates the primary client?</div>
+                        <div class="q-control">
+                            <input class="inp" id="primaryClientType" value="@optPrimaryClientType" />
+                        </div>
+                        <div class="q-help">
+                            Used to identify the primary client when multiple contacts exist (matters/cases).
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card-foot">
+                    <button class="btn btn-primary" type="button" id="btnSavePolicies">
+                        <i data-lucide="save"></i> Save policies
+                    </button>
+                    <button class="btn btn-ghost" type="button" id="btnResetPolicies">
+                        <i data-lucide="rotate-ccw"></i> Reset to template defaults
+                    </button>
+                </div>
+            </section>
+
+            <!-- Defaults -->
+            <section class="card">
+                <div class="card-head">
+                    <div class="ch-left">
+                        <div class="ch-ico"><i data-lucide="package"></i></div>
+                        <div>
+                            <div class="ch-title">Default values</div>
+                            <div class="ch-sub">Auto-fill required target fields when source values are missing or inconsistent.</div>
+                        </div>
+                    </div>
+
+                    <div class="ch-actions">
+                        <button class="btn btn-ghost" type="button" id="btnApplyProjectDefaults">
+                            <i data-lucide="sparkles"></i> Apply project defaults
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label class="lbl">Assigned To</label>
+                        <select class="inp" id="defAssignedTo">
+                            <option selected>@defaultAssignedTo</option>
+                            <option>Migration User</option>
+                            <option>Owner (from source)</option>
+                        </select>
+                        <div class="help">Used when the target requires an owner/assignee.</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="lbl">Country</label>
+                        <select class="inp" id="defCountry">
+                            <option selected>@defaultCountry</option>
+                            <option>India</option>
+                            <option>United States</option>
+                            <option>United Arab Emirates</option>
+                        </select>
+                        <div class="help">Applied when address country is blank.</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="lbl">Currency</label>
+                        <select class="inp" id="defCurrency">
+                            <option selected>@defaultCurrency</option>
+                            <option>USD</option>
+                            <option>EUR</option>
+                            <option>INR</option>
+                        </select>
+                        <div class="help">Used for billing fields when currency is missing.</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="lbl">Phone Type</label>
+                        <select class="inp" id="defPhoneType">
+                            <option selected>@defaultPhoneType</option>
+                            <option>Work</option>
+                            <option>Home</option>
+                        </select>
+                        <div class="help">Normalize phone labels to match target picklists.</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="lbl">Email Type</label>
+                        <select class="inp" id="defEmailType">
+                            <option selected>@defaultEmailType</option>
+                            <option>Personal</option>
+                            <option>Other</option>
+                        </select>
+                        <div class="help">Used when the target expects typed emails.</div>
+                    </div>
+
+                    <div class="field">
+                        <label class="lbl">Contact Status</label>
+                        <select class="inp" id="defContactStatus">
+                            <option selected>@defaultContactStatus</option>
+                            <option>Inactive</option>
+                            <option>Archived</option>
+                        </select>
+                        <div class="help">Required by some CRMs for segmentation and compliance.</div>
+                    </div>
+                </div>
+
+                <div class="card-foot">
+                    <button class="btn btn-primary" type="button" id="btnSaveDefaults">
+                        <i data-lucide="save"></i> Save defaults
+                    </button>
+                    <button class="btn btn-ghost" type="button" id="btnPreviewDefaults">
+                        <i data-lucide="scan"></i> Preview effective defaults
+                    </button>
+                </div>
+            </section>
+
+            <!-- Rules (config-level only) -->
+            <section class="card">
+                <div class="card-head">
+                    <div class="ch-left">
+                        <div class="ch-ico"><i data-lucide="list-checks"></i></div>
+                        <div>
+                            <div class="ch-title">Rules applied to @entity</div>
+                            <div class="ch-sub">These are validation rules used later during Verify (not transactional metrics here).</div>
+                        </div>
+                    </div>
+
+                    <div class="ch-actions">
+                        <button class="btn btn-ghost" type="button" id="btnManageRules">
+                            <i data-lucide="settings-2"></i> Manage rules
+                        </button>
+                    </div>
+                </div>
+
+                <div class="rules">
+                    <div class="rule">
+                        <div class="r-left">
+                            <span class="dot dot-ok"></span>
+                            <div>
+                                <div class="r-name">Required fields present</div>
+                                <div class="r-sub">Primary email, name, and contact type must be set.</div>
+                            </div>
+                        </div>
+                        <span class="pill pill-neutral">Mandatory</span>
+                    </div>
+
+                    <div class="rule">
+                        <div class="r-left">
+                            <span class="dot dot-warn"></span>
+                            <div>
+                                <div class="r-name">Duplicate policy</div>
+                                <div class="r-sub">Detect and merge duplicates based on name + email + phone.</div>
+                            </div>
+                        </div>
+                        <span class="pill pill-warn">Needs review</span>
+                    </div>
+
+                    <div class="rule">
+                        <div class="r-left">
+                            <span class="dot dot-ok"></span>
+                            <div>
+                                <div class="r-name">Picklist normalization</div>
+                                <div class="r-sub">Contact status and email/phone types match target enums.</div>
+                            </div>
+                        </div>
+                        <span class="pill pill-neutral">Standard</span>
+                    </div>
+                </div>
+
+                <div class="card-foot">
+                    <button class="btn btn-primary" type="button" id="btnSaveRules">
+                        <i data-lucide="save"></i> Save rule settings
+                    </button>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- RIGHT -->
+        <aside class="ec-side">
+
+            <div class="side-card">
+                <div class="side-head">
+                    <div class="side-left">
+                        <i data-lucide="sparkles"></i>
+                        <div class="side-title">Executive Advisory</div>
+                    </div>
+                    <span class="pill pill-soft">AI powered</span>
+                </div>
+
+                <div class="side-body">
+                    <div class="ai-box">
+                        <div class="ai-top">
+                            <span class="ai-dot"></span>
+                            <div class="ai-title">What to do next</div>
+                        </div>
+                        <div class="ai-text">@nextStep</div>
+                    </div>
+
+                    <div class="side-actions">
+                        <button class="btn btn-primary w100" type="button" id="btnAIExplain">
+                            <i data-lucide="message-square"></i> Explain fixes
+                        </button>
+                        <button class="btn btn-ghost w100" type="button" id="btnAIReport">
+                            <i data-lucide="file-down"></i> Generate report
+                        </button>
+                    </div>
+
+                    <div class="side-kv">
+                        <div class="skv">
+                            <div class="sk">Template</div>
+                            <div class="sv">@templateVersion</div>
+                        </div>
+                        <div class="skv">
+                            <div class="sk">Risk</div>
+                            <div class="sv">@risk</div>
+                        </div>
+                        <div class="skv">
+                            <div class="sk">Confidence</div>
+                            <div class="sv"><span class="pill pill-warn">@confidence</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-card">
+                <div class="side-head">
+                    <div class="side-left">
+                        <i data-lucide="shield"></i>
+                        <div class="side-title">Safety & Governance</div>
+                    </div>
+                </div>
+
+                <div class="side-body">
+                    <ul class="checklist">
+                        <li><span class="chk ok"></span> Changes are versioned (template + project)</li>
+                        <li><span class="chk warn"></span> Defaults required for mandatory fields</li>
+                        <li><span class="chk warn"></span> Duplicate policy requires confirmation</li>
+                        <li><span class="chk ok"></span> Audit logging enabled</li>
+                    </ul>
+
+                    <button class="btn btn-ghost w100" type="button" id="btnViewAudit">
+                        <i data-lucide="scroll-text"></i> View change log
+                    </button>
+                </div>
+            </div>
+
+        </aside>
+    </div>
+</div>
+
+@section Styles {
+<style>
+/* =========================================
+   ENTITY CONFIG (single file)
+   IMPORTANT: keep @@media (Razor escape)
+========================================= */
+
+:root{
+    --bg: #f6f8fc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --line: rgba(15,23,42,.10);
+    --line2: rgba(15,23,42,.07);
+    --shadow: 0 10px 28px rgba(15,23,42,.06);
+    --shadow2: 0 6px 16px rgba(15,23,42,.05);
+    --brand: #4f46e5;
+    --brandSoft: rgba(79,70,229,.10);
+
+    --ok: #16a34a;
+    --warn: #f59e0b;
+    --bad: #ef4444;
+    --info: #2563eb;
+}
+
+/* Shell */
+.ec-shell{
+    max-width: 1320px;
+    margin: 0 auto;
+    padding-bottom: 18px;
+}
+
+/* -------------------------
+   Project Hero (same as Config)
+-------------------------- */
+.proj-hero{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 18px;
+    background: var(--card);
+    border: 1px solid var(--line2);
+    box-shadow: var(--shadow);
+}
+
+.ph-left{ display:flex; gap: 12px; align-items:flex-start; }
+.ph-avatar{
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    display:flex; align-items:center; justify-content:center;
+    font-weight: 900;
+    color: #fff;
+    background: linear-gradient(180deg, rgba(79,70,229,.95), rgba(79,70,229,.65));
+    box-shadow: 0 10px 22px rgba(79,70,229,.18);
+}
+
+.ph-crumbs{ font-size: 12px; color: var(--muted); }
+.ph-crumb-link{ color: var(--muted); text-decoration:none; }
+.ph-crumb-link:hover{ color: var(--text); }
+.ph-crumb-sep{ margin: 0 6px; opacity:.7; }
+.ph-crumb-current{ color: var(--text); font-weight: 800; }
+
+.ph-title-row{ display:flex; align-items:center; gap: 10px; margin-top: 2px; }
+.ph-title{
+    margin:0;
+    font-size: 20px;
+    font-weight: 950;
+    color: var(--text);
+    letter-spacing: .1px;
+}
+
+.ph-meta{
+    margin-top: 8px;
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+}
+.meta-item{ display:inline-flex; gap: 6px; }
+.meta-k{ color: var(--muted); font-weight: 700; }
+.meta-v{ color: var(--text); font-weight: 800; }
+.meta-dot{ opacity:.6; }
+
+.ph-right{ display:flex; align-items:center; gap: 10px; }
+
+/* Tags */
+.tag{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    border: 1px solid var(--line2);
+    background: #fff;
+    color: var(--text);
+}
+.tag-neutral{ background: rgba(15,23,42,.05); border-color: rgba(15,23,42,.10); }
+.tag-good{ background: rgba(22,163,74,.10); border-color: rgba(22,163,74,.18); color: #15803d; }
+.tag-stage{ background: rgba(245,158,11,.10); border-color: rgba(245,158,11,.20); color: #b45309; }
+
+/* Buttons */
+.btn{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--text);
+    cursor:pointer;
+    box-shadow: 0 3px 10px rgba(15,23,42,.04);
+}
+.btn:hover{ background: rgba(15,23,42,.02); }
+
+.btn-primary{
+    background: var(--brand);
+    border-color: rgba(79,70,229,.55);
+    color: #fff;
+    box-shadow: 0 12px 22px rgba(79,70,229,.18);
+}
+.btn-primary:hover{ filter: brightness(1.02); }
+
+.btn-ghost{
+    background: #fff;
+    border-color: var(--line2);
+    color: var(--text);
+}
+.btn-ghost:hover{ background: rgba(15,23,42,.02); }
+
+.w100{ width: 100%; justify-content:center; }
+
+/* Icons */
+.btn svg, .ph-right svg, .ch-ico svg, .eh-ico svg, .side-left svg, .icon-btn svg, .tpl-tip svg, .obj-cta svg{
+    width: 16px; height: 16px;
+}
+
+/* Tabs */
+.proj-tabs{
+    margin-top: 12px;
+    display:flex;
+    align-items:center;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 16px;
+    background: var(--card);
+    border: 1px solid var(--line2);
+    box-shadow: var(--shadow2);
+    overflow-x:auto;
+}
+
+.ptab{
+    text-decoration:none;
+    padding: 10px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--muted);
+    border: 1px solid transparent;
+    white-space:nowrap;
+}
+.ptab:hover{ color: var(--text); background: rgba(15,23,42,.03); }
+.ptab.is-active{
+    color: var(--brand);
+    background: var(--brandSoft);
+    border-color: rgba(79,70,229,.22);
+}
+.ptab-spacer{ flex:1; }
+
+.icon-btn{
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--line2);
+    background: #fff;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 3px 10px rgba(15,23,42,.04);
+}
+.icon-btn:hover{ background: rgba(15,23,42,.02); }
+
+/* -------------------------
+   Entity header card
+-------------------------- */
+.entity-hero{
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: 20px;
+    background: var(--card);
+    border: 1px solid var(--line2);
+    box-shadow: var(--shadow2);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 14px;
+}
+
+.eh-left{ display:flex; align-items:center; gap: 12px; }
+.eh-ico{
+    width: 58px; height: 58px;
+    border-radius: 22px;
+    display:flex; align-items:center; justify-content:center;
+    background: rgba(79,70,229,.08);
+    border: 1px solid rgba(79,70,229,.16);
+    color: var(--brand);
+}
+.eh-name{
+    font-size: 32px;
+    font-weight: 950;
+    color: var(--text);
+    line-height: 1.05;
+}
+.eh-meta{
+    margin-top: 4px;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 800;
+}
+
+.eh-right{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+}
+.eh-mini{
+    display:flex;
+    gap: 10px;
+    flex-wrap:wrap;
+}
+.mini{
+    min-width: 110px;
+    padding: 10px 12px;
+    border-radius: 16px;
+    border: 1px solid var(--line2);
+    background: #fbfcff;
+}
+.mini-k{ font-size: 12px; color: var(--muted); font-weight: 900; }
+.mini-v{ font-size: 20px; color: var(--text); font-weight: 950; margin-top: 2px; }
+
+/* Pills */
+.pill{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 950;
+    border: 1px solid var(--line2);
+    background: #fff;
+    color: var(--text);
+    letter-spacing: .6px;
+}
+.pill-neutral{ background: rgba(15,23,42,.05); border-color: rgba(15,23,42,.10); }
+.pill-soft{ background: rgba(79,70,229,.10); border-color: rgba(79,70,229,.20); color: var(--brand); }
+.pill-ok{ background: rgba(22,163,74,.10); border-color: rgba(22,163,74,.18); color: #15803d; }
+.pill-warn{ background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.22); color: #b45309; }
+.pill-bad{ background: rgba(239,68,68,.10); border-color: rgba(239,68,68,.20); color: #b91c1c; }
+.pill-info{ background: rgba(37,99,235,.10); border-color: rgba(37,99,235,.20); color: #1d4ed8; }
+
+/* -------------------------
+   Grid
+-------------------------- */
+.ec-grid{
+    margin-top: 14px;
+    display:grid;
+    grid-template-columns: 1fr 360px;
+    gap: 18px;
+}
+
+@@media (max-width: 1120px){
+    .ec-grid{ grid-template-columns: 1fr; }
+    .proj-hero{ flex-direction:column; }
+    .ph-right{ width:100%; justify-content:flex-start; flex-wrap:wrap; }
+    .entity-hero{ flex-direction:column; align-items:flex-start; }
+    .eh-right{ justify-content:flex-start; width:100%; }
+}
+
+/* Cards */
+.card{
+    background: var(--card);
+    border: 1px solid var(--line2);
+    border-radius: 18px;
+    box-shadow: var(--shadow2);
+    overflow:hidden;
+}
+.card + .card{ margin-top: 14px; }
+
+.card-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 12px;
+    padding: 14px;
+    border-bottom: 1px solid var(--line2);
+    background: linear-gradient(180deg, rgba(15,23,42,.015), rgba(15,23,42,0));
+}
+
+.ch-left{ display:flex; gap: 10px; }
+.ch-ico{
+    width: 34px; height: 34px;
+    border-radius: 12px;
+    display:flex; align-items:center; justify-content:center;
+    background: rgba(79,70,229,.08);
+    border: 1px solid rgba(79,70,229,.16);
+    color: var(--brand);
+}
+.ch-title{ font-weight: 950; color: var(--text); }
+.ch-sub{ margin-top: 2px; font-size: 12px; color: var(--muted); max-width: 780px; }
+.ch-actions{ display:flex; align-items:center; gap: 10px; flex-wrap:wrap; }
+
+.card-foot{
+    padding: 12px 14px 14px 14px;
+    border-top: 1px solid var(--line2);
+    display:flex;
+    gap: 10px;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+}
+
+/* Question grid */
+.q-grid{
+    padding: 14px;
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+@@media (max-width: 980px){
+    .q-grid{ grid-template-columns: 1fr; }
+}
+.q{
+    border-radius: 16px;
+    border: 1px solid var(--line2);
+    background: #fbfcff;
+    box-shadow: 0 6px 16px rgba(15,23,42,.04);
+    padding: 12px;
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+}
+.q-label{
+    font-size: 13px;
+    font-weight: 950;
+    color: var(--text);
+    line-height: 1.25;
+    min-height: 40px; /* keeps all boxes aligned */
+}
+.q-control{ margin-top: 2px; }
+.q-help{
+    margin-top: auto;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.35;
+}
+
+/* Form grid (defaults) */
+.form-grid{
+    padding: 14px;
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+@@media (max-width: 980px){
+    .form-grid{ grid-template-columns: 1fr; }
+}
+
+.field{
+    border-radius: 16px;
+    border: 1px solid var(--line2);
+    background: #fbfcff;
+    box-shadow: 0 6px 16px rgba(15,23,42,.04);
+    padding: 12px;
+}
+.lbl{ font-size: 12px; color: var(--muted); font-weight: 900; display:block; margin-bottom: 8px; }
+.inp{
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(15,23,42,.12);
+    background: #fff;
+    padding: 10px 12px;
+    font-weight: 900;
+    color: var(--text);
+    outline: none;
+}
+.inp:focus{
+    border-color: rgba(79,70,229,.40);
+    box-shadow: 0 0 0 4px rgba(79,70,229,.10);
+}
+.help{ margin-top: 8px; font-size: 12px; color: var(--muted); line-height: 1.35; }
+
+/* Rules list */
+.rules{
+    padding: 14px;
+    display:grid;
+    gap: 10px;
+}
+.rule{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--line2);
+    background: #fff;
+}
+.r-left{ display:flex; gap: 10px; }
+.r-name{ font-weight: 950; color: var(--text); }
+.r-sub{ margin-top: 2px; font-size: 12px; color: var(--muted); line-height: 1.35; max-width: 520px; }
+
+/* Dots */
+.dot{ width: 10px; height: 10px; border-radius: 999px; display:inline-block; margin-top: 4px; }
+.dot-ok{ background: rgba(22,163,74,.9); }
+.dot-warn{ background: rgba(245,158,11,.9); }
+.dot-bad{ background: rgba(239,68,68,.9); }
+
+/* Sidebar */
+.ec-side{ display:flex; flex-direction:column; gap: 12px; }
+.side-card{
+    background: var(--card);
+    border: 1px solid var(--line2);
+    border-radius: 18px;
+    box-shadow: var(--shadow2);
+    overflow:hidden;
+}
+.side-head{
+    padding: 12px;
+    border-bottom: 1px solid var(--line2);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 10px;
+    background: linear-gradient(180deg, rgba(15,23,42,.015), rgba(15,23,42,0));
+}
+.side-left{ display:flex; align-items:center; gap: 10px; font-weight: 950; color: var(--text); }
+.side-title{ font-weight: 950; color: var(--text); }
+.side-body{ padding: 12px; }
+
+.ai-box{
+    border-radius: 14px;
+    border: 1px solid rgba(168,85,247,.22);
+    background: rgba(168,85,247,.08);
+    padding: 10px;
+}
+.ai-top{ display:flex; align-items:center; gap: 8px; }
+.ai-dot{ width: 8px; height: 8px; border-radius: 999px; background: rgba(168,85,247,.9); }
+.ai-title{ font-weight: 950; color: var(--text); }
+.ai-text{ margin-top: 6px; font-size: 13px; color: var(--text); opacity:.88; line-height: 1.45; }
+
+.side-actions{ margin-top: 10px; display:grid; gap: 10px; }
+
+.side-kv{
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line2);
+    display:grid;
+    gap: 10px;
+}
+.skv{ display:flex; justify-content:space-between; gap: 10px; font-size: 12px; }
+.sk{ color: var(--muted); font-weight: 900; }
+.sv{ color: var(--text); font-weight: 950; text-align:right; }
+
+/* Checklist */
+.checklist{
+    list-style:none;
+    padding:0;
+    margin:0 0 10px 0;
+    display:grid;
+    gap: 10px;
+}
+.checklist li{ display:flex; align-items:center; gap: 10px; font-size: 13px; color: var(--text); }
+.chk{ width: 10px; height: 10px; border-radius: 999px; display:inline-block; }
+.chk.ok{ background: rgba(22,163,74,.9); }
+.chk.warn{ background: rgba(245,158,11,.9); }
+.chk.bad{ background: rgba(239,68,68,.9); }
+</style>
+}
+
+@section Scripts {
+<script>
+(function () {
+    // Lucide icons (already in _Layout, safe to call)
+    if (window.lucide && typeof window.lucide.createIcons === "function") {
+        window.lucide.createIcons();
+    }
+
+    const toast = (msg) => console.log(msg);
+
+    // Navigation buttons
+    document.getElementById("btnBackToConfig")?.addEventListener("click", () => {
+        window.location.href = "@ConfigUrl()";
+    });
+
+    // Save buttons (wire later to DB/SP/ADF)
+    document.getElementById("btnSaveAll")?.addEventListener("click", () => toast("Save ALL: policies + defaults + rules"));
+    document.getElementById("btnSavePolicies")?.addEventListener("click", () => toast("Save policies"));
+    document.getElementById("btnResetPolicies")?.addEventListener("click", () => toast("Reset policies to template defaults"));
+    document.getElementById("btnSaveDefaults")?.addEventListener("click", () => toast("Save defaults"));
+    document.getElementById("btnPreviewDefaults")?.addEventListener("click", () => toast("Preview effective defaults"));
+    document.getElementById("btnSaveRules")?.addEventListener("click", () => toast("Save rule settings"));
+
+    // AI actions
+    document.getElementById("btnAIExplain")?.addEventListener("click", () => toast("AI Explain (Azure AI Foundry endpoint)"));
+    document.getElementById("btnAIReport")?.addEventListener("click", () => toast("Generate config report"));
+    document.getElementById("btnViewAudit")?.addEventListener("click", () => toast("View change log"));
+
+    // Misc
+    document.getElementById("btnExport")?.addEventListener("click", () => toast("Export entity config (PDF/JSON)"));
+    document.getElementById("btnViewTemplate")?.addEventListener("click", () => toast("View template " + "@templateVersion"));
+    document.getElementById("btnHelp")?.addEventListener("click", () => toast("Help"));
+    document.getElementById("btnMore")?.addEventListener("click", () => toast("More menu"));
+    document.getElementById("btnManageRules")?.addEventListener("click", () => toast("Manage rules"));
+    document.getElementById("btnApplyProjectDefaults")?.addEventListener("click", () => toast("Apply project defaults to entity"));
+})();
+</script>
+}
