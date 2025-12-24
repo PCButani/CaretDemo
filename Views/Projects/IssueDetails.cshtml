@@ -139,14 +139,14 @@
 
                 <div class="verify-validation-table">
                     <div class="verify-val-row verify-val-head">
-                        <div>Category</div><div>Executed</div><div>Passed</div><div>Failed</div><div>New Score</div><div>Severity</div><div>Coverage</div><div>Download</div>
+                        <div>Category</div><div>Failed</div><div>Points</div><div>AI Recommendation</div><div>Severity</div><div>Coverage</div><div>Download</div>
                     </div>
                     <div class="verify-val-row">
                         <div class="verify-val-category">Mapping Mismatch</div>
-                        <div>18</div>
-                        <div class="verify-val-good">15</div>
                         <div class="verify-val-bad">3</div>
-                        <div>88</div>
+                        <div class="score-point">+10</div>
+                        <div>Our AI can automatically identify and resolve mapping mismatches by aligning the fields in your data with the correct categories. It will ensure all data is correctly matched to the corresponding fields for accurate processing.</div>
+                       
                         <div><span class="pill pill-severity-critical">Critical</span></div>
                         <div class="verify-coverage">
                             <div class="verify-coverage-bar"><span style="width: 83%"></span></div>
@@ -156,10 +156,11 @@
                     </div>
                     <div class="verify-val-row">
                         <div class="verify-val-category">Rule Conflict</div>
-                        <div>12</div>
-                        <div class="verify-val-good">10</div>
+                        
                         <div class="verify-val-bad">2</div>
-                        <div>82</div>
+                        <div class="score-point">+7</div>
+                        <div>AI can help detect and resolve conflicts between rules by analyzing the dataset and automatically suggesting the best rule configuration. It will recommend adjustments to prevent conflicts while keeping your data consistent and correct.</div>
+                      
                         <div><span class="pill pill-severity-high">High</span></div>
                         <div class="verify-coverage">
                             <div class="verify-coverage-bar"><span style="width: 83%"></span></div>
@@ -169,10 +170,11 @@
                     </div>
                     <div class="verify-val-row">
                         <div class="verify-val-category">Lookup Failure</div>
-                        <div>24</div>
-                        <div class="verify-val-good">22</div>
+                       
                         <div class="verify-val-bad">2</div>
-                        <div>82</div>
+                        <div class="score-point">+6</div>
+                        <div>Our AI can perform advanced lookups to identify the correct data entries and resolve any lookup failures. It can automatically match missing or incorrectly linked data from external sources or internal databases.</div>
+                       
                         <div><span class="pill pill-severity-high">High</span></div>
                         <div class="verify-coverage">
                             <div class="verify-coverage-bar"><span style="width: 92%"></span></div>
@@ -182,10 +184,11 @@
                     </div>
                     <div class="verify-val-row">
                         <div class="verify-val-category">Aggregation Error</div>
-                        <div>16</div>
-                        <div class="verify-val-good">16</div>
+                       
                         <div class="verify-val-good">0</div>
-                        <div>-</div>
+                        <div class="score-point">-</div>
+                        <div>AI can analyze your dataset for aggregation errors and recommend corrections by recalculating or restructuring data to ensure accurate summation, averages, or groupings. It will ensure your aggregated results are precise.</div>
+                        
                         <div><span class="pill pill-severity-medium">Medium</span></div>
                         <div class="verify-coverage">
                             <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
@@ -195,10 +198,11 @@
                     </div>
                     <div class="verify-val-row">
                         <div class="verify-val-category">Join Loss</div>
-                        <div>8</div>
-                        <div class="verify-val-good">8</div>
+                       
                         <div class="verify-val-good">0</div>
-                        <div>-</div>
+                        <div class="score-point">-</div>
+                        <div>Our AI can automatically identify and restore lost joins in the dataset by cross-referencing related entries and rebuilding the correct relationships between records. This will ensure that no data is left out of the final results.</div>
+                        
                         <div><span class="pill pill-severity-medium">Medium</span></div>
                         <div class="verify-coverage">
                             <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
@@ -210,10 +214,11 @@
                         <div class="verify-val-category">
                             Sequence Dependency
                         </div>
-                        <div>14</div>
-                        <div class="verify-val-good">14</div>
+                        
                         <div class="verify-val-good">0</div>
-                        <div>-</div>
+                        <div class="score-point">-</div>
+                        <div>AI can detect and correct sequence dependency issues by analyzing the data flow and ensuring all records are processed in the correct order. It can automatically adjust the sequence to maintain data integrity and consistency.</div>
+                        
                         <div><span class="pill pill-severity-low">Low</span></div>
                         <div class="verify-coverage">
                             <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
@@ -345,58 +350,7 @@
             </div>
         </div>
 
-        <!-- Quick Info -->
-        <div class="panel">
-            <div class="panel-head">
-                <div>
-                    <div class="panel-title">Quick Info</div>
-                    <div class="panel-sub">Operational snapshot</div>
-                </div>
-            </div>
-
-            <div class="kv">
-                <div class="kv-row">
-                    <div class="kv-k">Project ID</div>
-                    <div class="kv-v">#@Model.Id</div>
-                </div>
-                <div class="kv-row">
-                    <div class="kv-k">Status</div>
-                    <div class="kv-v"><span class="pill pill-status">@Model.Status</span></div>
-                </div>
-                <div class="kv-row">
-                    <div class="kv-k">Health</div>
-                    <div class="kv-v"><span class="pill pill-health">@Model.Health</span></div>
-                </div>
-                <div class="kv-row">
-                    <div class="kv-k">Environment</div>
-                    <div class="kv-v"><span class="pill pill-env">@Model.Environment</span></div>
-                </div>
-                <div class="kv-row">
-                    <div class="kv-k">Last Run</div>
-                    <div class="kv-v">@Model.LastRunText</div>
-                </div>
-                <div class="kv-row">
-                    <div class="kv-k">Next Run</div>
-                    <div class="kv-v">@Model.NextRunText</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="panel">
-            <div class="panel-head">
-                <div>
-                    <div class="panel-title">Actions</div>
-                    <div class="panel-sub">Most used shortcuts</div>
-                </div>
-            </div>
-
-            <div class="side-actions">
-                <button class="btn btn-secondary w-100" type="button">Open Exceptions</button>
-                <button class="btn btn-secondary w-100" type="button">Run Validation</button>
-                <button class="btn btn-secondary w-100" type="button">Generate Export</button>
-            </div>
-        </div>
+       
 
     </aside>
 
@@ -411,353 +365,12 @@
             grid-template-columns: 1fr 480px;
             gap: 16px;
         }
-        /* =========================
-                           RIGHT SIDE – COPILOT
-                        ========================== */
-        .copilot {
-            padding: 12px;
-            background: rgba(168, 85, 247, .08);
+
+        .score-point{
+            font-weight: 700;
         }
-
-        .copilot-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-
-        .copilot-title {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .copilot-badge {
-            width: 36px;
-            height: 36px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(37,99,235,.20);
-            background: rgba(37,99,235,.10);
-            color: rgba(37,99,235,1);
-        }
-
-            .copilot-badge i {
-                width: 18px;
-                height: 18px;
-            }
-
-        .copilot-name {
-            font-weight: 900;
-            letter-spacing: -.2px;
-        }
-
-        .copilot-sub {
-            font-size: 12px;
-            opacity: .75;
-            margin-top: 2px;
-        }
-
-        .copilot-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: 900;
-            opacity: .85;
-            padding: 6px 10px;
-            border-radius: 999px;
-            border: 1px solid rgba(0,0,0,.08);
-            background: rgba(0,0,0,.03);
-            white-space: nowrap;
-        }
-
-        .online-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 999px;
-            background: rgba(16,185,129,1);
-        }
-
-        .copilot-scope {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-            padding: 10px;
-            border-radius: 14px;
-            border: 1px solid rgba(0,0,0,.06);
-            background: rgba(0,0,0,.02);
-            margin-bottom: 10px;
-        }
-
-        .scope-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 10px;
-            border-radius: 999px;
-            border: 1px solid rgba(0,0,0,.08);
-            background: rgba(255,255,255,.8);
-            font-size: 12px;
-            font-weight: 900;
-        }
-
-            .scope-pill i {
-                width: 16px;
-                height: 16px;
-            }
-
-        .scope-text {
-            font-size: 12px;
-            opacity: .85;
-            font-weight: 800;
-        }
-
-        .mini-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 6px 0 8px;
-            font-size: 12px;
-            font-weight: 900;
-            opacity: .85;
-        }
-
-        .mini-tag {
-            font-size: 11px;
-            font-weight: 900;
-            padding: 4px 8px;
-            border-radius: 999px;
-            border: 1px solid rgba(79,70,229,.20);
-            background: rgba(79,70,229,.10);
-            color: rgba(79,70,229,1);
-            white-space: nowrap;
-        }
-
-        .mini-hint {
-            font-size: 11px;
-            font-weight: 800;
-            opacity: .6;
-        }
-
-        .copilot-insights {
-            margin-bottom: 10px;
-        }
-
-        .insight {
-            display: grid;
-            grid-template-columns: 32px 1fr auto;
-            gap: 10px;
-            align-items: center;
-            padding: 10px;
-            border-radius: 14px;
-            border: 1px solid rgba(0,0,0,.06);
-            background: rgba(0,0,0,.02);
-            margin-bottom: 8px;
-        }
-
-        .insight-ic {
-            width: 32px;
-            height: 32px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(0,0,0,.08);
-            background: rgba(255,255,255,.8);
-            opacity: .9;
-        }
-
-            .insight-ic i {
-                width: 16px;
-                height: 16px;
-            }
-
-        .insight-title {
-            font-weight: 900;
-            letter-spacing: -.1px;
-        }
-
-        .insight-sub {
-            font-size: 12px;
-            opacity: .75;
-            margin-top: 2px;
-            font-weight: 800;
-        }
-
-        .sev {
-            font-size: 11px;
-            font-weight: 900;
-            padding: 5px 8px;
-            border-radius: 999px;
-            border: 1px solid rgba(0,0,0,.08);
-            background: rgba(0,0,0,.03);
-            white-space: nowrap;
-        }
-
-            .sev.high {
-                background: rgba(239,68,68,.12);
-                color: rgba(153,27,27,1);
-                border-color: rgba(239,68,68,.20);
-            }
-
-            .sev.med {
-                background: rgba(245,158,11,.14);
-                color: rgba(146,64,14,1);
-                border-color: rgba(245,158,11,.25);
-            }
-
-        .suggest-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-
-        .suggest-btn {
-            text-align: left;
-            border-radius: 12px;
-            border: 1px solid rgba(0,0,0,.08);
-            background: rgba(255,255,255,.85);
-            padding: 10px 10px;
-            font-size: 12px;
-            font-weight: 900;
-            cursor: pointer;
-        }
-
-            .suggest-btn:hover {
-                background: rgba(0,0,0,.02);
-            }
-
-        .copilot-chat {
-            height: 260px;
-            overflow: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 10px;
-            border-radius: 14px;
-            border: 1px solid rgba(0,0,0,.06);
-            background: rgba(0,0,0,.02);
-            margin-bottom: 10px;
-        }
-
-        .msg {
-            max-width: 92%;
-            padding: 10px;
-            border-radius: 14px;
-            border: 1px solid rgba(0,0,0,.06);
-            background: rgba(255,255,255,.85);
-            font-size: 13px;
-            line-height: 1.35;
-        }
-
-            .msg.ai {
-                align-self: flex-start;
-            }
-
-            .msg.user {
-                align-self: flex-end;
-                background: rgba(79,70,229,1);
-                color: white;
-                border-color: rgba(79,70,229,.45);
-            }
-
-            .msg .time {
-                font-size: 11px;
-                opacity: .65;
-                margin-top: 8px;
-                font-weight: 800;
-            }
-
-            .msg.user .time {
-                opacity: .75;
-            }
-
-            .msg ul {
-                margin: 8px 0 0 18px;
-            }
-
-        .copilot-input {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-            .copilot-input input {
-                flex: 1;
-                border-radius: 12px;
-                border: 1px solid rgba(0,0,0,.10);
-                background: rgba(255,255,255,.9);
-                padding: 10px 10px;
-                font-size: 13px;
-                outline: none;
-            }
-
-                .copilot-input input:focus {
-                    border-color: rgba(79,70,229,.35);
-                    box-shadow: 0 0 0 4px rgba(79,70,229,.10);
-                }
-
-        .send-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            border: 1px solid rgba(79,70,229,.35);
-            background: rgba(79,70,229,1);
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-            .send-btn i {
-                width: 18px;
-                height: 18px;
-            }
-
-            .send-btn:hover {
-                filter: brightness(.98);
-            }
-
-        .copilot-foot {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-        }
-
-        .micro-action {
-            border-radius: 12px;
-            border: 1px solid rgba(0,0,0,.08);
-            background: rgba(255,255,255,.85);
-            padding: 9px 10px;
-            font-size: 12px;
-            font-weight: 900;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            white-space: nowrap;
-        }
-
-            .micro-action i {
-                width: 16px;
-                height: 16px;
-            }
-
-            .micro-action:hover {
-                background: rgba(0,0,0,.02);
-            }
-
         body .verify-page .verify-val-row {
-            grid-template-columns: 1.8fr repeat(4, 0.5fr) 1fr 1fr 0.4fr;
+            grid-template-columns: 1fr 0.3fr 0.3fr 2fr 0.4fr  1fr 0.5fr;
         }
     </style>
 }

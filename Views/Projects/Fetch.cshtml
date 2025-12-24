@@ -161,14 +161,20 @@
         <section class="details-main">
 
             <div class="panel">
-                <div class="panel-head">
+               
+                <div style="display:flex; align-items:center; justify-content:space-between;margin-bottom:5px;">
                     <div>
                         <div class="panel-title">Entity Health</div>
                         <div class="panel-sub">Top objects readiness (summary view)</div>
                     </div>
-                    <button class="btn btn-secondary" type="button" disabled>View full list</button>
-                </div>
 
+                    <div style="display:flex; gap:12px;">
+
+                        <button class="btn btn-secondary" type="button" style="display:flex; align-items:center; gap:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" class="lucide lucide-download"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg> Export
+                        </button>
+                    </div>
+                </div>
                 <div class="obj-list">
                     <!-- 6 objects (summary-only) -->
 
@@ -181,7 +187,9 @@
                                     </div>
                                     <div class="obj-meta">Incremental • Last: Today 09:10 • Rows: 45,210</div>
                                 </div>
-                                <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
+                                <div class="obj-right"><span class="pill pill-ok" style="margin-right:10px;"> Ready</span><span class="pill pill-ok">Download</span></div>
+                                @* <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" class="lucide lucide-download"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg></div> *@
+
                             </div>
                             <div class="pbar good"><span style="width: 92%"></span></div>
                             <div class="pills">
@@ -206,7 +214,7 @@
                                     <div class="obj-name">Invoices</div>
                                     <div class="obj-meta">Full • Last: Today 09:10 • Rows: 61,880</div>
                                 </div>
-                                <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
+                                <div class="obj-right"><span class="pill pill-ok" style="margin-right:10px;"> Ready</span><span class="pill pill-ok">Download</span></div>
                             </div>
                             <div class="pbar good"><span style="width: 100%"></span></div>
                             <div class="pills">
@@ -231,7 +239,7 @@
                                     <div class="obj-name">Matters</div>
                                     <div class="obj-meta">Incremental • Last: — • Rows: —</div>
                                 </div>
-                                <div class="obj-right"><span class="pill pill-warn">Needs config</span></div>
+                                <div class="obj-right"><span class="pill pill-warn" style="margin-right:10px;">Needs config</span><span class="pill pill-warn">Download</span></div>
                             </div>
                             <div class="pbar warn"><span style="width: 38%"></span></div>
                             <div class="pills">
@@ -256,7 +264,8 @@
                                     <div class="obj-name">Time Entries</div>
                                     <div class="obj-meta">Incremental • Last: Today 09:10 • Rows: 12,340</div>
                                 </div>
-                                <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
+                                <div class="obj-right"><span class="pill pill-ok" style="margin-right:10px;"> Ready</span><span class="pill pill-ok">Download</span></div>
+
                             </div>
                             <div class="pbar good"><span style="width: 88%"></span></div>
                             <div class="pills">
@@ -281,7 +290,8 @@
                                     <div class="obj-name">Payments</div>
                                     <div class="obj-meta">Full • Last: Today 09:10 • Rows: 4,560</div>
                                 </div>
-                                <div class="obj-right"><span class="pill pill-ok">Ready</span></div>
+                                <div class="obj-right"><span class="pill pill-ok" style="margin-right:10px;"> Ready</span><span class="pill pill-ok">Download</span></div>
+
                             </div>
                             <div class="pbar good"><span style="width: 96%"></span></div>
                             <div class="pills">
@@ -306,7 +316,8 @@
                                     <div class="obj-name">Users</div>
                                     <div class="obj-meta">Incremental • Last: Yesterday 01:00 • Rows: 2,110</div>
                                 </div>
-                                <div class="obj-right"><span class="pill pill-warn">Warning</span></div>
+                                <div class="obj-right"><span class="pill pill-warn" style="margin-right:10px;">Needs config</span><span class="pill pill-warn">Download</span></div>
+
                             </div>
                             <div class="pbar warn"><span style="width: 64%"></span></div>
                             <div class="pills">

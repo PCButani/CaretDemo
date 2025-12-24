@@ -56,7 +56,7 @@
         </div>
 
         <div class="hero-right">
-            <button class="btn btn-secondary"><i data-lucide="file-down"></i> Evidence Pack</button>
+           
             <button class="btn btn-secondary"><i data-lucide="shield-check"></i> Run Verify</button>
             <button class="btn btn-primary"><i data-lucide="badge-check"></i> Approve</button>
         </div>
@@ -409,71 +409,108 @@
 
         </section>
 
-        <aside class="details-side">
-            <div class="panel">
-                <div class="panel-head">
-                    <div>
-                        <div class="panel-title">AI Insights</div>
-                        <div class="panel-sub">Azure AI Foundry (assistive only)</div>
+        <!-- RIGHT (Side) -->
+        <aside class="overview-side">
+
+            <!-- AI Copilot (Reusable Side Panel) -->
+            <div class="panel copilot">
+                <div class="copilot-head">
+                    <div class="copilot-title">
+                        <div class="copilot-badge">
+                            <i data-lucide="sparkles"></i>
+                        </div>
+                        <div>
+                            <div class="copilot-name">AI Copilot</div>
+                            <div class="copilot-sub">Project-aware assistant (assistive only)</div>
+                        </div>
+                    </div>
+                    <div class="copilot-status">
+                        <span class="online-dot"></span> Online
                     </div>
                 </div>
 
-                <div class="verify-ai-insights">
-                    <div class="verify-ai-insight-item">
-                        <div class="verify-ai-insight-icon"><i data-lucide="lightbulb"></i></div>
-                        <div class="verify-ai-insight-text">
-                            <strong>83%</strong> of failures stem from 2 validation patterns: Uniqueness and Referential Integrity
-                        </div>
-                        <span class="verify-ai-confidence">High</span>
+
+
+                <div class="copilot-insights">
+                    <div class="mini-head">
+                        <span>AI Insights</span>
+                        <span class="mini-tag">Azure AI Foundry</span>
                     </div>
-                    <div class="verify-ai-insight-item">
-                        <div class="verify-ai-insight-icon"><i data-lucide="trending-up"></i></div>
-                        <div class="verify-ai-insight-text">
-                            Highest risk object: <strong>Contacts → Accounts</strong> mapping shows repeated constraint violations
+
+                    <div class="insight high">
+                        <div class="insight-ic"><i data-lucide="alert-octagon"></i></div>
+                        <div class="insight-txt">
+                            <div class="insight-title">83% of failures</div>
+                            <div class="insight-sub">Uniqueness + Referential Integrity patterns</div>
                         </div>
-                        <span class="verify-ai-confidence">High</span>
+                        <span class="sev high">High</span>
                     </div>
-                    <div class="verify-ai-insight-item">
-                        <div class="verify-ai-insight-icon"><i data-lucide="alert-circle"></i></div>
-                        <div class="verify-ai-insight-text">
-                            Matters table transform step requires manual review due to schema drift detection
+
+                    <div class="insight high">
+                        <div class="insight-ic"><i data-lucide="link-2"></i></div>
+                        <div class="insight-txt">
+                            <div class="insight-title">Highest risk object</div>
+                            <div class="insight-sub">Contacts → Accounts mapping violations</div>
                         </div>
-                        <span class="verify-ai-confidence">Medium</span>
+                        <span class="sev high">High</span>
+                    </div>
+
+                    <div class="insight med">
+                        <div class="insight-ic"><i data-lucide="scan"></i></div>
+                        <div class="insight-txt">
+                            <div class="insight-title">Schema drift detected</div>
+                            <div class="insight-sub">Matters transform requires manual review</div>
+                        </div>
+                        <span class="sev med">Medium</span>
                     </div>
                 </div>
 
-                <div class="verify-ai-questions">
-                    <div class="verify-ai-questions-label">Suggested Questions</div>
-                    <div class="verify-ai-question-chips">
-                        <button class="verify-ai-chip" type="button">Why did Matters fail?</button>
-                        <button class="verify-ai-chip" type="button">Show uniqueness patterns</button>
-                        <button class="verify-ai-chip" type="button">Compare to last run</button>
-                        <button class="verify-ai-chip" type="button">What's blocking approval?</button>
+
+
+                <div class="copilot-chat" id="copilotChat" aria-label="AI chat messages">
+                    <div class="msg ai">
+                        Based on validation, <b>Contacts</b> readiness is <b>68%</b>, driven by
+                        <b>missing first/last names</b>. This blocks automation eligibility.
+                        <div class="time">2 minutes ago</div>
                     </div>
+
+                    <div class="msg user">
+                        How did we fix this in past migrations?
+                        <div class="time">1 minute ago</div>
+                    </div>
+
+                    <div class="msg ai">
+                        For similar cases, we’ve improved readiness by:
+                        <ul>
+                            <li>Re-exporting using <b>Full Contact Report</b></li>
+                            <li>Applying name-splitting normalization rules</li>
+                            <li>Running duplicate detection before load</li>
+                        </ul>
+                        <div class="time">just now</div>
+                    </div>
+                </div>
+
+                <div class="copilot-input">
+                    <input id="copilotInput" type="text" placeholder="Ask about this project…" />
+                    <button id="copilotSend" type="button" class="send-btn" title="Send">
+                        <i data-lucide="send"></i>
+                    </button>
+                </div>
+
+                <div class="copilot-foot" style="display:none">
+                    <button class="micro-action" type="button">
+                        <i data-lucide="wrench"></i> Suggest fix
+                    </button>
+                    <button class="micro-action" type="button">
+                        <i data-lucide="search"></i> Similar cases
+                    </button>
+                    <button class="micro-action" type="button">
+                        <i data-lucide="terminal-square"></i> Generate SQL
+                    </button>
                 </div>
             </div>
 
-            <div class="panel">
-                <div class="panel-head">
-                    <div>
-                        <div class="panel-title">Decision & Audit</div>
-                        <div class="panel-sub">Governed sign-off</div>
-                    </div>
-                </div>
 
-                <div class="kv">
-                    <div class="kv-row">
-                        <div class="kv-k">Gate</div>
-                        <div class="kv-v">
-                            <span class="pill @(blockers>0 ? "pill-bad" : "pill-ok")">
-                                @(blockers>0 ? "Blocked" : "Clear")
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="btn btn-primary w-100" style="margin-top:12px;">Approve Migration</button>
-            </div>
         </aside>
     </div>
 </div>

@@ -98,10 +98,18 @@
 
             <!-- 5) Run History (table + bar chart header) -->
             <div class="panel">
-                <div class="panel-head">
+                
+                <div style="display:flex; align-items:center; justify-content:space-between;margin-bottom:5px;">
                     <div>
                         <div class="panel-title">Contact Rules</div>
                         <div class="panel-sub">Recent runs and outcomes</div>
+                    </div>
+
+                    <div style="display:flex; gap:12px;">
+
+                        <button class="btn btn-secondary" type="button" style="display:flex; align-items:center; gap:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" class="lucide lucide-download"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg> Export
+                        </button>
                     </div>
                 </div>
                
@@ -115,32 +123,39 @@
                         
                         <div>Action</div>
                     </div>
-
+                    <div class="runs-row">
+                        <div><span class="pill">Duplicate Contacts</span></div>
+                        <div>4,521</div>
+                        <div>80</div>
+                        <div>We can merge duplicate contacts using AI, ensuring there is only one entry per person, which improves your contact management and data accuracy</div>
+                        <div><span class="pill pill-ok">Low </span></div>
+                        <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" class="lucide lucide-download"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg></div>
+                    </div>
                     <div class="runs-row">
                         <div><span class="pill">Missing Last Name</span></div>
                         <div>4,521</div>
                         <div>80</div>
-                        <div>Either Send a new file</div>
+                        <div>AI can help identify and fill in missing last names based on available data or similar contacts, making sure your records are complete.</div>
                         <div><span class="pill pill-ok">Low </span></div>
-                        <div></div>
+                        <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" class="lucide lucide-download"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg></div>
                     </div>
 
                     <div class="runs-row">
                         <div><span class="pill">Missing Address</span></div>
                         <div>4,521</div>
                         <div>98</div>
-                        <div>We can merge it though the AI</div>
+                        <div>AI can correct invalid addresses or fill in missing details by cross-referencing with available databases, ensuring the addresses are accurate and complete</div>
                         <div><span class="pill pill-warn">Medium</span></div>
-                        <div></div>
+                        <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" class="lucide lucide-download"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg></div>
                     </div>
 
                     <div class="runs-row">
                         <div><span class="pill">Invalid Email</span></div>
                         <div> 4,521</div>
                         <div>193</div>
-                        <div>We can get a list of records which are not correct</div>
+                        <div>We can validate and correct the email addresses using AI to identify and update invalid or incomplete email formats, ensuring proper delivery and communication.</div>
                         <div><span class="pill pill-denger">High</span></div>
-                        <div></div>
+                        <div><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" class="lucide lucide-download"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg></div>
                     </div>
                 </div>
 
@@ -149,41 +164,117 @@
 
         </section>
 
-        <aside class="details-side">
-            <div class="panel">
-                <div class="panel-head">
-                    <div>
-                        <div class="panel-title">Schedule</div>
-                        <div class="panel-sub">Read-only</div>
+        <!-- RIGHT (Side) -->
+        <aside class="overview-side">
+
+            <!-- AI Copilot (Reusable Side Panel) -->
+            <div class="panel copilot">
+                <div class="copilot-head">
+                    <div class="copilot-title">
+                        <div class="copilot-badge">
+                            <i data-lucide="sparkles"></i>
+                        </div>
+                        <div>
+                            <div class="copilot-name">AI Copilot</div>
+                            <div class="copilot-sub">Project-aware assistant (assistive only)</div>
+                        </div>
+                    </div>
+                    <div class="copilot-status">
+                        <span class="online-dot"></span> Online
                     </div>
                 </div>
 
-                <div class="kv">
-                    <div class="chat-container">
-                        <div class="chat-window" id="chat-window">
-                            <!-- Messages will appear here -->
-                        </div>
 
-                        <div class="input-group">
-                            <input type="text" id="user-input" class="form-control" placeholder="Type a message..." aria-label="User message" aria-describedby="send-button">
-                            <div class="input-group-append">
-                                <button class="btn" id="send-button" onclick="sendMessage()">Send</button>
-                            </div>
-                        </div>
+
+                <div class="copilot-insights">
+                    <div class="mini-head">
+                        <span>AI Insights</span>
+                        <span class="mini-tag">Azure AI Foundry</span>
                     </div>
-                    <div class="kv-row"><div class="kv-k">Next Run</div><div class="kv-v">@Model.NextRunText</div></div>
-                    <div class="kv-row"><div class="kv-k">Frequency</div><div class="kv-v">Daily</div></div>
-                    <div class="kv-row"><div class="kv-k">Timezone</div><div class="kv-v">UTC</div></div>
+
+                    <div class="insight high">
+                        <div class="insight-ic"><i data-lucide="alert-octagon"></i></div>
+                        <div class="insight-txt">
+                            <div class="insight-title">83% of failures</div>
+                            <div class="insight-sub">Uniqueness + Referential Integrity patterns</div>
+                        </div>
+                        <span class="sev high">High</span>
+                    </div>
+
+                    <div class="insight high">
+                        <div class="insight-ic"><i data-lucide="link-2"></i></div>
+                        <div class="insight-txt">
+                            <div class="insight-title">Highest risk object</div>
+                            <div class="insight-sub">Contacts → Accounts mapping violations</div>
+                        </div>
+                        <span class="sev high">High</span>
+                    </div>
+
+                    <div class="insight med">
+                        <div class="insight-ic"><i data-lucide="scan"></i></div>
+                        <div class="insight-txt">
+                            <div class="insight-title">Schema drift detected</div>
+                            <div class="insight-sub">Matters transform requires manual review</div>
+                        </div>
+                        <span class="sev med">Medium</span>
+                    </div>
+                </div>
+
+
+
+                <div class="copilot-chat" id="copilotChat" aria-label="AI chat messages">
+                    <div class="msg ai">
+                        Based on validation, <b>Contacts</b> readiness is <b>68%</b>, driven by
+                        <b>missing first/last names</b>. This blocks automation eligibility.
+                        <div class="time">2 minutes ago</div>
+                    </div>
+
+                    <div class="msg user">
+                        How did we fix this in past migrations?
+                        <div class="time">1 minute ago</div>
+                    </div>
+
+                    <div class="msg ai">
+                        For similar cases, we’ve improved readiness by:
+                        <ul>
+                            <li>Re-exporting using <b>Full Contact Report</b></li>
+                            <li>Applying name-splitting normalization rules</li>
+                            <li>Running duplicate detection before load</li>
+                        </ul>
+                        <div class="time">just now</div>
+                    </div>
+                </div>
+
+                <div class="copilot-input">
+                    <input id="copilotInput" type="text" placeholder="Ask about this project…" />
+                    <button id="copilotSend" type="button" class="send-btn" title="Send">
+                        <i data-lucide="send"></i>
+                    </button>
+                </div>
+
+                <div class="copilot-foot" style="display:none">
+                    <button class="micro-action" type="button">
+                        <i data-lucide="wrench"></i> Suggest fix
+                    </button>
+                    <button class="micro-action" type="button">
+                        <i data-lucide="search"></i> Similar cases
+                    </button>
+                    <button class="micro-action" type="button">
+                        <i data-lucide="terminal-square"></i> Generate SQL
+                    </button>
                 </div>
             </div>
 
-           
+
         </aside>
     </div>
 </div>
 
 @section PageStyles {
     <style>
+        .details-grid{
+            grid-template-columns: 1fr 440px;
+        }
         /* =========================
                            Toggle: Summary vs Details
                         ========================== */
@@ -604,7 +695,7 @@
 
         .runs-row {
             display: grid;
-            grid-template-columns: 1fr 0.3fr 0.2fr 1.6fr 0.5fr 0.2fr;
+            grid-template-columns: 0.7fr 0.3fr 0.2fr 1.6fr 0.5fr 0.2fr;
             gap: 10px;
             padding: 10px 12px;
             align-items: center;
@@ -726,6 +817,9 @@
         .input-group input {
             border-radius: 20px;
         }
+
+       
+
     </style>
 }
 
