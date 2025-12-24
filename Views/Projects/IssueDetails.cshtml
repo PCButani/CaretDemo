@@ -11,8 +11,8 @@
     <div class="hero-left">
         <div class="hero-logo" aria-hidden="true">
             @(string.IsNullOrWhiteSpace(Model.ClientName)
-                        ? "C"
-                        : Model.ClientName.Trim().Substring(0, 1).ToUpperInvariant())
+                ? "C"
+                : Model.ClientName.Trim().Substring(0, 1).ToUpperInvariant())
         </div>
 
         <div class="hero-text">
@@ -84,129 +84,680 @@
     <div class="tabs-spacer"></div>
 </div>
 
-<div class="verify-page">
-    <div class="details-grid">
-        <section class="details-main">
+<div class="verify-page overview-grid">
 
-            <div>
-                
-                <h2 style="padding-left:10px;">Contacts</h2>
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <div class="panel-title">Blockers & Failed Rules</div>
-                            <div class="panel-sub">Critical issues requiring governance review</div>
-                        </div>
-                    </div>
+    <section class="details-main">
 
-                    <div class="verify-blockers-grid">
-                        <div class="verify-blocker-card">
-                            <div class="verify-blocker-num">2</div>
-                            <div class="verify-blocker-label">Critical Blockers</div>
-                        </div>
-                        <div class="verify-blocker-detail">
-                            <div class="verify-blocker-section">
-                                <div class="verify-blocker-subtitle">Top Failing Categories</div>
-                                <div class="verify-blocker-chips">
-                                    <span class="pill pill-fail">Uniqueness</span>
-                                    <span class="pill pill-fail">Referential Integrity</span>
-                                    <span class="pill pill-warn">Schema Drift</span>
-                                </div>
-                            </div>
+        <div>
 
-                            <div class="verify-blocker-section">
-                                <div class="verify-blocker-subtitle">Exception Rows Impacted</div>
-                                <div class="verify-blocker-impact">18 rows</div>
-                            </div>
-                        </div>
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Blockers & Failed Rules</div>
+                        <div class="panel-sub">Critical issues requiring governance review</div>
                     </div>
                 </div>
 
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <div class="panel-title">SQL Validation Breakdown</div>
-                            <div class="panel-sub">Validation rules executed by category</div>
-                        </div>
+                <div class="verify-blockers-grid">
+                    <div class="verify-blocker-card">
+                        <div class="verify-blocker-num">2</div>
+                        <div class="verify-blocker-label">Critical Blockers</div>
                     </div>
+                    <div class="verify-blocker-detail">
+                        <div class="verify-blocker-section">
+                            <div class="verify-blocker-subtitle">Top Failing Categories</div>
+                            <div class="verify-blocker-chips">
+                                <span class="pill pill-fail">Uniqueness</span>
+                                <span class="pill pill-fail">Referential Integrity</span>
+                                <span class="pill pill-warn">Schema Drift</span>
+                            </div>
+                        </div>
 
-                    <div class="verify-validation-table">
-                        <div class="verify-val-row verify-val-head">
-                            <div>Category</div><div>Executed</div><div>Passed</div><div>Failed</div><div>Severity</div><div>Coverage</div>
-                        </div>
-                        <div class="verify-val-row">
-                            <div class="verify-val-category">Uniqueness</div>
-                            <div>18</div>
-                            <div class="verify-val-good">15</div>
-                            <div class="verify-val-bad">3</div>
-                            <div><span class="pill pill-severity-critical">Critical</span></div>
-                            <div class="verify-coverage">
-                                <div class="verify-coverage-bar"><span style="width: 83%"></span></div>
-                                <span class="verify-coverage-text">83%</span>
-                            </div>
-                        </div>
-                        <div class="verify-val-row">
-                            <div class="verify-val-category">Referential Integrity</div>
-                            <div>12</div>
-                            <div class="verify-val-good">10</div>
-                            <div class="verify-val-bad">2</div>
-                            <div><span class="pill pill-severity-high">High</span></div>
-                            <div class="verify-coverage">
-                                <div class="verify-coverage-bar"><span style="width: 83%"></span></div>
-                                <span class="verify-coverage-text">83%</span>
-                            </div>
-                        </div>
-                        <div class="verify-val-row">
-                            <div class="verify-val-category">Data Type</div>
-                            <div>24</div>
-                            <div class="verify-val-good">22</div>
-                            <div class="verify-val-bad">2</div>
-                            <div><span class="pill pill-severity-high">High</span></div>
-                            <div class="verify-coverage">
-                                <div class="verify-coverage-bar"><span style="width: 92%"></span></div>
-                                <span class="verify-coverage-text">92%</span>
-                            </div>
-                        </div>
-                        <div class="verify-val-row">
-                            <div class="verify-val-category">Nullability</div>
-                            <div>16</div>
-                            <div class="verify-val-good">16</div>
-                            <div class="verify-val-good">0</div>
-                            <div><span class="pill pill-severity-medium">Medium</span></div>
-                            <div class="verify-coverage">
-                                <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
-                                <span class="verify-coverage-text">100%</span>
-                            </div>
-                        </div>
-                        <div class="verify-val-row">
-                            <div class="verify-val-category">Schema Drift</div>
-                            <div>8</div>
-                            <div class="verify-val-good">8</div>
-                            <div class="verify-val-good">0</div>
-                            <div><span class="pill pill-severity-medium">Medium</span></div>
-                            <div class="verify-coverage">
-                                <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
-                                <span class="verify-coverage-text">100%</span>
-                            </div>
-                        </div>
-                        <div class="verify-val-row">
-                            <div class="verify-val-category">Business Rules</div>
-                            <div>14</div>
-                            <div class="verify-val-good">14</div>
-                            <div class="verify-val-good">0</div>
-                            <div><span class="pill pill-severity-low">Low</span></div>
-                            <div class="verify-coverage">
-                                <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
-                                <span class="verify-coverage-text">100%</span>
-                            </div>
+                        <div class="verify-blocker-section">
+                            <div class="verify-blocker-subtitle">Exception Rows Impacted</div>
+                            <div class="verify-blocker-impact">18 rows</div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
-    </div>
+
+            <div class="panel">
+               
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <div class="panel-title">SQL Validation Breakdown</div>
+                        <div class="panel-sub">Validation rules executed by category</div>
+                    </div>
+
+                    <div style="display:flex; gap:12px;">
+                        
+                        <button class="btn btn-secondary" type="button" style="display:flex; align-items:center; gap:6px;">
+                            <i data-lucide="download"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <div class="verify-validation-table">
+                    <div class="verify-val-row verify-val-head">
+                        <div>Category</div><div>Executed</div><div>Passed</div><div>Failed</div><div>New Score</div><div>Severity</div><div>Coverage</div><div>Download</div>
+                    </div>
+                    <div class="verify-val-row">
+                        <div class="verify-val-category">Mapping Mismatch</div>
+                        <div>18</div>
+                        <div class="verify-val-good">15</div>
+                        <div class="verify-val-bad">3</div>
+                        <div>88</div>
+                        <div><span class="pill pill-severity-critical">Critical</span></div>
+                        <div class="verify-coverage">
+                            <div class="verify-coverage-bar"><span style="width: 83%"></span></div>
+                            <span class="verify-coverage-text">83%</span>
+                        </div>
+                        <div> <i data-lucide="download"></i></div>
+                    </div>
+                    <div class="verify-val-row">
+                        <div class="verify-val-category">Rule Conflict</div>
+                        <div>12</div>
+                        <div class="verify-val-good">10</div>
+                        <div class="verify-val-bad">2</div>
+                        <div>82</div>
+                        <div><span class="pill pill-severity-high">High</span></div>
+                        <div class="verify-coverage">
+                            <div class="verify-coverage-bar"><span style="width: 83%"></span></div>
+                            <span class="verify-coverage-text">83%</span>
+                        </div>
+                        <div> <i data-lucide="download"></i></div>
+                    </div>
+                    <div class="verify-val-row">
+                        <div class="verify-val-category">Lookup Failure</div>
+                        <div>24</div>
+                        <div class="verify-val-good">22</div>
+                        <div class="verify-val-bad">2</div>
+                        <div>82</div>
+                        <div><span class="pill pill-severity-high">High</span></div>
+                        <div class="verify-coverage">
+                            <div class="verify-coverage-bar"><span style="width: 92%"></span></div>
+                            <span class="verify-coverage-text">92%</span>
+                        </div>
+                        <div> <i data-lucide="download"></i></div>
+                    </div>
+                    <div class="verify-val-row">
+                        <div class="verify-val-category">Aggregation Error</div>
+                        <div>16</div>
+                        <div class="verify-val-good">16</div>
+                        <div class="verify-val-good">0</div>
+                        <div>-</div>
+                        <div><span class="pill pill-severity-medium">Medium</span></div>
+                        <div class="verify-coverage">
+                            <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
+                            <span class="verify-coverage-text">100%</span>
+                        </div>
+                        <div> <i data-lucide="download"></i></div>
+                    </div>
+                    <div class="verify-val-row">
+                        <div class="verify-val-category">Join Loss</div>
+                        <div>8</div>
+                        <div class="verify-val-good">8</div>
+                        <div class="verify-val-good">0</div>
+                        <div>-</div>
+                        <div><span class="pill pill-severity-medium">Medium</span></div>
+                        <div class="verify-coverage">
+                            <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
+                            <span class="verify-coverage-text">100%</span>
+                        </div>
+                        <div> <i data-lucide="download"></i></div>
+                    </div>
+                    <div class="verify-val-row">
+                        <div class="verify-val-category">
+                            Sequence Dependency
+                        </div>
+                        <div>14</div>
+                        <div class="verify-val-good">14</div>
+                        <div class="verify-val-good">0</div>
+                        <div>-</div>
+                        <div><span class="pill pill-severity-low">Low</span></div>
+                        <div class="verify-coverage">
+                            <div class="verify-coverage-bar"><span style="width: 100%"></span></div>
+                            <span class="verify-coverage-text">100%</span>
+                        </div>
+                        <div> <i data-lucide="download"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RIGHT (Side) -->
+    <aside class="overview-side">
+
+        <!-- AI Copilot (Reusable Side Panel) -->
+        <div class="panel copilot">
+            <div class="copilot-head">
+                <div class="copilot-title">
+                    <div class="copilot-badge">
+                        <i data-lucide="sparkles"></i>
+                    </div>
+                    <div>
+                        <div class="copilot-name">AI Copilot</div>
+                        <div class="copilot-sub">Project-aware assistant (assistive only)</div>
+                    </div>
+                </div>
+                <div class="copilot-status">
+                    <span class="online-dot"></span> Online
+                </div>
+            </div>
+
+            <div class="copilot-scope">
+                <span class="scope-pill">
+                    <i data-lucide="folder"></i>
+                    Project scoped
+                </span>
+                <span class="scope-text">MIG-2026-001 • @Model.SourcePlatform → @Model.TargetPlatform</span>
+            </div>
+
+            <div class="copilot-insights">
+                <div class="mini-head">
+                    <span>AI Insights</span>
+                    <span class="mini-tag">Azure AI Foundry</span>
+                </div>
+
+                <div class="insight high">
+                    <div class="insight-ic"><i data-lucide="alert-octagon"></i></div>
+                    <div class="insight-txt">
+                        <div class="insight-title">83% of failures</div>
+                        <div class="insight-sub">Uniqueness + Referential Integrity patterns</div>
+                    </div>
+                    <span class="sev high">High</span>
+                </div>
+
+                <div class="insight high">
+                    <div class="insight-ic"><i data-lucide="link-2"></i></div>
+                    <div class="insight-txt">
+                        <div class="insight-title">Highest risk object</div>
+                        <div class="insight-sub">Contacts → Accounts mapping violations</div>
+                    </div>
+                    <span class="sev high">High</span>
+                </div>
+
+                <div class="insight med">
+                    <div class="insight-ic"><i data-lucide="scan"></i></div>
+                    <div class="insight-txt">
+                        <div class="insight-title">Schema drift detected</div>
+                        <div class="insight-sub">Matters transform requires manual review</div>
+                    </div>
+                    <span class="sev med">Medium</span>
+                </div>
+            </div>
+
+            <div class="copilot-suggest">
+                <div class="mini-head">
+                    <span>Suggested Questions</span>
+                    <span class="mini-hint">click to ask</span>
+                </div>
+
+                <div class="suggest-grid">
+                    <button class="suggest-btn" type="button">Why did Contacts fail?</button>
+                    <button class="suggest-btn" type="button">Show uniqueness patterns</button>
+                    <button class="suggest-btn" type="button">Compare to last run</button>
+                    <button class="suggest-btn" type="button">What’s blocking approval?</button>
+                </div>
+            </div>
+
+            <div class="copilot-chat" id="copilotChat" aria-label="AI chat messages">
+                <div class="msg ai">
+                    Based on validation, <b>Contacts</b> readiness is <b>68%</b>, driven by
+                    <b>missing first/last names</b>. This blocks automation eligibility.
+                    <div class="time">2 minutes ago</div>
+                </div>
+
+                <div class="msg user">
+                    How did we fix this in past migrations?
+                    <div class="time">1 minute ago</div>
+                </div>
+
+                <div class="msg ai">
+                    For similar cases, we’ve improved readiness by:
+                    <ul>
+                        <li>Re-exporting using <b>Full Contact Report</b></li>
+                        <li>Applying name-splitting normalization rules</li>
+                        <li>Running duplicate detection before load</li>
+                    </ul>
+                    <div class="time">just now</div>
+                </div>
+            </div>
+
+            <div class="copilot-input">
+                <input id="copilotInput" type="text" placeholder="Ask about this project…" />
+                <button id="copilotSend" type="button" class="send-btn" title="Send">
+                    <i data-lucide="send"></i>
+                </button>
+            </div>
+
+            <div class="copilot-foot">
+                <button class="micro-action" type="button">
+                    <i data-lucide="wrench"></i> Suggest fix
+                </button>
+                <button class="micro-action" type="button">
+                    <i data-lucide="search"></i> Similar cases
+                </button>
+                <button class="micro-action" type="button">
+                    <i data-lucide="terminal-square"></i> Generate SQL
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Info -->
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <div class="panel-title">Quick Info</div>
+                    <div class="panel-sub">Operational snapshot</div>
+                </div>
+            </div>
+
+            <div class="kv">
+                <div class="kv-row">
+                    <div class="kv-k">Project ID</div>
+                    <div class="kv-v">#@Model.Id</div>
+                </div>
+                <div class="kv-row">
+                    <div class="kv-k">Status</div>
+                    <div class="kv-v"><span class="pill pill-status">@Model.Status</span></div>
+                </div>
+                <div class="kv-row">
+                    <div class="kv-k">Health</div>
+                    <div class="kv-v"><span class="pill pill-health">@Model.Health</span></div>
+                </div>
+                <div class="kv-row">
+                    <div class="kv-k">Environment</div>
+                    <div class="kv-v"><span class="pill pill-env">@Model.Environment</span></div>
+                </div>
+                <div class="kv-row">
+                    <div class="kv-k">Last Run</div>
+                    <div class="kv-v">@Model.LastRunText</div>
+                </div>
+                <div class="kv-row">
+                    <div class="kv-k">Next Run</div>
+                    <div class="kv-v">@Model.NextRunText</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <div class="panel-title">Actions</div>
+                    <div class="panel-sub">Most used shortcuts</div>
+                </div>
+            </div>
+
+            <div class="side-actions">
+                <button class="btn btn-secondary w-100" type="button">Open Exceptions</button>
+                <button class="btn btn-secondary w-100" type="button">Run Validation</button>
+                <button class="btn btn-secondary w-100" type="button">Generate Export</button>
+            </div>
+        </div>
+
+    </aside>
+
+
 </div>
 
 @section PageStyles {
     <link rel="stylesheet" href="~/css/verify.css" />
+    <style>
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 1fr 480px;
+            gap: 16px;
+        }
+        /* =========================
+                           RIGHT SIDE – COPILOT
+                        ========================== */
+        .copilot {
+            padding: 12px;
+            background: rgba(168, 85, 247, .08);
+        }
+
+        .copilot-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .copilot-title {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .copilot-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(37,99,235,.20);
+            background: rgba(37,99,235,.10);
+            color: rgba(37,99,235,1);
+        }
+
+            .copilot-badge i {
+                width: 18px;
+                height: 18px;
+            }
+
+        .copilot-name {
+            font-weight: 900;
+            letter-spacing: -.2px;
+        }
+
+        .copilot-sub {
+            font-size: 12px;
+            opacity: .75;
+            margin-top: 2px;
+        }
+
+        .copilot-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 900;
+            opacity: .85;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(0,0,0,.03);
+            white-space: nowrap;
+        }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(16,185,129,1);
+        }
+
+        .copilot-scope {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 10px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,.06);
+            background: rgba(0,0,0,.02);
+            margin-bottom: 10px;
+        }
+
+        .scope-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.8);
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+            .scope-pill i {
+                width: 16px;
+                height: 16px;
+            }
+
+        .scope-text {
+            font-size: 12px;
+            opacity: .85;
+            font-weight: 800;
+        }
+
+        .mini-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 6px 0 8px;
+            font-size: 12px;
+            font-weight: 900;
+            opacity: .85;
+        }
+
+        .mini-tag {
+            font-size: 11px;
+            font-weight: 900;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(79,70,229,.20);
+            background: rgba(79,70,229,.10);
+            color: rgba(79,70,229,1);
+            white-space: nowrap;
+        }
+
+        .mini-hint {
+            font-size: 11px;
+            font-weight: 800;
+            opacity: .6;
+        }
+
+        .copilot-insights {
+            margin-bottom: 10px;
+        }
+
+        .insight {
+            display: grid;
+            grid-template-columns: 32px 1fr auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,.06);
+            background: rgba(0,0,0,.02);
+            margin-bottom: 8px;
+        }
+
+        .insight-ic {
+            width: 32px;
+            height: 32px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.8);
+            opacity: .9;
+        }
+
+            .insight-ic i {
+                width: 16px;
+                height: 16px;
+            }
+
+        .insight-title {
+            font-weight: 900;
+            letter-spacing: -.1px;
+        }
+
+        .insight-sub {
+            font-size: 12px;
+            opacity: .75;
+            margin-top: 2px;
+            font-weight: 800;
+        }
+
+        .sev {
+            font-size: 11px;
+            font-weight: 900;
+            padding: 5px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(0,0,0,.03);
+            white-space: nowrap;
+        }
+
+            .sev.high {
+                background: rgba(239,68,68,.12);
+                color: rgba(153,27,27,1);
+                border-color: rgba(239,68,68,.20);
+            }
+
+            .sev.med {
+                background: rgba(245,158,11,.14);
+                color: rgba(146,64,14,1);
+                border-color: rgba(245,158,11,.25);
+            }
+
+        .suggest-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .suggest-btn {
+            text-align: left;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.85);
+            padding: 10px 10px;
+            font-size: 12px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+            .suggest-btn:hover {
+                background: rgba(0,0,0,.02);
+            }
+
+        .copilot-chat {
+            height: 260px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,.06);
+            background: rgba(0,0,0,.02);
+            margin-bottom: 10px;
+        }
+
+        .msg {
+            max-width: 92%;
+            padding: 10px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,.06);
+            background: rgba(255,255,255,.85);
+            font-size: 13px;
+            line-height: 1.35;
+        }
+
+            .msg.ai {
+                align-self: flex-start;
+            }
+
+            .msg.user {
+                align-self: flex-end;
+                background: rgba(79,70,229,1);
+                color: white;
+                border-color: rgba(79,70,229,.45);
+            }
+
+            .msg .time {
+                font-size: 11px;
+                opacity: .65;
+                margin-top: 8px;
+                font-weight: 800;
+            }
+
+            .msg.user .time {
+                opacity: .75;
+            }
+
+            .msg ul {
+                margin: 8px 0 0 18px;
+            }
+
+        .copilot-input {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+            .copilot-input input {
+                flex: 1;
+                border-radius: 12px;
+                border: 1px solid rgba(0,0,0,.10);
+                background: rgba(255,255,255,.9);
+                padding: 10px 10px;
+                font-size: 13px;
+                outline: none;
+            }
+
+                .copilot-input input:focus {
+                    border-color: rgba(79,70,229,.35);
+                    box-shadow: 0 0 0 4px rgba(79,70,229,.10);
+                }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid rgba(79,70,229,.35);
+            background: rgba(79,70,229,1);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .send-btn i {
+                width: 18px;
+                height: 18px;
+            }
+
+            .send-btn:hover {
+                filter: brightness(.98);
+            }
+
+        .copilot-foot {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+
+        .micro-action {
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.85);
+            padding: 9px 10px;
+            font-size: 12px;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+            .micro-action i {
+                width: 16px;
+                height: 16px;
+            }
+
+            .micro-action:hover {
+                background: rgba(0,0,0,.02);
+            }
+
+        body .verify-page .verify-val-row {
+            grid-template-columns: 1.8fr repeat(4, 0.5fr) 1fr 1fr 0.4fr;
+        }
+    </style>
 }

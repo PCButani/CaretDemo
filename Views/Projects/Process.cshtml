@@ -872,10 +872,10 @@
            asp-controller="Projects" asp-action="Config" asp-route-id="@Model.Id">Config</a>
 
         <div class="tabs-spacer"></div>
-        <div class="view-toggle">
+        @* <div class="view-toggle">
             <button class="vt-btn is-active" data-view="decision">Decision</button>
             <button class="vt-btn" data-view="evidence">Evidence</button>
-        </div>
+        </div> *@
     </div>
 
     <!-- =========================
@@ -1016,13 +1016,13 @@
                 <!-- Objects in Scope (KEEP) -->
                 <div class="pce-section">
                     <div class="pce-section-head">
-                        <h2 class="pce-h2">Objects in Scope</h2>
+                        <h2 class="pce-h2">Entity in Scope</h2>
                         <div class="pce-sub">Summary + Detail view (object-level readiness)</div>
                     </div>
 
                     <div class="pce-objects" id="pceObjects">
                         <div class="pce-objects-head">
-                            <div style="font-weight:950;color:rgba(10,15,30,.92);">Object Dashboard</div>
+                            <div style="font-weight:950;color:rgba(10,15,30,.92);">Entity Dashboard</div>
                             <div class="pce-seg" role="tablist" aria-label="View toggle">
                                 <button type="button" class="is-active" id="pceViewSummary" onclick="pceSetView('summary')">Summary</button>
                                 <button type="button" id="pceViewDetail" onclick="pceSetView('detail')">Detailed</button>
