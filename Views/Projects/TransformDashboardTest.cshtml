@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Transform Dashboard – AI Issue Table</title>
+
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --line:#e6e9f2;
+      --shadow: 0 14px 34px rgba(2,6,23,.08);
+      --radius: 16px;
+
+      --ai:#6d28d9;
+      --aiSoft: rgba(109,40,217,.10);
+
+      --crit:#ef4444;
+      --critSoft: rgba(239,68,68,.10);
+
+      --high:#f59e0b;
+      --highSoft: rgba(245,158,11,.12);
+
+      --med:#3b82f6;
+      --medSoft: rgba(59,130,246,.10);
+
+      --ok:#22c55e;
+      --okSoft: rgba(34,197,94,.12);
+    }
+
+    body{
+      margin:0;
+      background:var(--bg);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--ink);
+    }
+
+    .wrap{
+      max-width: 1280px;
+      margin: 24px auto 64px;
+      padding: 0 18px;
+    }
+
+    /* Top header (light, minimal) */
+    .pageHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom: 14px;
+    }
+    .crumbs{
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .dot{opacity:.6}
+    .titleRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+    h1{
+      margin:0;
+      font-size:20px;
+      font-weight:1000;
+      letter-spacing:-.02em;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .aiMark{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--aiSoft);
+      border:1px solid rgba(109,40,217,.18);
+      color:var(--ai);
+      font-weight:1000;
+      font-size:12px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.85);
+      color:var(--muted);
+      font-weight:900;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .pillAi{
+      border-color: rgba(109,40,217,.18);
+      background: var(--aiSoft);
+      color: var(--ai);
+    }
+    .sub{
+      margin-top:8px;
+      font-size:13px;
+      font-weight:700;
+      color:var(--muted);
+      max-width: 100ch;
+    }
+    .btnRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .btn{
+      height:34px;
+      padding:0 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-weight:1000;
+      font-size:13px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+      box-shadow: 0 1px 0 rgba(2,6,23,.03);
+    }
+    .btnPrimary{
+      background: linear-gradient(180deg, #7c3aed, #5b21b6);
+      color:#fff;
+      border-color: rgba(109,40,217,.25);
+    }
+
+    /* Card + table */
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .cardHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px 12px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(248,250,252,.96), rgba(255,255,255,.96));
+    }
+    .cardTitle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:1000;
+      font-size:14px;
+    }
+    .robot{
+      width:26px;height:26px;border-radius:10px;
+      display:inline-flex;align-items:center;justify-content:center;
+      background: var(--aiSoft);
+      border:1px solid rgba(109,40,217,.18);
+      color: var(--ai);
+      font-size:16px;
+    }
+    .cardSub{
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+    .headRight{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.8);
+      font-weight:1000;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .chipCrit{ background: var(--critSoft); border-color: rgba(239,68,68,.22); color:#b42318; }
+    .chipHigh{ background: var(--highSoft); border-color: rgba(245,158,11,.22); color:#9a5800; }
+
+    .tableWrap{ overflow:auto; }
+    table{
+      width:100%;
+      border-collapse: separate;
+      border-spacing:0;
+      min-width: 1200px;
+      font-size: 13px;
+    }
+    thead th{
+      text-align:left;
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      background:#f8fafc;
+      color:#334155;
+      font-weight:1000;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+      white-space:nowrap;
+    }
+    tbody td{
+      padding:12px 14px;
+      border-bottom:1px solid rgba(241,245,249,.95);
+      vertical-align:top;
+      font-weight:900;
+    }
+    tbody tr:hover td{ background: rgba(109,40,217,.03); }
+
+    .muted{ color:var(--muted); font-weight:800; }
+    .r{ text-align:right; }
+
+    .entityCell{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .avatar{
+      width:30px;height:30px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      background: rgba(2,6,23,.04);
+      border:1px solid var(--line);
+      font-weight:1000;
+      color:#334155;
+      flex:0 0 auto;
+    }
+    .entityName{ font-weight:1000; }
+    .entityMeta{
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    .sev{
+      display:inline-flex;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:1000;
+      font-size:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      white-space:nowrap;
+    }
+    .sevCrit{ background: var(--critSoft); border-color: rgba(239,68,68,.22); color:#b42318; }
+    .sevHigh{ background: var(--highSoft); border-color: rgba(245,158,11,.22); color:#9a5800; }
+    .sevMed{ background: var(--medSoft); border-color: rgba(59,130,246,.22); color:#1d4ed8; }
+
+    /* AI bar (kept like your older one) */
+    .aiBar{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width: 170px;
+    }
+    .aiTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .aiLabel{
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+    }
+    .aiPct{
+      font-weight:1000;
+      color: var(--ai);
+      font-size:12px;
+    }
+    .bar{
+      height:10px;
+      border-radius:999px;
+      background: rgba(109,40,217,.12);
+      border:1px solid rgba(109,40,217,.16);
+      overflow:hidden;
+    }
+    .bar > span{
+      display:block;
+      height:100%;
+      border-radius:999px;
+      background: linear-gradient(90deg, #7c3aed, #4f46e5);
+      width: 0%;
+    }
+    .aiHint{
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      line-height:1.25;
+    }
+
+    /* Compact text cells */
+    .compact{
+      max-width: 280px;
+      line-height:1.25;
+    }
+    .compact b{ color:#0f172a; }
+
+    /* Actions alignment (fixed) */
+    .actionsCell{
+      min-width: 190px;
+    }
+    .actionsGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px;
+      justify-content:end;
+    }
+    .act{
+      height:32px;
+      padding:0 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-weight:1000;
+      font-size:12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .actAi{
+      background: var(--aiSoft);
+      border-color: rgba(109,40,217,.18);
+      color: var(--ai);
+    }
+    .actSoft{
+      background: rgba(2,6,23,.03);
+      border-color: var(--line);
+      color:#334155;
+    }
+    .actOk{
+      background: var(--okSoft);
+      border-color: rgba(34,197,94,.18);
+      color:#0f7a35;
+    }
+    .actWide{
+      grid-column: 1 / span 2;
+      justify-content:space-between;
+      padding: 0 10px;
+    }
+
+    /* Copilot panel (bottom full width) */
+    .copilot{
+      margin-top: 14px;
+      display:none;
+    }
+    .copilot.show{ display:block; }
+
+    .copHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(109,40,217,.10), rgba(255,255,255,.96));
+    }
+    .copTitle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:1000;
+      font-size:14px;
+    }
+    .closeBtn{
+      height:34px;
+      padding:0 12px;
+      border-radius: 12px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-weight:1000;
+      cursor:pointer;
+    }
+
+    .copBody{
+      padding: 14px 16px 16px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 14px;
+    }
+    .chatBox{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius: 16px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height: 260px;
+    }
+    .chatMsgs{
+      padding: 12px;
+      flex: 1;
+      overflow:auto;
+    }
+    .msg{
+      margin-bottom:10px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .msg .b{
+      width:28px;height:28px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      border:1px solid var(--line);
+      background:#fff;
+      font-weight:1000;
+      color:#334155;
+      flex:0 0 auto;
+    }
+    .msg.ai .b{
+      background: var(--aiSoft);
+      border-color: rgba(109,40,217,.18);
+      color: var(--ai);
+    }
+    .bubble{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius: 14px;
+      padding:10px 12px;
+      font-size:13px;
+      color: var(--muted);
+      font-weight:800;
+      line-height:1.35;
+      max-width: 90ch;
+    }
+    .msg.ai .bubble{
+      background: rgba(109,40,217,.05);
+      border-color: rgba(109,40,217,.12);
+      color:#334155;
+    }
+    .chatInput{
+      border-top:1px solid var(--line);
+      padding:10px;
+      display:flex;
+      gap:10px;
+      background:#fff;
+    }
+    .chatInput input{
+      flex:1;
+      height:38px;
+      border-radius: 12px;
+      border:1px solid var(--line);
+      padding: 0 12px;
+      font-weight:800;
+      outline:none;
+    }
+    .chatInput button{
+      height:38px;
+      padding: 0 14px;
+      border-radius: 12px;
+      border:1px solid rgba(109,40,217,.18);
+      background: var(--aiSoft);
+      color: var(--ai);
+      font-weight:1000;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .sidePanel{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .kv{
+      display:grid;
+      grid-template-columns: 120px 1fr;
+      gap: 8px 12px;
+      font-size:13px;
+      font-weight:900;
+      margin-top: 8px;
+    }
+    .kv .k{ color: var(--muted); font-weight:900; }
+    .kv .v{ color: #0f172a; font-weight:1000; }
+
+    @@media (max-width: 1000px){
+      .pageHead{ flex-direction:column; }
+      .btnRow{ justify-content:flex-start; }
+      .copBody{ grid-template-columns: 1fr; }
+      table{ min-width: 1180px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="pageHead">
+    <div>
+      <div class="crumbs">
+        <span>Projects</span><span class="dot">/</span>
+        <span>Project #0 — ZolaSuite Migration</span><span class="dot">/</span>
+        <span>Transform</span>
+      </div>
+
+      <div class="titleRow">
+        <h1><span class="aiMark">🤖 AI</span> Transform Dashboard</h1>
+        <span class="pill pillAi">AI-generated • Copilot-assisted</span>
+        <span class="pill">🕒 Last run: <b>Today 09:10</b></span>
+      </div>
+
+      <div class="sub">
+        AI flags transform failures at <b>rule/entity level</b>, aligns root cause to evidence, and offers <b>fix commands</b> + <b>next steps</b>.
+      </div>
+    </div>
+
+    <div class="btnRow">
+      <button class="btn">⬇️ Export</button>
+      <button class="btn">↻ Re-run</button>
+      <button class="btn btnPrimary">✓ Approve (if clean)</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="cardHead">
+      <div>
+        <div class="cardTitle">
+          <span class="robot">🤖</span>
+          AI Issue Table (Entity / Rule / Action)
+        </div>
+        <div class="cardSub">
+          Designed for demos: one view shows impact, aligned root cause, recommended fix, and actions.
+        </div>
+      </div>
+
+      <div class="headRight">
+        <span class="chip chipCrit">Critical 2</span>
+        <span class="chip chipHigh">High 2</span>
+        <span class="chip">Filter: Last run</span>
+      </div>
+    </div>
+
+    <div class="tableWrap">
+      <table id="issueTable">
+        <thead>
+        <tr>
+          <th>Entity / Step</th>
+          <th>Issue</th>
+          <th>Rule / Logic</th>
+          <th class="r">Rows</th>
+          <th>Severity</th>
+          <th title="AI confidence that the root cause + fix is correct">
+            AI Confidence (Root cause + fix)
+          </th>
+          <th>Root Cause (aligned)</th>
+          <th>Recommended Fix</th>
+          <th class="r">Actions</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr class="issueRow"
+            data-entity="Customers"
+            data-step="Normalize_Product (ADF Data Flow)"
+            data-issue="Lookup Miss"
+            data-rule="Dim_Product_Map"
+            data-rows="412"
+            data-sev="Critical"
+            data-ai="97"
+            data-root="Reference data missing keys (new ProductCode values not mapped)."
+            data-fix="Refresh mapping + add fallback mapping rule."
+            data-q="Why are product lookups missing in Dim_Product_Map and what exact fix should I apply?">
+          <td>
+            <div class="entityCell">
+              <div class="avatar">C</div>
+              <div>
+                <div class="entityName">Customers</div>
+                <div class="entityMeta">Normalize_Product • ADF Data Flow</div>
+              </div>
+            </div>
+          </td>
+          <td class="muted">Lookup Miss</td>
+          <td><b>Dim_Product_Map</b></td>
+          <td class="r">412</td>
+          <td><span class="sev sevCrit">Critical</span></td>
+          <td>
+            <div class="aiBar">
+              <div class="aiTop">
+                <span class="aiLabel">Confidence</span>
+                <span class="aiPct">97%</span>
+              </div>
+              <div class="bar"><span style="width:97%"></span></div>
+              <div class="aiHint">AI is confident root cause + fix match evidence.</div>
+            </div>
+          </td>
+          <td class="compact">Reference data missing keys (new ProductCode values not mapped).</td>
+          <td class="compact"><b>Refresh mapping</b> + add fallback rule.</td>
+          <td class="actionsCell r">
+            <div class="actionsGrid">
+              <button class="act actAi actWide js-deepdive">🤖 Deep dive</button>
+              <button class="act actSoft">Generate</button>
+              <button class="act actSoft">Simulate</button>
+              <button class="act actOk">Planned</button>
+            </div>
+          </td>
+        </tr>
+
+        <tr class="issueRow"
+            data-entity="Sales"
+            data-step="CustomerNormalize (SQL Transform)"
+            data-issue="Join Loss"
+            data-rule="CustomerJoinStrategy"
+            data-rows="1287"
+            data-sev="Critical"
+            data-ai="96"
+            data-root="INNER JOIN drops rows due to inconsistent key formatting (trim/case/zeros)."
+            data-fix="Normalize join keys + change INNER→LEFT where valid + null handling."
+            data-q="Which join keys are causing row loss and what SQL changes should I apply?">
+          <td>
+            <div class="entityCell">
+              <div class="avatar">S</div>
+              <div>
+                <div class="entityName">Sales</div>
+                <div class="entityMeta">CustomerNormalize • SQL Transform</div>
+              </div>
+            </div>
+          </td>
+          <td class="muted">Join Loss</td>
+          <td><b>CustomerJoinStrategy</b></td>
+          <td class="r">1,287</td>
+          <td><span class="sev sevCrit">Critical</span></td>
+          <td>
+            <div class="aiBar">
+              <div class="aiTop">
+                <span class="aiLabel">Confidence</span>
+                <span class="aiPct">96%</span>
+              </div>
+              <div class="bar"><span style="width:96%"></span></div>
+              <div class="aiHint">Confidence based on join evidence + samples.</div>
+            </div>
+          </td>
+          <td class="compact">INNER JOIN drops rows (key formatting mismatch).</td>
+          <td class="compact"><b>Normalize keys</b> + INNER→LEFT + null-safe join.</td>
+          <td class="actionsCell r">
+            <div class="actionsGrid">
+              <button class="act actAi actWide js-deepdive">🤖 Deep dive</button>
+              <button class="act actSoft">SQL</button>
+              <button class="act actSoft">Samples</button>
+              <button class="act actOk">Planned</button>
+            </div>
+          </td>
+        </tr>
+
+        <tr class="issueRow"
+            data-entity="Accounts"
+            data-step="CustomerTypeDerive (ADF Data Flow)"
+            data-issue="Rule Conflict"
+            data-rule="CustomerTypeDerive"
+            data-rows="89"
+            data-sev="High"
+            data-ai="94"
+            data-root="Multiple conditions match; precedence undefined."
+            data-fix="Add precedence order + regression test for overlaps."
+            data-q="Which conditions overlap in CustomerTypeDerive and how do I add precedence + tests?">
+          <td>
+            <div class="entityCell">
+              <div class="avatar">A</div>
+              <div>
+                <div class="entityName">Accounts</div>
+                <div class="entityMeta">CustomerTypeDerive • ADF Data Flow</div>
+              </div>
+            </div>
+          </td>
+          <td class="muted">Rule Conflict</td>
+          <td><b>CustomerTypeDerive</b></td>
+          <td class="r">89</td>
+          <td><span class="sev sevHigh">High</span></td>
+          <td>
+            <div class="aiBar">
+              <div class="aiTop">
+                <span class="aiLabel">Confidence</span>
+                <span class="aiPct">94%</span>
+              </div>
+              <div class="bar"><span style="width:94%"></span></div>
+              <div class="aiHint">Rule overlap patterns detected.</div>
+            </div>
+          </td>
+          <td class="compact">Conditions overlap; precedence not defined.</td>
+          <td class="compact"><b>Define precedence</b> + add regression test.</td>
+          <td class="actionsCell r">
+            <div class="actionsGrid">
+              <button class="act actAi actWide js-deepdive">🤖 Deep dive</button>
+              <button class="act actSoft">Test</button>
+              <button class="act actSoft">Assign</button>
+              <button class="act actOk">Planned</button>
+            </div>
+          </td>
+        </tr>
+
+        <tr class="issueRow"
+            data-entity="Orders"
+            data-step="RevenueCalc (SQL Transform)"
+            data-issue="Aggregation"
+            data-rule="RevenueGroupKey"
+            data-rows="32"
+            data-sev="High"
+            data-ai="92"
+            data-root="Null handling missing; grouping key drift across runs."
+            data-fix="Fix grouping logic + enforce datatype + null-safe expressions."
+            data-q="Why is RevenueGroupKey drifting and what changes stabilize aggregation results?">
+          <td>
+            <div class="entityCell">
+              <div class="avatar">O</div>
+              <div>
+                <div class="entityName">Orders</div>
+                <div class="entityMeta">RevenueCalc • SQL Transform</div>
+              </div>
+            </div>
+          </td>
+          <td class="muted">Aggregation</td>
+          <td><b>RevenueGroupKey</b></td>
+          <td class="r">32</td>
+          <td><span class="sev sevHigh">High</span></td>
+          <td>
+            <div class="aiBar">
+              <div class="aiTop">
+                <span class="aiLabel">Confidence</span>
+                <span class="aiPct">92%</span>
+              </div>
+              <div class="bar"><span style="width:92%"></span></div>
+              <div class="aiHint">Evidence shows grouping instability.</div>
+            </div>
+          </td>
+          <td class="compact">Null handling missing; grouping key drift.</td>
+          <td class="compact"><b>Fix grouping</b> + enforce datatype + null safety.</td>
+          <td class="actionsCell r">
+            <div class="actionsGrid">
+              <button class="act actAi actWide js-deepdive">🤖 Deep dive</button>
+              <button class="act actSoft">Fix</button>
+              <button class="act actSoft">Simulate</button>
+              <button class="act actOk">Planned</button>
+            </div>
+          </td>
+        </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Bottom GPT/Copilot (full width, single panel) -->
+  <div class="card copilot" id="copilotPanel">
+    <div class="copHead">
+      <div class="copTitle">
+        <span class="robot">🤖</span>
+        GPT Copilot (Issue Deep Dive)
+        <span class="pill pillAi" style="margin-left:8px;">Context-aware from table selection</span>
+      </div>
+      <button class="closeBtn" id="closeCopilot">Close</button>
+    </div>
+
+    <div class="copBody">
+      <div class="chatBox">
+        <div class="chatMsgs" id="chatMsgs"></div>
+        <div class="chatInput">
+          <input id="chatInput" placeholder="Press Enter to ask GPT…"/>
+          <button id="sendBtn">Send</button>
+        </div>
+      </div>
+
+      <div class="sidePanel">
+        <div class="cardTitle" style="padding:0;background:none;border:none;">
+          <span class="robot">🤖</span>
+          Selected issue
+        </div>
+
+        <div class="kv" id="issueKV"></div>
+
+        <div class="sub" style="margin-top:10px;">
+          Demo behavior: click “Deep dive” → question auto-fills → press Enter → GPT answer appears.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const copilot = document.getElementById("copilotPanel");
+  const chatMsgs = document.getElementById("chatMsgs");
+  const chatInput = document.getElementById("chatInput");
+  const issueKV = document.getElementById("issueKV");
+
+  function addMsg(who, html){
+    const msg = document.createElement("div");
+    msg.className = "msg " + (who === "ai" ? "ai" : "user");
+    msg.innerHTML = `
+      <div class="b">${who === "ai" ? "🤖" : "U"}</div>
+      <div class="bubble">${html}</div>
+    `;
+    chatMsgs.appendChild(msg);
+    chatMsgs.scrollTop = chatMsgs.scrollHeight;
+  }
+
+  function mockAiAnswer(question){
+    return `
+      <b>AI Answer:</b> I reviewed the transform evidence pattern and aligned it with the rule failure.<br/>
+      <ul style="margin:8px 0 0 18px;">
+        <li><b>Most likely root cause</b>: key mismatch / reference drift / join strategy mismatch</li>
+        <li><b>Next step</b>: pull a sample set of failing keys + validate against mapping/stage</li>
+        <li><b>Fix action</b>: generate SQL/ADF change + rerun only impacted entity</li>
+        <li><b>Expected outcome</b>: recover impacted rows and stabilize future runs</li>
+      </ul>
+      <div style="margin-top:8px;color:#64748b;font-weight:800;">
+        (In real build: GPT can output exact SQL/ADF expressions + test cases.)
+      </div>
+    `;
+  }
+
+  function openCopilotFromRow(row){
+    copilot.classList.add("show");
+    chatMsgs.innerHTML = "";
+
+    const entity = row.dataset.entity;
+    const step = row.dataset.step;
+    const issue = row.dataset.issue;
+    const rule = row.dataset.rule;
+    const rows = row.dataset.rows;
+    const sev = row.dataset.sev;
+    const ai = row.dataset.ai;
+    const root = row.dataset.root;
+    const fix = row.dataset.fix;
+    const q = row.dataset.q;
+
+    issueKV.innerHTML = `
+      <div class="k">Entity</div><div class="v">${entity}</div>
+      <div class="k">Step</div><div class="v">${step}</div>
+      <div class="k">Issue</div><div class="v">${issue}</div>
+      <div class="k">Rule</div><div class="v">${rule}</div>
+      <div class="k">Severity</div><div class="v">${sev}</div>
+      <div class="k">Rows</div><div class="v">${rows}</div>
+      <div class="k">AI Conf.</div><div class="v">${ai}%</div>
+      <div class="k">Root</div><div class="v">${root}</div>
+      <div class="k">Fix</div><div class="v">${fix}</div>
+    `;
+
+    addMsg("ai", `I’m ready to deep dive into <b>${entity}</b> → <b>${issue}</b>. I can generate fix steps + commands.`);
+    addMsg("ai", `A suggested question is prepared. Press <b>Enter</b> to run it.`);
+    chatInput.value = q;
+    chatInput.focus();
+  }
+
+  document.querySelectorAll(".js-deepdive").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const row = e.target.closest(".issueRow");
+      openCopilotFromRow(row);
+    });
+  });
+
+  document.getElementById("closeCopilot").addEventListener("click", () => {
+    copilot.classList.remove("show");
+  });
+
+  function send(){
+    const q = chatInput.value.trim();
+    if (!q) return;
+    addMsg("user", q);
+    addMsg("ai", mockAiAnswer(q));
+    chatInput.value = "";
+  }
+
+  document.getElementById("sendBtn").addEventListener("click", send);
+  chatInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") send();
+  });
+</script>
+
+</body>
+</html>

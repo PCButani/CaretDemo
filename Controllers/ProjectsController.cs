@@ -97,7 +97,10 @@ namespace DataSync.Web.Controllers
             // IMPORTANT: render Verify.cshtml, not Details.cshtml
             return View(vm); // will load Views/Projects/Verify.cshtml
         }
-
+        public IActionResult TransformDashboardTest()
+        {
+            return View();
+        }
         public IActionResult IssueDetails(int id)
         {
             var vm = BuildProjectDetailsVm(id);
